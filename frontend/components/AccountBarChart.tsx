@@ -46,6 +46,11 @@ export default function Component() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const getDayIndex = (day: string) => {
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    return days.indexOf(day);
+  };
+
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
@@ -79,11 +84,6 @@ export default function Component() {
 
     fetchTransactions();
   }, []);
-
-  const getDayIndex = (day: string) => {
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    return days.indexOf(day);
-  };
 
   const totalDebit = chartData.reduce((sum, data) => sum + data.debit, 0);
   const totalCredit = chartData.reduce((sum, data) => sum + data.credit, 0);

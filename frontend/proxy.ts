@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 /**
  * Gate the authenticated routes.
  *
+ * Next 16 renamed `middleware.ts` to `proxy.ts`; `middleware` is deprecated.
+ *
  * The previous version only checked that an `accessToken` *cookie existed*, so
  * an expired or forged token still rendered the whole dashboard before every
  * request came back 401. This decodes the JWT payload and honours `exp`.
@@ -26,7 +28,7 @@ function isTokenExpired(token: string): boolean {
   }
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const accessToken = request.cookies.get("accessToken")?.value;
 
   // Signed out, or holding a token that has expired: send them to sign-in.

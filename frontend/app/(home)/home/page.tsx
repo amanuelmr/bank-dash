@@ -2,8 +2,9 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import mobileImage from "@/../../public/Images/landingpageImge.png";
-import personWithCreditCard from "@/../../public/Images/person-paying-with-its-credit-card.png";
+// Served from public/, so reference by URL. Importing these as modules both
+// broke the path alias and bundled ~2MB of PNGs into the client bundle.
+const MOBILE_IMAGE = "/Images/landingpageImge.png";
 
 const Landing: React.FC = () => {
   return (
@@ -51,7 +52,7 @@ const Landing: React.FC = () => {
 
             <div className="w-full md:w-3/5 flex items-center justify-center">
               <Image
-                src={mobileImage}
+                src={MOBILE_IMAGE}
                 width={200}
                 height={200}
                 alt="sample moble of project"
