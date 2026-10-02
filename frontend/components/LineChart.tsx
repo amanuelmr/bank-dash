@@ -9,7 +9,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useEffect, useState } from "react";
-import { getRandomBalanceHistory } from "@/services/transactionfetch";
+import { getBalanceHistory } from "@/services/transactionfetch";
 import { TbFileSad } from "react-icons/tb";
 import { colors } from "@/constants/index";
 
@@ -36,7 +36,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function LineChart() {
-  const [lineChartData, setLineChartData] = useState([]);
+  const [lineChartData, setLineChartData] = useState<{ month: string; balance: number }[]>([]);
   const [status, setStatus] = useState<
     "loading" | "success" | "error" | "nodata"
   >("loading");
@@ -45,18 +45,17 @@ export default function LineChart() {
     const fetchLineChart = async () => {
       setStatus("loading");
       try {
-        const response = await getRandomBalanceHistory();
+        const points = await getBalanceHistory(12);
 
-        if (response && response.data) {
-          const mappedData = response.data.map(
-            (item: { time: string; value: number }) => {
-              const monthIndex = parseInt(item.time.split("-")[1]) - 1;
-              return {
-                month: monthNames[monthIndex],
-                balance: item.value,
-              };
-            }
-          );
+        if (Array.isArray(points)) {
+          const mappedData = points.map((item) => {
+            // `period` is "YYYY-MM"; the chart wants a month name.
+            const monthIndex = Number(item.period.split("-")[1]) - 1;
+            return {
+              month: monthNames[monthIndex] ?? item.period,
+              balance: item.value,
+            };
+          });
 
           if (mappedData.length === 0) {
             setStatus("nodata");

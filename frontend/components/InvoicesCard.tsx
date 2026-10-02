@@ -2,15 +2,10 @@ import { useEffect, useState } from 'react';
 import { CurrencyDollarIcon } from "@heroicons/react/24/outline";
 import { getExpenses } from "@/services/transactionfetch";
 import { formatDistanceToNowStrict } from 'date-fns';
+import type { Transaction } from "@/types/api";
 
 import { TbFileSad } from "react-icons/tb";
-interface Transaction {
-  id: number;
-  receiverUserName: string;
-  date: string;
-  amount: number;
-  description: string;
-}
+
 
 const TransactionList: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -21,8 +16,8 @@ const TransactionList: React.FC = () => {
       try {
         const transactionData = await getExpenses(0, 5);
 
-        if (Array.isArray(transactionData.data.content)) {
-          setTransactions(transactionData.data.content);
+        if (Array.isArray(transactionData.items)) {
+          setTransactions(transactionData.items);
           setStatus('success');
         } else {
           console.error("Transaction data is not an array");
@@ -82,8 +77,8 @@ const TransactionList: React.FC = () => {
             <CurrencyDollarIcon className="h-8 w-8 text-blue-700"/>
           </div>
           <div className="flex-1 px-3">
-            <div className="text-gray-800 font-medium">{transaction.receiverUserName}</div>
-            <div className="text-gray-400 text-sm">{formatTimeSince(transaction.date)}</div>
+            <div className="text-gray-800 font-medium">{transaction.receiverUsername}</div>
+            <div className="text-gray-400 text-sm">{formatTimeSince(transaction.occurredAt)}</div>
           </div>
           <div className="text-gray-800 font-semibold">${transaction.amount}</div>
         </div>

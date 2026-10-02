@@ -5,7 +5,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
 import { createCard } from "@/services/cardfetch";
-import { convertDateToISOString } from "@/lib/utils";
+import { format } from "date-fns";
 import Image from "next/image";
 import { message } from "antd";
 
@@ -17,11 +17,7 @@ type NewCardProps = {
   passcode: string;
 };
 
-type TokenProp = {
-  token: string;
-};
-
-const AddNewCard: React.FC<TokenProp> = ({ token }) => {
+const AddNewCard: React.FC = () => {
   const {
     register,
     handleSubmit,
@@ -40,12 +36,13 @@ const AddNewCard: React.FC<TokenProp> = ({ token }) => {
       const apiData = {
         balance: Number(data.balance),
         cardHolder: data.nameOnCard,
-        expiryDate: convertDateToISOString(data.expiryDate),
+        // The API expects a plain YYYY-MM-DD date.
+        expiryDate: format(data.expiryDate, "yyyy-MM-dd"),
         passcode: data.passcode,
         cardType: data.cardType,
       };
-      const fetch = await createCard(apiData, token);
-      if (fetch) {
+      const created = await createCard(apiData);
+      if (created) {
         messageApi.open({
           type: "success",
           content: "Successfully created your new card",

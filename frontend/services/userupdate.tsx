@@ -1,130 +1,36 @@
-import Cookie from "js-cookie";
+import { api, paginated } from "@/lib/apiClient";
+import type {
+  AccountSummary,
+  InvestmentSummary,
+  Page,
+  Preferences,
+  PublicUser,
+  UpdateProfileRequest,
+  User,
+} from "@/types/api";
 
-const API_BASE_URL = "https://bank-dash-36iy.onrender.com";
-const token = Cookie.get("accessToken");
+/** The signed-in user, including balance and preferences. */
+export const currentuser = (): Promise<User> => api.get<User>("/users/me");
 
-// Update User Details - PUT Request
-export const updateUserDetails = async (userData: any) => {
-  try {
-    const response = await fetch("https://bank-dash-36iy.onrender.com/user/update", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(userData),
-    });
-    
+export const updateUserDetails = (payload: UpdateProfileRequest): Promise<User> =>
+  api.put<User>("/users/me", payload);
 
-    if (!response.ok) {
-      throw new Error("Failed to update user details");
-    }
+export const updatePreference = (payload: Partial<Preferences>): Promise<Preferences> =>
+  api.put<Preferences>("/users/me/preferences", payload);
 
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error:", error);
-    throw error;
-  }
-};
+/** Another user's public profile - deliberately no email or balance. */
+export const fetchUserDetails = (username: string): Promise<PublicUser> =>
+  api.get<PublicUser>(`/users/${encodeURIComponent(username)}`);
 
-// Update User Preferences - PUT Request
-export const updatePreference = async (userData: any) => {
-  try {
-    const response = await fetch(
-      "https://bank-dash-36iy.onrender.com/user/update-preference",
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      }
-    );
+/** Balance, lifetime income/expense and savings, for the accounts page. */
+export const fetchAccountSummary = (): Promise<AccountSummary> =>
+  api.get<AccountSummary>("/users/me/summary");
 
-    if (!response.ok) {
-      throw new Error("Failed to update user preferences");
-    }
+export const randomInvestmentData = (
+  years = 5,
+  months = 8,
+): Promise<InvestmentSummary> =>
+  api.get<InvestmentSummary>("/users/me/investment-summary", { years, months });
 
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error:", error);
-    throw error;
-  }
-};
-
-// Fetch User Details - GET Request
-export const fetchUserDetails = async (username: string) => {
-  try {
-    const response = await fetch(
-      `https://bank-dash-36iy.onrender.com/user/{username}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch user details");
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error:", error);
-    throw error;
-  }
-};
-
-// Fetch Random Investment Data - GET Request
-export const randomInvestmentData = async () => {
-  try {
-    const response = await fetch(
-      `https://bank-dash-36iy.onrender.com/user/random-investment-data?years=5&months=8`,
-      {
-        method: "GET",
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch investment data");
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error:", error);
-    throw error;
-  }
-};
-
-// Fetch Current User - GET Request
-export const currentuser = async () => {
-  try {
-    const response = await fetch(
-      `https://bank-dash-36iy.onrender.com/user/current`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch current user details");
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error:", error);
-    throw error;
-  }
-};
+/** Bank services are paged but never filtered by the caller today. */
+export type { Page };

@@ -51,15 +51,15 @@ const trendingdata = [
 ];
 
 interface chartData {
-  time: string;
+  period: string;
   value: number;
 }
 interface InvestmentData {
-  totalInvestment: string;
-  rateOfReturn: string;
-  yearlyTotalInvestment: chartData[];
+  totalInvestment: number;
+  rateOfReturn: number;
+  numberOfInvestments: number;
+  yearlyInvestments: chartData[];
   monthlyRevenue: chartData[];
-  // Add other properties as needed
 }
 
 const Investments = () => {
@@ -83,12 +83,8 @@ const Investments = () => {
     const fetchInvestmentData = async () => {
       setStatus("loading");
       try {
-        const data = await randomInvestmentData();
-        console.log(data, "sanhiubk");
-        if (data.success) {
-          setInvestment(data.data);
-          setStatus("success");
-        }
+        setInvestment(await randomInvestmentData(5, 8));
+        setStatus("success");
       } catch (error) {
         console.error("Error fetching investment data:", error);
         setStatus("error");
@@ -175,7 +171,7 @@ const Investments = () => {
             <p
               className={`${colors.textblack} font-semibold text-[16px] dark:text-white`}
             >
-              {investment?.totalInvestment ?? "no data to display"}
+              {investment ? `$${investment.totalInvestment.toLocaleString()}` : "no data to display"}
             </p>
           </div>
         </div>
@@ -193,7 +189,7 @@ const Investments = () => {
             <p
               className={`${colors.textblack} font-semibold text-[16px] dark:text-white`}
             >
-              1809
+              {investment ? investment.numberOfInvestments.toLocaleString() : "-"}
             </p>
           </div>
         </div>
@@ -211,7 +207,7 @@ const Investments = () => {
             <p
               className={`${colors.textblack} font-semibold text-[16px] dark:text-white`}
             >
-              {investment?.rateOfReturn ?? "no data to display"}
+              {investment ? `${investment.rateOfReturn}%` : "no data to display"}
             </p>
           </div>
         </div>
@@ -226,7 +222,7 @@ const Investments = () => {
           </h2>
           <LineChartStright
             yearlyData={
-              investment?.yearlyTotalInvestment ?? [{ time: "", value: 0 }]
+              investment?.yearlyInvestments ?? [{ period: "", value: 0 }]
             }
           />
         </div>
@@ -237,7 +233,7 @@ const Investments = () => {
             Monthly Revenue
           </h2>
           <LineChartNoBg
-            monthlyData={investment?.monthlyRevenue ?? [{ time: "", value: 0 }]}
+            monthlyData={investment?.monthlyRevenue ?? [{ period: "", value: 0 }]}
           />
         </div>
       </div>

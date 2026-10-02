@@ -13,41 +13,44 @@ import PieChart from "@/components/PieChart";
 import QuickTransfer from "@/components/QuickTransfer";
 import LineChart from "@/components/LineChart";
 import Link from "next/link";
-import Cookies from "js-cookie";
 import { getAllCards } from "@/services/cardfetch";
+import { getAccessToken } from "@/lib/apiClient";
+import type { Card } from "@/types/api";
 import Image from "next/image";
 import MyCardsLoad from "@/components/loadingComponents/MyCardsLoad";
 import { TbFileSad } from "react-icons/tb";
 
 const Page = () => {
-  const [cards, setCards] = useState<any[]>([]);
-  const [token, setToken] = useState<any>(null); // Initialize with null to indicate it's being fetched
+  const [cards, setCards] = useState<Card[]>([]);
+  const [hasToken, setHasToken] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // Add a loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchCards = async () => {
+      if (!getAccessToken()) {
+        setHasToken(false);
+        setLoading(false);
+        return;
+      }
+      setHasToken(true);
       try {
-        const storedToken = Cookies.get("accessToken");
-        setToken(storedToken);
-
-        if (!storedToken) {
-          setLoading(false); // Stop loading if no token is found
-          throw new Error("Token not found. Please log in again.");
+        const { items } = await getAllCards(0, 20);
+        if (!cancelled) {
+          setCards(items.slice(0, 2));
+          setError(null);
         }
-
-        const data = await getAllCards(storedToken);
-        setCards(data.slice(0, 2));
-        console.log(data);
-        setError(null);
-      } catch (err) {
-        setError("Failed to fetch cards data!");
+      } catch {
+        if (!cancelled) setError("Failed to fetch cards data!");
       } finally {
-        setLoading(false); // Stop loading once the fetch is done
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchCards();
+    return () => { cancelled = true; };
   }, []);
 
   return (
@@ -75,12 +78,12 @@ const Page = () => {
                       }
                       balance={card.balance}
                       cardHolder={card.cardHolder}
-                      expiryDate={card.expiryDate.slice(0, 10)}
-                      cardNumber={card.semiCardNumber}
+                      expiryDate={card.expiryDate}
+                      maskedNumber={card.maskedNumber}
                     />
                   </div>
                 ))
-              ) : token ? (
+              ) : hasToken ? (
                 <div className="w-screen bg-white py-16 rounded-xl flex flex-col justify-center dark:bg-dark dark:border-[1px] dark:border-gray-700">
                   <TbFileSad
                     className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}

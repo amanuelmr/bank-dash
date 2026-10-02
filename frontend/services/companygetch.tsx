@@ -1,73 +1,23 @@
-import Cookies from "js-cookie";
+import { api, paginated } from "@/lib/apiClient";
+import type { Company, Page } from "@/types/api";
 
-const API_BASE_URL = "https://bank-dash-36iy.onrender.com";
-const token = Cookies.get("accessToken");
-// GET /companies/{id}
-export const getCompanyById = async (id: any) => {
-  const response = await fetch(`${API_BASE_URL}/companies/${id}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.json();
-};
+export const getAllCompanies = (page = 0, size = 10): Promise<Page<Company>> =>
+  paginated<Company>("/companies", page, size);
 
-// PUT /companies/{id}
-export const updateCompanyById = async (id: any, updateData: any) => {
-  const response = await fetch(`${API_BASE_URL}/companies/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(updateData),
-  });
-  return response.json();
-};
+/** Trending stocks, best day change first. */
+export const getTrendingCompanies = (limit = 6): Promise<Company[]> =>
+  api.get<Company[]>("/companies/trending", { limit });
 
-// DELETE /companies/{id}
-export const deleteCompanyById = async (id: any) => {
-  const response = await fetch(`${API_BASE_URL}/companies/${id}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.json();
-};
+export const getCompanyById = (id: string): Promise<Company> =>
+  api.get<Company>(`/companies/${id}`);
 
-// GET /companies
-export const getAllCompanies = async () => {
-  const response = await fetch(`${API_BASE_URL}/companies`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.json();
-};
+export const createCompany = (companyData: Partial<Company>): Promise<Company> =>
+  api.post<Company>("/companies", companyData);
 
-// POST /companies
-export const createCompany = async (companyData: any) => {
-  const response = await fetch(`${API_BASE_URL}/companies`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(companyData),
-  });
-  return response.json();
-};
+export const updateCompanyById = (
+  id: string,
+  updateData: Partial<Company>,
+): Promise<Company> => api.put<Company>(`/companies/${id}`, updateData);
 
-// GET /companies/trending-companies
-export const getTrendingCompanies = async () => {
-  const response = await fetch(`${API_BASE_URL}/companies/trending-companies`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.json();
-};
+export const deleteCompanyById = (id: string): Promise<null> =>
+  api.delete<null>(`/companies/${id}`);

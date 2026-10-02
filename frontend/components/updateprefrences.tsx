@@ -5,23 +5,44 @@ import {Input} from '@/components/ui/Input';
 import Toggle from '@/components/ui/Toggle';
 import { updatePreference, currentuser} from '@/services/userupdate';
 
+interface PreferenceFormValues {
+  currency: string;
+  timeZone: string;
+  sentOrReceiveDigitalCurrency: boolean;
+  receiveMerchantOrder: boolean;
+  accountRecommendations: boolean;
+}
+
 const PreferenceForm = () => {
-  const { control, register, handleSubmit, setValue } = useForm();
-  const [loading, setLoading] = useState(true); // To handle loading state
+  const { control, register, handleSubmit, setValue } = useForm<PreferenceFormValues>({
+    defaultValues: {
+      currency: 'USD',
+      timeZone: 'GMT-5',
+      sentOrReceiveDigitalCurrency: false,
+      receiveMerchantOrder: false,
+      accountRecommendations: false,
+    },
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const Userdata = await currentuser();
-        const data = Userdata.data.preference // Fetch preference data from backend
-        console.log('Fetched Data:', data);
+        const user = await currentuser();
+        const data = user.preferences;
+        if (!data) {
+          setLoading(false);
+          return;
+        }
 
         // Prefill the form with fetched data
         setValue('currency', data.currency || '');
         setValue('timeZone', data.timeZone || '');
-        setValue('digitalCurrencyNotification', data.sentOrReceiveDigitalCurrency || false);
-        setValue('merchantOrderNotification', data.receiveMerchantOrder || false);
-        setValue('accountRecommendationNotification', data.accountRecommendations || false);
+        setValue('sentOrReceiveDigitalCurrency', data.sentOrReceiveDigitalCurrency || false);
+        setValue('receiveMerchantOrder', data.receiveMerchantOrder || false);
+        setValue('accountRecommendations', data.accountRecommendations || false);
 
         setLoading(false); // Set loading to false after data is fetched
       } catch (error) {
@@ -33,13 +54,16 @@ const PreferenceForm = () => {
     fetchData();
   }, [setValue]);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: PreferenceFormValues) => {
+    setSaving(true);
     try {
-      console.log('Form Data:', data);
-      const response = await updatePreference(data); // Update preferences
-      console.log('Update Preference Response:', response);
+      await updatePreference(data);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error updating preferences:', error);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -70,21 +94,21 @@ const PreferenceForm = () => {
           <div className="space-y-4 flex flex-col">
             <Controller
               control={control}
-              name="digitalCurrencyNotification"
+              name="sentOrReceiveDigitalCurrency"
               render={({ field }) => (
                 <Toggle label="I send or receive digital currency" {...field} />
               )}
             />
             <Controller
               control={control}
-              name="merchantOrderNotification"
+              name="receiveMerchantOrder"
               render={({ field }) => (
                 <Toggle label="I receive merchant order" {...field} />
               )}
             />
             <Controller
               control={control}
-              name="accountRecommendationNotification"
+              name="accountRecommendations"
               render={({ field }) => (
                 <Toggle label="There are recommendations for my account" {...field} />
               )}
@@ -94,9 +118,14 @@ const PreferenceForm = () => {
       </div>
 
       <div className="mt-6 flex justify-center md:pt-32">
-        <button type="submit" className="w-full max-w-xs mx-auto bg-blue-800 text-white py-2 rounded-md">
-          Save
+        <button
+          type="submit"
+          disabled={saving}
+          className="w-full max-w-xs mx-auto bg-blue-800 text-white py-2 rounded-md disabled:opacity-60"
+        >
+          {saving ? 'Saving…' : 'Save'}
         </button>
+        {saved && <p className="text-sm text-green-600 text-center mt-2">Preferences saved</p>}
       </div>
     </form>
   );

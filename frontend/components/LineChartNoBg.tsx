@@ -35,7 +35,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 interface chartData {
-  time: string;
+  period: string;
   value: number;
 }
 interface props {
@@ -58,7 +58,7 @@ export default function LineChartNoBg({ monthlyData }: props) {
           >
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="time"
+              dataKey="period"
               tickLine={false}
               axisLine={false}
               tickMargin={8}

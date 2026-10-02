@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Cookies from "js-cookie";
 
 import {
   Carousel,
@@ -10,14 +9,13 @@ import {
 } from "@/components/ui/carousel";
 import { loanCardMapping } from "@/constants/index";
 import Link from "next/link";
-import { getMyLoans, getLoanDetailData } from "@/services/activeloan";
+import { getMyLoans, getLoanDetailData, repayLoan } from "@/services/activeloan";
 import CustomLoans from "@/public/icons/CustomLoans";
 import { TbFileSad } from "react-icons/tb";
 import { colors } from "@/constants";
-import { UserData } from "@/types";
+import type { Loan, User } from "@/types/api";
+import { ApiError } from "@/lib/apiClient";
 import { currentuser } from "@/services/userupdate";
-import { createTransaction } from "@/services/transactionfetch";
-import { access } from "fs";
 import { message } from "antd";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import Pagination from "@/components/Pagination";
@@ -48,7 +46,7 @@ const LoansPage: React.FC = () => {
   const [loanCardsError, setLoanCardsError] = useState<string | null>(null);
 
   // State for loans
-  const [loans, setLoans] = useState([]);
+  const [loans, setLoans] = useState<Loan[]>([]);
   const [loansLoading, setLoansLoading] = useState(true);
   const [loansError, setLoansError] = useState<string | null>(null);
   const ITEMS_PER_PAGE = 5;
@@ -60,12 +58,12 @@ const LoansPage: React.FC = () => {
       setLoansError(null);
 
       try {
-        const response = await getMyLoans(currentPage, ITEMS_PER_PAGE);
-        if (response.data.content.length === 0) {
+        const page = await getMyLoans(currentPage, ITEMS_PER_PAGE);
+        if (page.items.length === 0) {
           setLoansError("No active loans found.");
         } else {
-          setLoans(response.data.content);
-          setTotalPages(response.data.totalPages);
+          setLoans(page.items);
+          setTotalPages(page.totalPages);
         }
       } catch (error) {
         setLoansError("Error fetching the loans.");
@@ -99,43 +97,40 @@ const LoansPage: React.FC = () => {
     } as any);
   };
 
-  const accessToken = Cookies.get("accessToken") || "";
-  const selectedUser = "soll";
   const [isLoading, setIsLoading] = useState(false);
-  const[selectedIndex , setselecteIndex] = useState(-1)
-  const onSubmit = async (amount: string ,index:any) => {
-    setselecteIndex(index)
-    setIsLoading(true);
-    const transactionData = {
-      type: "transfer",
-      description: `Transfer to [${selectedUser}]`,
-      amount: amount,
-      receiverUserName: selectedUser,
-    };
-    console.log("transactionData:", transactionData);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
+  /**
+   * Repay a loan.
+   *
+   * This used to POST a generic transfer to a hard-coded recipient ("soll"),
+   * which moved money without ever touching the loan - so the outstanding total
+   * never changed and the table lied. It now calls the loan repayment endpoint,
+   * which debits the balance, reduces what is owed, and marks the loan PAID once
+   * it reaches zero.
+   */
+  const onSubmit = async (loan: Loan, index: number) => {
+    setSelectedIndex(index);
+    setIsLoading(true);
     try {
-      const res = await createTransaction(transactionData, accessToken);
-      if (res.success && parseInt(transactionData.amount) < accountBalance) {
-        success(transactionData.amount, transactionData.receiverUserName);
-        setLoans(loans.filter(( _ , i) => i !== index));
-      } else if (parseInt(transactionData.amount) > accountBalance) {
+      const result = await repayLoan(loan.id);
+      success(result.amountPaid.toLocaleString(), loan.loanType);
+
+      setLoans((current) =>
+        current.map((item: Loan, i: number) => (i === index ? result.loan : item)),
+      );
+      setAccountBalance((balance) => balance - result.amountPaid);
+    } catch (error) {
+      if (error instanceof ApiError && error.code === "insufficient_funds") {
         lowbalance();
-        console.error(
-          "Insufficient funds , typeof(accountBalance):",
-          accountBalance,
-          transactionData.amount
-        );
       } else {
         errormessage();
-        console.error("Failed to create transaction", res);
       }
-    } catch (error) {
-      errormessage();
-      console.error("Error creating transaction:", error);
+      console.error("Error repaying loan:", error);
+    } finally {
+      setIsLoading(false);
+      setSelectedIndex(-1);
     }
-    setIsLoading(false);
-    setselecteIndex(-1)
   };
   
   useEffect(() => {
@@ -144,14 +139,16 @@ const LoansPage: React.FC = () => {
       setLoanCardsError(null);
 
       try {
-        const response = await getLoanDetailData();
-        const { data } = response;
+        const summary = await getLoanDetailData();
 
-        const loanCard = loanCardMapping.map((loan) => ({
-          icon: loan.icon,
-          title: loan.title,
-          loanAmount: `$${data[loan.descriptionKey]?.toLocaleString() || 0}`,
-        }));
+        const loanCard = loanCardMapping.map((loan) => {
+          const key = loan.descriptionKey as keyof typeof summary;
+          return {
+            icon: loan.icon,
+            title: loan.title,
+            loanAmount: `$${(summary[key] ?? 0).toLocaleString()}`,
+          };
+        });
 
         loanCard.push({
           icon: CustomLoans,
@@ -175,14 +172,14 @@ const LoansPage: React.FC = () => {
   }, []);
 
   const [accountBalance, setAccountBalance] = useState(0);
-  const [info, setinfo] = useState<UserData>();
+  const [info, setinfo] = useState<User>();
   const [visible, setvisible] = useState(false);
   useEffect(() => {
     const fetch = async () => {
       try {
         const data = await currentuser();
-        setinfo(data.data || []);
-        setAccountBalance(data.data.accountBalance);
+        setinfo(data);
+        setAccountBalance(data.accountBalance);
       } catch (error) {
         console.error("Error:", error);
       }
@@ -191,16 +188,16 @@ const LoansPage: React.FC = () => {
   }, []);
 
   const totalLoanMoney = loans.reduce(
-    (total, loan: any) => total + parseInt(loan.loanAmount),
-    0
+    (total, loan) => total + loan.loanAmount,
+    0,
   );
   const totalLeftToRepay = loans.reduce(
-    (total, loan: any) => total + parseInt(loan.amountLeftToRepay),
-    0
+    (total, loan) => total + loan.amountLeftToRepay,
+    0,
   );
   const totalInstallment = loans.reduce(
-    (total, loan: any) => total + parseInt(loan.installment),
-    0
+    (total, loan) => total + loan.installment,
+    0,
   );
 
   return (
@@ -321,15 +318,15 @@ const LoansPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {loans.map((loan: any, index) => (
+                  {loans.map((loan: Loan, index: number) => (
                     <tr key={index}>
-                      <td className="border-t px-4 py-2">{loan.loanAmount}</td>
+                      <td className="border-t px-4 py-2">${loan.loanAmount.toLocaleString()}</td>
                       <td className="border-t px-4 py-2">
-                        {loan.amountLeftToRepay}
+                        ${loan.amountLeftToRepay.toLocaleString()}
                       </td>
                       <td className="border-t px-4 py-2">
                       <button
-                          onClick={() => onSubmit(loan.amountLeftToRepay , index)}
+                          onClick={() => onSubmit(loan, index)}
                           className= {` text-gray-900 border border-purple-900 rounded-full px-4 py-1 ${selectedIndex === index && isLoading ? 'bg-gray-200 cursor-not-allowed ' : 'bg-white hover:bg-gray-200' }`}
                         >
                            { selectedIndex === index && isLoading ? (
@@ -493,16 +490,16 @@ const LoansPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {loans.map((loan: any, index) => (
+                  {loans.map((loan: Loan, index: number) => (
                     <tr key={index}>
                       <td className="border-t px-4 py-2 text-sm">
                         {index + 1}
                       </td>
                       <td className="border-t px-4 py-2 text-sm">
-                        {loan.loanAmount}
+                        ${loan.loanAmount.toLocaleString()}
                       </td>
                       <td className="border-t px-4 py-2 text-sm">
-                        {loan.amountLeftToRepay}
+                        ${loan.amountLeftToRepay.toLocaleString()}
                       </td>
                       <td className="border-t px-4 py-2 text-sm">
                         {loan.loanDuration} months
@@ -511,11 +508,11 @@ const LoansPage: React.FC = () => {
                         {loan.interestRate}%
                       </td>
                       <td className="border-t px-4 py-2 text-sm">
-                        {loan.installment}
+                        ${loan.installment.toLocaleString()}
                       </td>
                       <td className="border-t px-4 py-2 text-sm">
                         <button
-                          onClick={() => onSubmit(loan.amountLeftToRepay , index)}
+                          onClick={() => onSubmit(loan, index)}
                           className="text-purple-900 border border-purple-900 rounded-full px-4 py-1 hover:bg-gray-300"
                         >
                            { selectedIndex === index && isLoading ? (

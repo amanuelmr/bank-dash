@@ -1,8 +1,6 @@
 'use client';
 import { FC, useEffect, useState } from "react";
 import Image from "next/image";
-import { signOut } from "next-auth/react";
-import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -11,27 +9,29 @@ import NotificationBell from './NotificationBell';
 import { DialogDemo } from "./modal";
 import { useNotifications } from '@/services/NotificationContext';
 import { MdDoneAll } from 'react-icons/md'; 
-import { UserData } from "@/types/index";
+import type { User } from "@/types/api";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { currentuser } from "@/services/userupdate";
+import { logout } from "@/services/authentication";
 import ThemeSwitch from "./ThemeSwitch";
 
 export function DropdownMenuDemo() {
   const router = useRouter();
   const handleSignOut = async () => {
-    Cookies.remove("accessToken");
-    router.push("/home"); // Redirect after sign-out
+    // Revokes the refresh token server-side, then clears both cookies.
+    await logout();
+    router.push("/home");
+    router.refresh();
   };
 
-  const [info, setinfo] = useState<UserData>();
+  const [info, setinfo] = useState<User>();
   const [isSmallScreen, setIsSmallScreen] = useState<boolean>(false);
   const { notifications, markAllAsRead, unreadCount } = useNotifications();
 
   useEffect(() => {
     const fetch = async () => {
       try {
-        const data = await currentuser();
-        setinfo(data.data || []);
+        setinfo(await currentuser());
       } catch (error) {
         console.error("Error:", error);
       }

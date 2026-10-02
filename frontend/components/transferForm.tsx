@@ -4,7 +4,6 @@ import { colors } from '@/constants';
 import { FaEyeSlash, FaEye } from "react-icons/fa";
 import { useForm } from 'react-hook-form';
 import { createTransaction } from '@/services/transactionfetch';
-import Cookies from 'js-cookie';
 
 const TransferPage: React.FC = () => {
   const [visible, setVisible] = useState(false); 
@@ -12,12 +11,17 @@ const TransferPage: React.FC = () => {
   let account = 5000;
 
   const onSubmit = async (data: any) => {
-    const Token = Cookies.get('accessToken') ?? "";
     console.log(data)
-    const res = await createTransaction(data, Token);
-    if (res.status === 200) {
-      
+    try {
+      await createTransaction({
+        type: data.type,
+        amount: Number(data.amount),
+        description: data.description,
+        receiverUsername: data.receiverUsername,
+      });
       reset();
+    } catch (error) {
+      console.error('Error creating transaction:', error);
     }
   };
 
@@ -85,16 +89,16 @@ const TransferPage: React.FC = () => {
               {errors.amount && <p className="text-red-500 text-xs italic">{errors.amount.message as string}</p>}
             </div>
             <div>
-              <label htmlFor="receiverUserName" className="block text-black text-sm font-bold mb-1">Receiver Username:</label>
+              <label htmlFor="receiverUsername" className="block text-black text-sm font-bold mb-1">Receiver Username:</label>
               <input
-                {...register('receiverUserName', { required: "This field is required" })}
+                {...register('receiverUsername', { required: "This field is required" })}
                 type="text"
-                id="receiverUserName"
+                id="receiverUsername"
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Enter receiver's username"
                 required
               />
-              {errors.receiverUserName && <p className="text-red-500 text-xs italic">{errors.receiverUserName.message as string}</p>}
+              {errors.receiverUsername && <p className="text-red-500 text-xs italic">{errors.receiverUsername.message as string}</p>}
             </div>
             <div className="flex items-center justify-center mt-4">
               <button

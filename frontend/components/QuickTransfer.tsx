@@ -4,31 +4,21 @@ import { colors } from "@/constants/index";
 import Image from "next/image";
 import { createTransaction, getLatestTransfers } from '@/services/transactionfetch';
 import { useForm } from "react-hook-form";
-import Cookie from 'js-cookie';
 import { TbFileSad } from "react-icons/tb";
 import { message } from 'antd';
 
 
 import AccountContext from "./account_balance_context";
-import { UserData } from "@/types";
+import type { TransferRecipient, User } from "@/types/api";
+import { ApiError } from "@/lib/apiClient";
 import { currentuser } from "@/services/userupdate";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
-interface UserType {
-  id: string;
-  name: string;
-  username: string;
-  city: string;
-  country: string;
-  profilePicture: string;
-}
-
 const QuickTransfer: React.FC = () => {
   const { register, reset, handleSubmit, formState: { errors } } = useForm();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [users, setUsers] = useState<UserType[]>([]);
+  const [users, setUsers] = useState<TransferRecipient[]>([]);
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const accessToken = Cookie.get('accessToken') ?? '';
   const [messageApi, contextHolder] = message.useMessage();
   const success = (amount: string, username: string) => {
     messageApi.open({
@@ -64,14 +54,8 @@ const QuickTransfer: React.FC = () => {
       setStatus('loading');
       try {
 
-        const data = await getLatestTransfers(6);
-        if (data.success) {
-          setUsers(data.data);
-          setStatus('success');
-        } else {
-          setStatus('error');
-        }
-        console.log(data,status)
+        setUsers(await getLatestTransfers(6));
+        setStatus('success');
       } catch (error) {
         console.error("Error fetching the users: ", error);
         setStatus('error');
@@ -82,14 +66,14 @@ const QuickTransfer: React.FC = () => {
   }, []);
 
   const [accountBalance, setAccountBalance ] = useState(0);
-  const [info, setinfo] = useState<UserData>();
+  const [info, setinfo] = useState<User>();
   const [visible , setvisible] = useState(false)
   useEffect(() => {
     const fetch = async () => {
       try {
         const data = await currentuser();
-        setinfo(data.data || []);
-        setAccountBalance(data.data.accountBalance);
+        setinfo(data);
+        setAccountBalance(data.accountBalance);
       } catch (error) {
         console.error("Error:", error);
       }
@@ -117,32 +101,28 @@ const QuickTransfer: React.FC = () => {
   const onSubmit = async (data: { amount: string }) => {
     setloading(true)
     
-    const transactionData = {
-      type: "transfer",
-      description: `Transfer to ${selectedUser}`,
-      amount: data.amount,
-      receiverUserName: selectedUser
-    };
+    if (!selectedUser) {
+      nouser();
+      setloading(false);
+      return;
+    }
 
     try {
-      const res = await createTransaction(transactionData, accessToken);
-      if (res.success && parseInt(transactionData.amount) < accountBalance) {
-        success(transactionData.amount, transactionData.receiverUserName);
-        reset();
-      } 
-      else if (parseInt(transactionData.amount) > accountBalance){
-        lowbalance();
-        console.error('Insufficient funds , typeof(accountBalance):', (accountBalance) , (transactionData.amount));
-      }
-      else if (selectedUser === '') {
-        nouser();
-      }
-      else {
-        errormessage();
-        console.error('Failed to create transaction', res);
-      }
+      await createTransaction({
+        type: "transfer",
+        description: `Transfer to ${selectedUser}`,
+        amount: Number(data.amount),
+        receiverUsername: selectedUser,
+      });
+      success(data.amount, selectedUser);
+      reset();
     } catch (error) {
-      errormessage();
+      // The API is the authority on funds, so its error is what we show.
+      if (error instanceof ApiError && error.code === "insufficient_funds") {
+        lowbalance();
+      } else {
+        errormessage();
+      }
       console.error('Error creating transaction:', error);
     }
     setloading(false)

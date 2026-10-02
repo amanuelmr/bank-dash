@@ -1,148 +1,41 @@
-import axios from 'axios';
+import { api, clearTokens, getRefreshToken, setTokens } from "@/lib/apiClient";
+import type {
+  ChangePasswordRequest,
+  RegisterRequest,
+  TokenPair,
+  User,
+} from "@/types/api";
 
-interface UserData {
-  name: string;
-  email: string;
-  dateOfBirth: string;
-  permanentAddress: string;
-  postalCode: string;
-  username: string;
-  password: string;
-  presentAddress: string;
-  city: string;
-  country: string;
-  profilePicture?: string;
-  currency: string;
-  preference: {
-    sentOrReceiveDigitalCurrency: boolean;
-    receiveMerchantOrder: boolean;
-    accountRecommendations: boolean;
-    timeZone: string;
-    twoFactorAuthentication: boolean;
-  };
-}
+/** Create an account. The caller is redirected to sign-in afterwards. */
+export const registerUser = (payload: RegisterRequest): Promise<User> =>
+  api.post<User>("/auth/register", payload);
 
-export const registerUser = async (userData: UserData) => {
-  try {
-    // Format the userData to match the expected request body
-    const formattedData = {
-      name: userData.name,
-      email: userData.email,
-      dateOfBirth: new Date(userData.dateOfBirth).toISOString(),
-      permanentAddress: userData.permanentAddress,
-      postalCode: userData.postalCode,
-      username: userData.username,
-      password: userData.password,
-      presentAddress: userData.presentAddress,
-      city: userData.city,
-      country: userData.country,
-      profilePicture: userData.profilePicture || "",
-      preference: {
-        currency: userData.currency,
-        sentOrReceiveDigitalCurrency: userData.preference.sentOrReceiveDigitalCurrency,
-        receiveMerchantOrder: userData.preference.receiveMerchantOrder,
-        accountRecommendations: userData.preference.accountRecommendations,
-        timeZone: userData.preference.timeZone,
-        twoFactorAuthentication: userData.preference.twoFactorAuthentication
-      }
-    };
-
-    const response = await axios.post(
-      "https://bank-dash-36iy.onrender.com/auth/register",
-      formattedData,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.log('Error from here', )
-      console.error("Axios Error:", error.response?.data || error.message);
-      throw new Error(error.response?.data?.message || "Failed to register user");
-    } else {
-      console.error("Unexpected Error:", error);
-      throw new Error("An unexpected error occurred");
-    }
-  }
+/**
+ * Exchange credentials for tokens and store them for later requests.
+ *
+ * Storing here (rather than in the form) keeps every caller of `loginUser`
+ * authenticated automatically.
+ */
+export const loginUser = async (username: string, password: string): Promise<TokenPair> => {
+  const tokens = await api.post<TokenPair>("/auth/login", { username, password });
+  setTokens(tokens);
+  return tokens;
 };
 
-// Refresh Token - POST Request
-export const refreshToken = async (tokenData: any) => {
-  try {
-    const response = await fetch(
-      "https://bank-dash-36iy.onrender.com/auth/refresh_token",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(tokenData),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to refresh token");
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error:", error);
-    throw error;
-  }
+export const refreshToken = (): Promise<TokenPair> => {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return Promise.reject(new Error("Not signed in"));
+  return api.post<TokenPair>("/auth/refresh", { refreshToken });
 };
 
-// Login User - POST Request
-export const loginUser = async (loginData: any) => {
+export const changePassword = (payload: ChangePasswordRequest): Promise<null> =>
+  api.post<null>("/auth/change-password", payload);
+
+/** Revoke the stored refresh token server-side, then drop it locally. */
+export const logout = async (): Promise<void> => {
   try {
-    const response = await fetch("https://bank-dash-36iy.onrender.com/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(loginData),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to login");
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error:", error);
-    throw error;
+    await api.post<null>("/auth/logout", { refreshToken: getRefreshToken() });
+  } finally {
+    clearTokens();
   }
 };
-
-// Change Password - POST Request
-export const changePassword = async (passwordData: any) => {
-  try {
-    const response = await fetch(
-      "https://bank-dash-36iy.onrender.com/auth/change_password",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(passwordData),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to change password");
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error:", error);
-    throw error;
-  }
-};
-
-// You can export all functions from this file

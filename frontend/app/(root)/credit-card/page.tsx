@@ -7,41 +7,45 @@ import CardSetting from "@/components/CardSetting";
 import CardList from "@/components/CardList";
 import { useEffect, useState } from "react";
 import { getAllCards } from "@/services/cardfetch";
-import Cookies from "js-cookie";
+import { getAccessToken } from "@/lib/apiClient";
+import type { Card } from "@/types/api";
 import Image from "next/image";
 import CardListLoad from "@/components/loadingComponents/CardListLoad";
 import MyCardsLoad from "@/components/loadingComponents/MyCardsLoad";
 import { TbFileSad } from "react-icons/tb";
 
 const CreditCard = () => {
-  const [cards, setCards] = useState<any[]>([]);
-  const [token, setToken] = useState<any>(null); // Initialize with null to indicate it's being fetched
+  const [cards, setCards] = useState<Card[]>([]);
+  const [hasToken, setHasToken] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // Add a loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchCards = async () => {
+      if (!getAccessToken()) {
+        setHasToken(false);
+        setLoading(false);
+        return;
+      }
+      setHasToken(true);
       try {
-        const storedToken = Cookies.get("accessToken");
-        setToken(storedToken);
-
-        if (!storedToken) {
-          setLoading(false); // Stop loading if no token is found
-          throw new Error("Token not found. Please log in again.");
+        const { items } = await getAllCards(0, 20);
+        if (!cancelled) {
+          setCards(items);
+          setError(null);
         }
-
-        const data = await getAllCards(storedToken);
-        setCards(data);
-        setError(null);
-      } catch (err) {
-        setError("Failed to fetch cards data!");
+      } catch {
+        if (!cancelled) setError("Failed to fetch cards data!");
       } finally {
-        setLoading(false); // Stop loading once the fetch is done
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchCards();
-  }, [cards]);
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <div className="lg:ml-72 ml-5 overflow-x-hidden mx-auto">
@@ -57,12 +61,12 @@ const CreditCard = () => {
                   backgroundColor={index % 2 === 0 ? colors.blue : colors.white}
                   balance={card.balance}
                   cardHolder={card.cardHolder}
-                  expiryDate={card.expiryDate.slice(0, 10)}
-                  cardNumber={card.semiCardNumber}
+                  expiryDate={card.expiryDate}
+                  maskedNumber={card.maskedNumber}
                 />
               </span>
             ))
-          ) : token ? (
+          ) : hasToken ? (
             <div className="max-h-[400px] lg:w-[730px] md:w-[487px] bg-white py-16 rounded-xl flex flex-col justify-center dark:bg-dark dark:border-[1px] dark:border-gray-700">
               <TbFileSad
                 className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
@@ -89,7 +93,7 @@ const CreditCard = () => {
           <h1 className="text-[19px] mb-3 font-bold text-[#333B69] dark:text-blue-500">Card List</h1>
           {loading ? (
             <CardListLoad />
-          ) : token ? (
+          ) : hasToken ? (
             error ? (
               <div className="pr-6 py-32 bg-white max-h-[400px] lg:w-[730px] md:w-[487px] w-[325] flex flex-col justify-center align-middle rounded-xl scrollbar-none dark:bg-dark dark:border-[1px] dark:border-gray-700 ">
                 <TbFileSad
@@ -112,7 +116,7 @@ const CreditCard = () => {
       <div className="flex flex-col md:flex-row w-[80%] mb-16">
         <div className="md:mb-2 mb-0 md:mr-5 lg:mr-10">
           <h1 className="text-[20px] mb-3 font-bold text-[#333B69] dark:text-blue-500">Add New Card</h1>
-          <AddNewCard token={token} />
+          <AddNewCard />
         </div>
 
         <div>

@@ -9,6 +9,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowPathIcon, ExclamationCircleIcon } from "@heroicons/react/24/outline"
 import { Switch } from '@/components/ui/switch'
+import { ApiError } from '@/lib/apiClient'
+import { registerUser } from '@/services/authentication'
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -22,7 +24,7 @@ const formSchema = z.object({
   city: z.string().min(1, { message: "City is required." }),
   country: z.string().min(1, { message: "Country is required." }),
   profilePicture: z.string().optional(),
-  preference: z.object({
+  preferences: z.object({
     currency: z.string().min(1, { message: "Currency is required." }),
     timeZone: z.string().min(1, { message: "Time zone is required." }),
     sentOrReceiveDigitalCurrency: z.boolean(),
@@ -45,7 +47,7 @@ export default function SignupForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       profilePicture: "",
-      preference: {
+      preferences: {
         currency: "",
         timeZone: "",
         sentOrReceiveDigitalCurrency: false,
@@ -63,21 +65,16 @@ export default function SignupForm() {
       setIsLoading(true)
       setErrorMessage("")
       try {
-        console.log("Submitting data:", data)
-        const response = await fetch('https://bank-dash-36iy.onrender.com/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        })
-        if (response.ok) {
-          router.push('/signin')
-        } else {
-          const errorData = await response.json()
-          setErrorMessage(errorData.message || "Signup failed. Please try again.")
-        }
+        await registerUser(data)
+        router.push('/signin')
       } catch (error) {
-        console.error('Error during signup:', error)
-        setErrorMessage("An unexpected error occurred.")
+        if (error instanceof ApiError) {
+          setErrorMessage(error.message || "Signup failed. Please try again.")
+        } else if (error instanceof Error) {
+          setErrorMessage(error.message)
+        } else {
+          setErrorMessage("An unexpected error occurred.")
+        }
       } finally {
         setIsLoading(false)
       }
@@ -88,7 +85,7 @@ export default function SignupForm() {
     const fieldsToValidate = {
       1: ["name", "email", "username", "password", "dateOfBirth"],
       2: ["permanentAddress", "presentAddress", "postalCode", "city", "country"],
-      3: ["preference.currency", "preference.timeZone"]
+      3: ["preferences.currency", "preferences.timeZone"]
     }[step] as (keyof FormValues)[];
 
     setShowErrors(true)
@@ -104,8 +101,8 @@ export default function SignupForm() {
     setShowErrors(false)
   }
 
-  const handleSwitchChange = (field: keyof FormValues['preference']) => {
-    setValue(`preference.${field}`, !watch(`preference.${field}`))
+  const handleSwitchChange = (field: keyof FormValues['preferences']) => {
+    setValue(`preferences.${field}`, !watch(`preferences.${field}`))
   }
 
   useEffect(() => {
@@ -337,7 +334,7 @@ export default function SignupForm() {
                 </label>
                 <select
                   id="currency"
-                  {...register("preference.currency")}
+                  {...register("preferences.currency")}
                   className="w-full m-auto border-gray-200 dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
                 >
                   <option value="">Select currency</option>
@@ -345,10 +342,10 @@ export default function SignupForm() {
                   <option value="EUR">EUR</option>
                   <option value="GBP">GBP</option>
                 </select>
-                {showError("preference.currency") && (
+                {showError("preferences.currency") && (
                   <div className="flex gap-1">
                     <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
-                    <p className="text-red-500">{errors.preference?.currency?.message}</p>
+                    <p className="text-red-500">{errors.preferences?.currency?.message}</p>
                   </div>
                 )}
               </div>
@@ -359,7 +356,7 @@ export default function SignupForm() {
                 </label>
                 <select
                   id="timeZone"
-                  {...register("preference.timeZone")}
+                  {...register("preferences.timeZone")}
                   className="w-full m-auto border-gray-200 dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
                 >
                   <option value="">Select time zone</option>
@@ -367,10 +364,10 @@ export default function SignupForm() {
                   <option value="EST">EST</option>
                   <option value="PST">PST</option>
                 </select>
-                {showError("preference.timeZone") && (
+                {showError("preferences.timeZone") && (
                   <div className="flex gap-1">
                     <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
-                    <p className="text-red-500">{errors.preference?.timeZone?.message}</p>
+                    <p className="text-red-500">{errors.preferences?.timeZone?.message}</p>
                   </div>
                 )}
               </div>
@@ -382,7 +379,7 @@ export default function SignupForm() {
                   </label>
                   <Switch
                     id="sentOrReceiveDigitalCurrency"
-                    checked={watch("preference.sentOrReceiveDigitalCurrency")}
+                    checked={watch("preferences.sentOrReceiveDigitalCurrency")}
                     onCheckedChange={() => handleSwitchChange("sentOrReceiveDigitalCurrency")}
                   />
                 </div>
@@ -393,7 +390,7 @@ export default function SignupForm() {
                   </label>
                   <Switch
                     id="receiveMerchantOrder"
-                    checked={watch("preference.receiveMerchantOrder")}
+                    checked={watch("preferences.receiveMerchantOrder")}
                     onCheckedChange={() => handleSwitchChange("receiveMerchantOrder")}
                   />
                 </div>
@@ -404,7 +401,7 @@ export default function SignupForm() {
                   </label>
                   <Switch
                     id="accountRecommendations"
-                    checked={watch("preference.accountRecommendations")}
+                    checked={watch("preferences.accountRecommendations")}
                     onCheckedChange={() => handleSwitchChange("accountRecommendations")}
                   />
                 </div>
@@ -415,7 +412,7 @@ export default function SignupForm() {
                   </label>
                   <Switch
                     id="twoFactorAuthentication"
-                    checked={watch("preference.twoFactorAuthentication")}
+                    checked={watch("preferences.twoFactorAuthentication")}
                     onCheckedChange={() => handleSwitchChange("twoFactorAuthentication")}
                   />
                 </div>

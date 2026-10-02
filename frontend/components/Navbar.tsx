@@ -3,8 +3,6 @@ import { FC, useState } from 'react';
 import Image from 'next/image';
 import { FaSearch, FaCog, FaBell } from 'react-icons/fa';
 import Link from 'next/link';
-import { signOut } from 'next-auth/react';
-import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { DropdownMenuDemo } from './dropdown';
 import ThemeSwitch from './ThemeSwitch';

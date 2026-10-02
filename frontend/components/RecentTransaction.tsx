@@ -9,13 +9,15 @@ import {
 } from "@/services/transactionfetch";
 import { TbFileSad } from "react-icons/tb";
 import { colors } from "@/constants/index";
+import type { Transaction } from "@/types/api";
 
 const RecentTransactions = () => {
   const [filter, setFilter] = useState<"all" | "income" | "expense">("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [alltransaction, setAllTransaction] = useState([]);
-  const [allincomes, setAllIncomes] = useState([]);
-  const [allexpenses, setAllExpenses] = useState([]);
+  // Zero-indexed, matching the API. The old value started at 1 and skipped page 0.
+  const [currentPage, setCurrentPage] = useState(0);
+  const [alltransaction, setAllTransaction] = useState<Transaction[]>([]);
+  const [allincomes, setAllIncomes] = useState<Transaction[]>([]);
+  const [allexpenses, setAllExpenses] = useState<Transaction[]>([]);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState<"loading" | "success" | "error">(
     "loading"
@@ -36,14 +38,15 @@ const RecentTransactions = () => {
           getExpenses(currentPage, ITEMS_PER_PAGE),
         ]);
 
-        setAllTransaction(response.data.content || []);
-        setTotalPages(response.data.totalPages);
+        setAllTransaction(response.items ?? []);
+        setAllIncomes(response2.items ?? []);
+        setAllExpenses(response3.items ?? []);
 
-        setAllIncomes(response2.data.content || []);
-        setTotalPages(response2.data.totalPages);
-
-        setAllExpenses(response3.data.content || []);
-        setTotalPages(response3.data.totalPages);
+        // Each tab can have a different length; keep the widest so no tab is
+        // missing pages. (The old code let the last response overwrite the rest.)
+        setTotalPages(
+          Math.max(response.totalPages, response2.totalPages, response3.totalPages),
+        );
 
         setIsLoading("success");
       } catch (error) {

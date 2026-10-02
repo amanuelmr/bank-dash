@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { colors } from "@/constants";
-import { getAllTransactionsss } from "@/services/transactionfetch";
+import { getRecentTransactions } from "@/services/transactionfetch";
 import LifeInsuranceIcon from "@/public/icons/LifeInsuranceIcon";
 import ShoppingIcon from "@/public/icons/ShoppingIcon";
 import SavingAccountsIcon from "@/public/icons/SavingAccountsIcon";
@@ -20,8 +20,8 @@ const RecentTransaction = () => {
     const fetchRecentTransaction = async () => {
       setStatus("loading");
       try {
-        const response = await getAllTransactionsss();
-        setRecentTransaction(response.data.content);
+        const transactions = await getRecentTransactions(10);
+        setRecentTransaction(transactions);
         setStatus("success");
       } catch (error) {
         console.error("Error fetching the recent transactions: ", error);
@@ -126,7 +126,7 @@ const RecentTransaction = () => {
                     </div>
                     <div className="my-2">
                       <p className="text-lg font-medium">
-                        {transaction.senderUserName}
+                        {transaction.senderUsername}
                       </p>
                       <p className={`${colors.textgray} text-sm text-start`}>
                         {transaction.date}

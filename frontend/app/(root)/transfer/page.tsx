@@ -5,10 +5,9 @@ import Image from 'next/image';
 import { FaEyeSlash, FaEye } from "react-icons/fa";
 import { useForm } from 'react-hook-form';
 import { createTransaction } from '@/services/transactionfetch';
-import Cookies from 'js-cookie';
 import { message } from 'antd';
 import { currentuser } from '@/services/userupdate';
-import {UserData} from '@/types/index'
+import type { User } from '@/types/api'
 
 const TransferPage: React.FC = () => {
   const [visible, setVisible] = useState(false);
@@ -16,15 +15,14 @@ const TransferPage: React.FC = () => {
   const [status, setStatus] = useState<'success' | 'error' | null>(null);
   const { register, reset, handleSubmit, formState: { errors } } = useForm();
   // let account = 5000;
-  const [info, setinfo] = useState<UserData>()
+  const [info, setinfo] = useState<User>()
 
 
   useEffect(() => {
     const fetch = async () => {
       try {
         const data = await currentuser();
-        setinfo(data.data || []);
-        console.log(data)
+        setinfo(data);
       } catch (error) {
         console.error("Error:", error);
       }
@@ -49,25 +47,15 @@ const TransferPage: React.FC = () => {
   }, [status]);
 
   const onSubmit = async (data: any) => {
-    const Token = Cookies.get('accessToken') ?? "";
-
-    const transactionData = {
-      ...data,
-      type: data.type,
-      description: data.description,
-      amount: data.amount,
-      receiverUserName: data.receiverUserName,
-    };
-
     try {
-      const res = await createTransaction(transactionData, Token);
-      console.log(res);
-      if (res.success) {
-        setStatus('success');
-        reset();
-      } else {
-        setStatus('error');
-      }
+      await createTransaction({
+        type: data.type,
+        amount: Number(data.amount),
+        description: data.description || undefined,
+        receiverUsername: data.receiverUsername,
+      });
+      setStatus('success');
+      reset();
     } catch (error) {
       console.error("Error creating transaction:", error);
       setStatus('error');
@@ -129,11 +117,11 @@ const TransferPage: React.FC = () => {
               />
             </div>
             <div>
-              <label htmlFor="receiverUserName" className="block text-black text-sm font-bold mb-1">Receiver Username:</label>
+              <label htmlFor="receiverUsername" className="block text-black text-sm font-bold mb-1">Receiver Username:</label>
               <input
-                {...register('receiverUserName', { required: "This field is required" })}
+                {...register('receiverUsername', { required: "This field is required" })}
                 type="text"
-                id="receiverUserName"
+                id="receiverUsername"
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-dark dark:bg-white leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Enter receiver's username"
                 required

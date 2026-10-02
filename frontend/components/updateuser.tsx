@@ -2,10 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Image from "next/image";
 import { updateUserDetails, currentuser } from "@/services/userupdate";
-import Cookie from "js-cookie";
 import { FaPencilAlt } from "react-icons/fa";
-import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
-import { app } from "firebase-functions";
 
 interface EditProfileFormData {
   name: string;
@@ -29,18 +26,15 @@ const EditProfileForm = () => {
   } = useForm<EditProfileFormData>();
 
   const [profileImage, setProfileImage] = useState<string>("/Images/profilepic.jpeg");
-  const [file, setFile] = useState<File | null>(null); // Track profile picture changes
-  const token = Cookie.get("accessToken") || "";
+  const [file, setFile] = useState<File | null>(null); // kept for the file picker preview
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   // Fetch user data and prefill form
   useEffect(() => {
     const fetchUserData = async () => {
-      console.log("Fetching user data...");
-
       try {
-        const user = await currentuser();
-        const userData = user.data;
-        console.log("User Data:", userData);
+        const userData = await currentuser();
 
         // Prefill the form with the fetched data
         setValue("name", userData.name);
@@ -62,62 +56,30 @@ const EditProfileForm = () => {
 
     
     fetchUserData();
-  }, [setValue, token]);
+  }, [setValue]);
 
-  // Function to handle file upload
-   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Preview the chosen image locally; the file itself is not uploaded anywhere.
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      const imageUrl = URL.createObjectURL(selectedFile);
-      setProfileImage(imageUrl); // Temporarily preview image
-    }
-  };
-
-
-  const uploadImageToCloud = async (file: File): Promise<string> => {
-    const storage = getStorage();
-    const storageRef = ref(storage, `profilePictures/${file.name}`); // Store in a specific folder
-
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    return new Promise((resolve, reject) => {
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          if (progress === 100) {
-            console.log(`Upload is ${progress}% done`);
-          }
-        },
-        (error) => {
-          console.error("Error during upload:", error);
-          reject(error);
-        },
-        async () => {
-          try {
-            const url = await getDownloadURL(uploadTask.snapshot.ref);
-            console.log("File available at", url);
-            resolve(url);
-          } catch (err) {
-            console.error("Error getting download URL:", err);
-            reject(err);
-          }
-        }
-      );
-    });
+    if (!selectedFile) return;
+    setFile(selectedFile);
+    setProfileImage(URL.createObjectURL(selectedFile));
   };
 
   const onSubmit = async (data: EditProfileFormData) => {
+    setSaving(true);
     try {
-      // Ensure profilePicture is updated
-      data.profilePicture = profileImage;
-
-      console.log("Form data:", data);
-      const response = await updateUserDetails(data); // Send updated data to backend
-      console.log("Update User Details Response:", response);
+      await updateUserDetails({
+        ...data,
+        dateOfBirth: data.dateOfBirth || undefined,
+        profilePicture: profileImage,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
     } catch (error) {
       console.error("Error updating user details:", error);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -146,7 +108,7 @@ const EditProfileForm = () => {
               id="fileInput"
               type="file"
               accept="image/*"
-              onChange={handleFileChange} // Correctly handle file change
+              onChange={handleFileChange}
               className="hidden" // Hidden file input
             />
           </span>
@@ -233,10 +195,12 @@ const EditProfileForm = () => {
       <div className="md:col-span-3 flex justify-end">
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-700 focus:outline-none"
+          disabled={saving}
+          className="px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-700 focus:outline-none disabled:opacity-60"
         >
-          Save Changes
+          {saving ? 'Saving…' : 'Save Changes'}
         </button>
+        {saved && <p className="text-sm text-green-600">Profile updated</p>}
       </div>
     </form>
   );

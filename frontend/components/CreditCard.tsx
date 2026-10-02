@@ -8,10 +8,10 @@ interface ResponsiveCreditCardProps {
   balance: number;
   cardHolder: string;
   expiryDate: string;
-  cardNumber: string;
+  maskedNumber: string;
 }
 
-const ResponsiveCreditCard: React.FC<ResponsiveCreditCardProps> = ({ backgroundColor, balance, cardHolder, expiryDate, cardNumber }) => {
+const ResponsiveCreditCard: React.FC<ResponsiveCreditCardProps> = ({ backgroundColor, balance, cardHolder, expiryDate, maskedNumber }) => {
   return (
     <div className={`${backgroundColor} w-[231px] h-[170px] sm:w-[265px] sm:h-[170px] md:w-[350px] md:h-[235px] rounded-xl relative ${backgroundColor === colors.white ? 'border-[1px] border-gray-300' : ''}`}>
       <div className="flex justify-between w-[95%]">
@@ -35,7 +35,7 @@ const ResponsiveCreditCard: React.FC<ResponsiveCreditCardProps> = ({ backgroundC
       </div>
       
       <div className={`flex justify-between child-div absolute bottom-0 left-0 right-0 ${backgroundColor == colors.blue ? 'bg-gradient-to-b from-blue-600' : 'border-t-[1px]'}`}>
-        <span className={`p-3 ml-2 text-[15px] sm:text-[15px] md:text-[22px] ${backgroundColor == colors.blue ? 'text-white' : 'text-orange-400'}`}>{cardNumber}</span>
+        <span className={`p-3 ml-2 text-[15px] sm:text-[15px] md:text-[22px] ${backgroundColor == colors.blue ? 'text-white' : 'text-orange-400'}`}>{maskedNumber}</span>
         <Image src={'/icons/masterCard.png'} width={35} height={33} alt="card icon" className='mt-0.5 mr-3 md:w-[44px] md:h-[42px]' />
       </div>
 

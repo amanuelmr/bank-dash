@@ -70,7 +70,7 @@ const displaytransaction = (alltransaction: any, type: any) => {
                 </tr>
               </thead>
               <tbody>
-                {alltransaction.map((transaction: any, index: any) => (
+                {alltransaction.map((transaction: any, index: number) => (
                   <tr
                     key={transaction.transactionId}
                     className={`border-b border-gray-200 ${
@@ -78,7 +78,7 @@ const displaytransaction = (alltransaction: any, type: any) => {
                     } hover:bg-gray-100 transition-colors duration-300 dark:bg-dark text-gray-900 dark:text-white`}
                   >
                     <td className="p-4 flex items-center text-sm text-gray-700 dark:text-white truncate">
-                      {transaction.type === "deposit" || type === "income" ? (
+                      {transaction.direction === "IN" ? (
                         <FaArrowCircleDown className="text-green-500 text-lg mr-2" />
                       ) : (
                         <FaArrowCircleUp className="text-red-500 text-lg mr-2" />
@@ -93,20 +93,17 @@ const displaytransaction = (alltransaction: any, type: any) => {
                     </td>
                     <td className="p-4 text-sm dark:text-white">Card Name</td>
                     <td className="p-4 text-sm dark:text-white">
-                      {transaction.date}
+                      {new Date(transaction.occurredAt).toLocaleDateString()}
                     </td>
                     <td
                       className={`p-4 text-sm ${
-                        transaction.type === "deposit"
-                          ? "text-green-500"
-                          : "text-red-500"
+                        transaction.direction === "IN" ? "text-green-500" : "text-red-500"
                       }`}
                     >
-                      {transaction.type === "deposit" ? (
-                        <div>+{transaction.amount}$</div>
-                      ) : (
-                        <div>-{transaction.amount}$</div>
-                      )}
+                      <div>
+                        {transaction.direction === "IN" ? "+" : "-"}
+                        {transaction.amount}$
+                      </div>
                     </td>
                     <td className="p-4">
                       <button className="text-blue-500 text-sm hover:underline">
@@ -128,7 +125,7 @@ const displaytransaction = (alltransaction: any, type: any) => {
               >
                 <div>
                   <div className="flex items-center mb-2">
-                    {transaction.type === "deposit" ? (
+                    {transaction.direction === "IN" ? (
                       <FaArrowCircleDown className="text-green-500 text-xl mr-2" />
                     ) : (
                       <FaArrowCircleUp className="text-red-500 text-xl mr-2" />
@@ -138,22 +135,19 @@ const displaytransaction = (alltransaction: any, type: any) => {
                     </span>
                   </div>
                   <div className="text-[12px] text-gray-400 mb-1 pl-5">
-                    {transaction.date}
+                    {new Date(transaction.occurredAt).toLocaleDateString()}
                   </div>
                 </div>
                 <div>
                   <div
                     className={`font-bold ${
-                      transaction.type === "deposit"
-                        ? "text-green-500"
-                        : "text-red-500"
+                      transaction.direction === "IN" ? "text-green-500" : "text-red-500"
                     }`}
                   >
-                    {transaction.type === "deposit" ? (
-                      <div>+{transaction.amount}$</div>
-                    ) : (
-                      <div>-{transaction.amount}$</div>
-                    )}
+                    <div>
+                      {transaction.direction === "IN" ? "+" : "-"}
+                      {transaction.amount}$
+                    </div>
                   </div>
                 </div>
               </div>

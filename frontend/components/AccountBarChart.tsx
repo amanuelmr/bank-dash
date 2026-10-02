@@ -3,6 +3,7 @@ import { Bar, BarChart, ResponsiveContainer, XAxis } from "recharts";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { getExpenses, getIncomes } from "@/services/transactionfetch";
+import type { Transaction } from "@/types/api";
 import {
   ChartConfig, 
   ChartContainer, 
@@ -12,18 +13,17 @@ import {
 
 import { TbFileSad } from "react-icons/tb";
 
+/** Static weekday skeleton; totals are filled in once the data arrives. */
+const WEEKDAY_SKELETON = ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"].map((day) => ({
+  day,
+  debit: 0,
+  credit: 0,
+}));
+
 export default function Component() {
   const [bottomMargin, setBottomMargin] = useState(90);
   const [barSize, setBarSize] = useState(20);
-  const [chartData, setChartData] = useState([
-    { day: "Sat", debit: 0, credit: 0 },
-    { day: "Sun", debit: 0, credit: 0 },
-    { day: "Mon", debit: 0, credit: 0 },
-    { day: "Tue", debit: 0, credit: 0 },
-    { day: "Wed", debit: 0, credit: 0 },
-    { day: "Thu", debit: 0, credit: 0 },
-    { day: "Fri", debit: 0, credit: 0 },
-  ]);
+  const [chartData, setChartData] = useState(WEEKDAY_SKELETON);
   const [status, setStatus] = useState<'loading' | 'error' | 'success'>('loading');
 
   useEffect(() => {
@@ -52,18 +52,20 @@ export default function Component() {
         const expensesData = await getExpenses(0, 5); 
         const incomesData = await getIncomes(0, 5);
 
-        const updatedChartData = chartData.map((dayData) => {
-          const dayExpenses = expensesData.data.content.filter(
-            (transaction: { date: string | number | Date; }) => new Date(transaction.date).getDay() === getDayIndex(dayData.day)
+        const updatedChartData = WEEKDAY_SKELETON.map((dayData) => {
+          const dayExpenses = expensesData.items.filter(
+            ({ occurredAt }: Transaction) =>
+              new Date(occurredAt).getDay() === getDayIndex(dayData.day)
           );
-          const dayIncomes = incomesData.data.content.filter(
-            (transaction: { date: string | number | Date; }) => new Date(transaction.date).getDay() === getDayIndex(dayData.day)
+          const dayIncomes = incomesData.items.filter(
+            ({ occurredAt }: Transaction) =>
+              new Date(occurredAt).getDay() === getDayIndex(dayData.day)
           );                                
 
           return {
             ...dayData,
-            debit: dayExpenses.reduce((sum: any, tx: { amount: any; }) => sum + tx.amount, 0),
-            credit: dayIncomes.reduce((sum: any, tx: { amount: any; }) => sum + tx.amount, 0),
+            debit: dayExpenses.reduce((sum: number, tx: Transaction) => sum + tx.amount, 0),
+            credit: dayIncomes.reduce((sum: number, tx: Transaction) => sum + tx.amount, 0),
           };
         });
 

@@ -12,8 +12,13 @@ import {
   
 } from "@heroicons/react/24/outline";
 import { creditcardstyles, colors ,logo } from "../constants/index";
-import Cookie from 'js-cookie';
+import { ApiError } from '@/lib/apiClient';
 import { loginUser } from '@/services/authentication';
+
+interface LoginFormValues {
+  username: string;
+  password: string;
+}
 
 
 const LoginForm: React.FC = () => {
@@ -21,44 +26,33 @@ const LoginForm: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
-  
+  } = useForm<LoginFormValues>();
+
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter()
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async ({ username, password }: LoginFormValues) => {
     setIsLoading(true);
     setErrorMessage("");
-      try {
-        const loggedInUser = await loginUser(data);
+    try {
+      // loginUser stores the tokens, so every later request is authenticated.
+      await loginUser(username, password);
 
-        console.log("Logged in user:", loggedInUser)
-        
-        Cookie.set('accessToken', loggedInUser.data.access_token);
-        Cookie.set('refreshToken', loggedInUser.data.refresh_token);
-
-        
-        
-
-        setIsLoading(false);
-        // console.log("redirect...")
-        window.location.href = '/'
-        // console.log("Success")
-      } catch (error) {
-        console.error('Error here:', error);
-        setIsLoading(false);
-        if (error instanceof Error) {
-          setErrorMessage(error.message || "Login failed. Please try again.");
-        } else if (typeof error === 'object' && error !== null && 'response' in error) {
-          const axiosError = error as any; // Type assertion
-          setErrorMessage(axiosError.response?.data?.message || "Login failed. Please try again.");
-        } else {
-          setErrorMessage("An unexpected error occurred.");
-        }
-
+      setIsLoading(false);
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      setIsLoading(false);
+      if (error instanceof ApiError) {
+        setErrorMessage(error.message || "Login failed. Please try again.");
+      } else if (error instanceof Error) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("An unexpected error occurred.");
       }
-    };
+    }
+  };
 
   return (
     <div className="flex items-center justify-center max-h-screen py-4 overflow-hidden">
@@ -73,21 +67,21 @@ const LoginForm: React.FC = () => {
 
         <div className="py-4">
         <div>
-          <label htmlFor="userName" className="block font-bold mb-2 text-gray-700 dark:text-white">
+          <label htmlFor="username" className="block font-bold mb-2 text-gray-700 dark:text-white">
           UserName
           </label>
           <input
-          id="userName"
+          id="username"
           type="text"
           placeholder="Username"  
           defaultValue="tester"
-          {...register("userName", { required: "Username is required" })}
+          {...register("username", { required: "Username is required" })}
           className="w-full m-auto border-gray-200  dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
           />
-          {errors.userName && (
+          {errors.username && (
           <div className="flex gap-1">
             <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
-            <p className="text-red-500">{errors.userName.message as string}</p>
+            <p className="text-red-500">{errors.username.message as string}</p>
           </div>
           )}
         </div>

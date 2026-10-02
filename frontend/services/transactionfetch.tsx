@@ -1,197 +1,42 @@
-import Cookies from "js-cookie";
+import { api, paginated } from "@/lib/apiClient";
+import type {
+  CreateTransactionRequest,
+  DepositRequest,
+  Page,
+  SeriesPoint,
+  Transaction,
+  TransferRecipient,
+} from "@/types/api";
 
-const API_BASE_URL = "https://bank-dash-36iy.onrender.com";
-const token = Cookies.get("accessToken");
+/** The most recent page of everything, newest first. */
+export const getAllTransactions = (page = 0, size = 10): Promise<Page<Transaction>> =>
+  paginated<Transaction>("/transactions", page, size);
 
-// GET /transactionshttps://bank-dashboard-1tst.onrender.com
-export const getAllTransactionsss = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/transactions`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.json();
-  } catch (error) {
-    console.error("Error fetching all transactions:", error);
-    throw error;
-  }
-};
+export const getIncomes = (page = 0, size = 10): Promise<Page<Transaction>> =>
+  paginated<Transaction>("/transactions/incomes", page, size);
 
-// GET /transactions
-export const getAllTransactions = async (page: any, size: any) => {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/transactions?page=${page}&size=${size}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    return response.json();
-  } catch (error) {
-    console.error("Error fetching some transactions:", error);
-    throw error;
-  }
-};
-// POST /transactions
-export const createTransaction = async (
-  transactionData: any,
-  accessToken: string
-) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/transactions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(transactionData),
-    });
-    console.log(response);
-    return response.json();
-  } catch (error) {
-    console.error("Error creating transaction:", error);
-    throw error;
-  }
-};
+export const getExpenses = (page = 0, size = 10): Promise<Page<Transaction>> =>
+  paginated<Transaction>("/transactions/expenses", page, size);
 
-// POST /transactions/deposit
-export const createDeposit = async (depositData: any, accessToken: string) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/transactions/deposit`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify(depositData),
-    });
-    return response.json();
-  } catch (error) {
-    console.error("Error creating deposit:", error);
-    throw error;
-  }
-};
+/** Small unpaged fetch for the dashboard's "recent transaction" strip. */
+export const getRecentTransactions = (size = 10): Promise<Transaction[]> =>
+  getAllTransactions(0, size).then((result) => result.items);
 
-// GET /transactions/{id}
-export const getTransactionById = async (id: any, accessToken: string) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/transactions/${id}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-    return response.json();
-  } catch (error) {
-    console.error("Error fetching transaction by ID:", error);
-    throw error;
-  }
-};
+/** Pay, transfer, shop, or repay a loan. */
+export const createTransaction = (
+  transactionData: CreateTransactionRequest,
+): Promise<Transaction> => api.post<Transaction>("/transactions", transactionData);
 
-// GET /transactions/random-balance-history
-export const getRandomBalanceHistory = async () => {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/transactions/random-balance-history?monthsBeforeFirstTransaction=12`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+export const createDeposit = (depositData: DepositRequest): Promise<Transaction> =>
+  api.post<Transaction>("/transactions/deposit", depositData);
 
-    // Check if the response is OK (status code 200-299)
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
+export const getTransactionById = (id: string): Promise<Transaction> =>
+  api.get<Transaction>(`/transactions/${id}`);
 
-    // Parse the response JSON
-    return response.json();
-  } catch (error) {
-    console.error("Error fetching random balance history:", error);
-    throw error;
-  }
-};
+/** Month-end balances, oldest first. `period` is `YYYY-MM`. */
+export const getBalanceHistory = (months = 12): Promise<SeriesPoint[]> =>
+  api.get<SeriesPoint[]>("/transactions/balance-history", { months });
 
-// GET /transactions/latest-transfers
-export const getLatestTransfers = async (number: number) => {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/transactions/quick-transfers?number=${number}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    return response.json();
-  } catch (error) {
-    console.error("Error fetching latest transfers:", error);
-    throw error;
-  }
-};
-
-// GET /transactions/incomes
-export const getIncomes = async (page: any, size: any) => {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/transactions/incomes?page=${page}&size=${size}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    return response.json();
-  } catch (error) {
-    console.error("Error fetching incomes:", error);
-    throw error;
-  }
-};
-
-// GET /transactions/expenses
-export const getExpenses = async (page: any, size: any) => {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/transactions/expenses?page=${page}&size=${size}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    return response.json();
-  } catch (error) {
-    console.error("Error fetching expenses:", error);
-    throw error;
-  }
-};
-
-// GET /transactions/balance-history
-export const getBalanceHistory = async (accessToken: string) => {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/transactions/balance-history`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    return response.json();
-  } catch (error) {
-    console.error("Error fetching balance history:", error);
-    throw error;
-  }
-};
+/** People worth transferring to, most recently interacted with first. */
+export const getLatestTransfers = (limit = 6): Promise<TransferRecipient[]> =>
+  api.get<TransferRecipient[]>("/transactions/transfer-recipients", { limit });

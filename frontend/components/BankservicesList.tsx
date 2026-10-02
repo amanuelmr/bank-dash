@@ -10,7 +10,7 @@ import SafetyIcon from "@/public/icons/SafetyIcon";
 import Pagination from "./Pagination";
 import { TbFileSad } from "react-icons/tb";
 import { colors } from "@/constants";
-import Cookie from "js-cookie";
+import type { BankService } from "@/types/api";
 
 
 const icons = [
@@ -83,8 +83,8 @@ const ITEMS_PER_PAGE = 10;
 const BankservicesList: React.FC = () => {
 
   const [currentPage, setCurrentPage] = useState(0);
-  const[filtered , setfiltered] = useState([])
-  const [services , setservices] = useState([])
+  const [filtered, setfiltered] = useState<BankService[]>([])
+  const [services, setServices] = useState<BankService[]>([])
   const randomIcons = icons;
   const [totalPages, setTotalPages] = useState(0);
   // const token = Cookie.get("accessToken") || 'null'
@@ -108,23 +108,18 @@ const BankservicesList: React.FC = () => {
       setStatus("loading");
 
       try {
-        const response= await getAllBankServices( currentPage, ITEMS_PER_PAGE);
-        console.log("response:" , response)
-        if (response.success === true) {
-          setStatus("success");
-          
-        setservices(response.data.content || []);
-        setfiltered(response.data.content || []);
-        setTotalPages(response.data.totalPages);
-        
-      }
-     } catch (error) {
+        const page = await getAllBankServices(currentPage, ITEMS_PER_PAGE);
+        setStatus("success");
+        setServices(page.items ?? []);
+        setfiltered(page.items ?? []);
+        setTotalPages(page.totalPages);
+      } catch (error) {
         setStatus("error");
         console.error("Error fetching bank services:", error);
       }
     };
     fetchData();
-  },[]);
+  }, [currentPage]);
 
   if (status === "loading") {
     return (

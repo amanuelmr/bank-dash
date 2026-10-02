@@ -1,95 +1,41 @@
-import Cookies from "js-cookie";
+import { api, paginated } from "@/lib/apiClient";
+import type {
+  CreateLoanRequest,
+  Loan,
+  LoanRepayment,
+  LoanSummary,
+  Page,
+} from "@/types/api";
 
-const API_BASE_URL = "https://bank-dash-36iy.onrender.com";
-const token = Cookies.get("accessToken");
+/** The signed-in user's loans, newest first. */
+export const getMyLoans = (page = 0, size = 5): Promise<Page<Loan>> =>
+  paginated<Loan>("/loans", page, size);
 
-// POST /active-loans
-export const createActiveLoan = async (loanData: any) => {
-  const response = await fetch(`${API_BASE_URL}/active-loans`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(loanData),
-  });
-  return response.json();
-};
+/** Every loan on file - administrator only. */
+export const getAllActiveLoans = (page = 0, size = 10): Promise<Page<Loan>> =>
+  paginated<Loan>("/loans/all", page, size);
 
-// POST /active-loans/{id}/reject
-export const rejectActiveLoan = async (id: any) => {
-  const response = await fetch(`${API_BASE_URL}/active-loans/${id}/reject`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  return response.json();
-};
+/** Outstanding totals per loan type, for the summary cards. */
+export const getLoanDetailData = (): Promise<LoanSummary> =>
+  api.get<LoanSummary>("/loans/summary");
 
-// POST /active-loans/{id}/approve
-export const approveActiveLoan = async (id: any) => {
-  const response = await fetch(`${API_BASE_URL}/active-loans/${id}/approve`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  return response.json();
-};
+export const getActiveLoanById = (id: string): Promise<Loan> =>
+  api.get<Loan>(`/loans/${id}`);
 
-// GET /active-loans/{id}
-export const getActiveLoanById = async (id: any) => {
-  const response = await fetch(`${API_BASE_URL}/active-loans/${id}`, {
-    method: "GET",
-  });
-  return response.json();
-};
+export const createActiveLoan = (loanData: CreateLoanRequest): Promise<Loan> =>
+  api.post<Loan>("/loans", loanData);
 
-// GET /active-loans/my-loans
-export const getMyLoans = async (page:any , size:any) => {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/active-loans/my-loans?page=${page}&size=${size}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    if (!response.ok) {
-      console.log(response);
-      throw new Error("Failed to fetch ");
-    }
-    return response.json();
-  } catch (error) {
-    console.error("Error: ", error);
-  }
-};
+export const approveActiveLoan = (id: string): Promise<Loan> =>
+  api.post<Loan>(`/loans/${id}/approve`);
 
-// GET /active-loans/detail-data
-export const getLoanDetailData = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/active-loans/detail-data`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (!response.ok) {
-      console.log(response);
-      throw new Error("Failed to fetch");
-    }
-    return response.json();
-  } catch (error) {
-    console.error("Error: ", error);
-  }
-};
+export const rejectActiveLoan = (id: string): Promise<Loan> =>
+  api.post<Loan>(`/loans/${id}/reject`);
 
-// GET /active-loans/all
-export const getAllActiveLoans = async () => {
-  const response = await fetch(`${API_BASE_URL}/active-loans/all`, {
-    method: "GET",
-  });
-  return response.json();
-};
+/**
+ * Repay a loan, debiting the account balance.
+ *
+ * Omit `amount` to clear the full outstanding balance; an amount above what is
+ * owed is clamped down to it.
+ */
+export const repayLoan = (id: string, amount?: number): Promise<LoanRepayment> =>
+  api.post<LoanRepayment>(`/loans/${id}/repay`, { amount });

@@ -1,18 +1,18 @@
 import React from "react";
 import { colors, sidebarLinks } from "../constants/index";
 import { CgCreditCard } from "react-icons/cg";
-import { cardType } from "@/types/index";
+import type { Card } from "@/types/api";
 import Image from "next/image";
 
 interface Props {
-  card_list: cardType[];
+  card_list: Card[];
 }
 
 const CardList: React.FC<Props> = ({ card_list }) => {
   return (
     <div className="max-h-[400px] lg:w-[730px] md:w-[487px] w-[325] overflow-y-scroll pr-6 py-4 scrollbar-thin scrollbar-track-[#F5F7FA] dark:scrollbar-track-dark scrollbar-thumb-[#b5c2d9] scrollbar-thumb-rounded-full">
       {Array.isArray(card_list) && card_list.length > 0 ? (
-        card_list.map((card: any, index: number) => (
+        card_list.map((card, index) => (
         <div
           key={index}
           className="flex flex-row justify-between w-full bg-white p-4 mb-4 rounded-lg shadow-md dark:bg-dark dark:text-white"
@@ -38,7 +38,7 @@ const CardList: React.FC<Props> = ({ card_list }) => {
           <div className="flex flex-col">
             <p className="text-sm font-medium hidden sm:block">Card Number</p>
             <p className={`${colors.textgray} text-xs hidden sm:block`}>
-              {card.semiCardNumber}
+              {card.maskedNumber}
             </p>
           </div>
 

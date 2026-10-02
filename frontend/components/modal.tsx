@@ -3,7 +3,7 @@ import { currentuser } from "@/services/userupdate"
 import { useEffect, useState } from "react"
 import { DocumentDuplicateIcon, PencilIcon } from "@heroicons/react/24/outline"
 import Image from "next/image"
-import { UserData } from "@/types"
+import type { User } from "@/types/api"
 
 import SettingsPage from "@/app/(root)/setting/page"
 import Link from "next/link"
@@ -23,14 +23,14 @@ import { FaEye, FaEyeSlash } from "react-icons/fa"
 // Add Tailwind CSS classes for styling
 export function DialogDemo() {
   const [accountBalance, setAccountBalance ] = useState(0);
-    const [info, setinfo] = useState<UserData>();
+    const [info, setinfo] = useState<User>();
     const [visible , setvisible] = useState(false)
     useEffect(() => {
       const fetch = async () => {
         try {
-          const data = await currentuser();
-          setinfo(data.data || []);
-          setAccountBalance(data.data.accountBalance);
+          const user = await currentuser();
+        setinfo(user);
+        setAccountBalance(user.accountBalance);
         } catch (error) {
           console.error("Error:", error);
         }
