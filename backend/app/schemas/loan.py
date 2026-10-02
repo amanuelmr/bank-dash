@@ -1,5 +1,7 @@
 """Loan schemas."""
 
+from datetime import date
+
 from pydantic import Field
 
 from app.models.loan import LoanStatus, LoanType
@@ -27,8 +29,8 @@ class LoanOut(CamelModel):
     interest_rate: float
     loan_duration: int
     status: LoanStatus
-    start_date: str | None = None
-    end_date: str | None = None
+    start_date: date | None = None
+    end_date: date | None = None
     created_at: UtcDateTime
 
 
