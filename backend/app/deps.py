@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from fastapi import Depends, Query
+from fastapi import Depends, Query, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,14 +19,24 @@ bearer_scheme = HTTPBearer(
 
 
 async def get_current_user(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: AsyncSession = Depends(get_db),
 ) -> User:
-    """Resolve the authenticated user, or raise 401."""
-    if credentials is None or not credentials.credentials:
-        raise UnauthorizedError("Authorization header is missing")
+    """Resolve the authenticated user, or raise 401.
 
-    payload = decode_access_token(credentials.credentials)
+    Accepts the token from either the ``Authorization: Bearer`` header or the
+    httpOnly cookie. The header is what CLI clients and the smoke script use;
+    the cookie is what the browser sends, since page scripts cannot read it.
+    """
+    token = credentials.credentials if credentials and credentials.credentials else None
+    if not token:
+        token = request.cookies.get(settings.access_cookie_name)
+
+    if not token:
+        raise UnauthorizedError("Not authenticated")
+
+    payload = decode_access_token(token)
     user = await db.get(User, payload.get("sub"))
     if user is None:
         raise UnauthorizedError("User no longer exists")

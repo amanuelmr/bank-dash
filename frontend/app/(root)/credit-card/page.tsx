@@ -7,7 +7,6 @@ import CardSetting from "@/components/CardSetting";
 import CardList from "@/components/CardList";
 import { useEffect, useState } from "react";
 import { getAllCards } from "@/services/cardfetch";
-import { getAccessToken } from "@/lib/apiClient";
 import type { Card } from "@/types/api";
 import Image from "next/image";
 import CardListLoad from "@/components/loadingComponents/CardListLoad";
@@ -16,7 +15,6 @@ import { TbFileSad } from "react-icons/tb";
 
 const CreditCard = () => {
   const [cards, setCards] = useState<Card[]>([]);
-  const [hasToken, setHasToken] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -24,12 +22,6 @@ const CreditCard = () => {
     let cancelled = false;
 
     const fetchCards = async () => {
-      if (!getAccessToken()) {
-        setHasToken(false);
-        setLoading(false);
-        return;
-      }
-      setHasToken(true);
       try {
         const { items } = await getAllCards(0, 20);
         if (!cancelled) {
@@ -66,7 +58,7 @@ const CreditCard = () => {
                 />
               </span>
             ))
-          ) : hasToken ? (
+          ) : (
             <div className="max-h-[400px] lg:w-[730px] md:w-[487px] bg-white py-16 rounded-xl flex flex-col justify-center dark:bg-dark dark:border-[1px] dark:border-gray-700">
               <TbFileSad
                 className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
@@ -76,8 +68,6 @@ const CreditCard = () => {
                 {error ? error : "There are no cards for now!"}
               </span>
             </div>
-          ) : (
-            <MyCardsLoad count={3}/>
           )}
         </div>
       </div>
@@ -93,7 +83,7 @@ const CreditCard = () => {
           <h1 className="text-[19px] mb-3 font-bold text-[#333B69] dark:text-blue-500">Card List</h1>
           {loading ? (
             <CardListLoad />
-          ) : hasToken ? (
+          ) : (
             error ? (
               <div className="pr-6 py-32 bg-white max-h-[400px] lg:w-[730px] md:w-[487px] w-[325] flex flex-col justify-center align-middle rounded-xl scrollbar-none dark:bg-dark dark:border-[1px] dark:border-gray-700 ">
                 <TbFileSad
@@ -107,8 +97,6 @@ const CreditCard = () => {
             ) : (
               <CardList card_list={cards} />
             )
-          ) : (
-            <CardListLoad />
           )}
         </div>
       </div>
