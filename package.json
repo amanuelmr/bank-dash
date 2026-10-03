@@ -2,7 +2,7 @@
   "name": "bankdash",
   "version": "1.0.0",
   "private": true,
-  "description": "BankDash monorepo. The Next.js app lives in frontend/, the FastAPI backend in backend/.",
+  "description": "BankDash monorepo. The deployable Next.js app is in frontend/ - Vercel's Root Directory must be set to 'frontend'. The FastAPI backend is in backend/ and is not deployed by Vercel. These scripts are a convenience wrapper only.",
   "engines": {
     "node": "24.x"
   },
