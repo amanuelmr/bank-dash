@@ -118,3 +118,30 @@ object:
 
 Authentication is a JWT bearer token plus a rotating refresh token. The
 frontend stores both in cookies and sends `Authorization: Bearer <accessToken>`.
+
+---
+
+## Deploying the frontend to Vercel
+
+Vercel needs **one project setting**, and this repository cannot substitute for
+it:
+
+> **Settings → General → Root Directory → `frontend`**
+
+The deployable app is `frontend/`, so its `package.json` must be the one at the
+Root Directory. Without this Vercel cannot find `next` and the build fails with
+*"No Next.js version detected."*
+
+No `vercel.json` is used on purpose. With Root Directory set to `frontend`,
+Vercel auto-detects the framework and derives the install, build, and output
+directories correctly. Adding one with `frontend/`-prefixed paths would break
+exactly that, since those paths would resolve relative to `frontend/`.
+
+The Node version does **not** need a dashboard change: `frontend/package.json`
+declares `engines#node: 24.x`, and Vercel reports that it overrides the
+project-level setting. The root `package.json` mirrors this and exists purely as
+a convenience wrapper for running `npm run build` / `lint` / `typecheck` from
+the repo root locally.
+
+Set `NEXT_PUBLIC_API_BASE_URL` in the Vercel project's environment variables to
+the deployed backend URL.
