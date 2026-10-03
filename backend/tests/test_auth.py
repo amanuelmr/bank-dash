@@ -156,6 +156,63 @@ async def test_refresh_without_a_token_is_rejected(client: AsyncClient):
     assert response.status_code == 401
 
 
+async def test_failed_refresh_expires_both_cookies(client: AsyncClient):
+    """A rejected refresh must clear the cookies, not just report the failure.
+
+    JavaScript cannot delete an httpOnly cookie, so only the server can. Without
+    this the dead cookie stays attached for its full 30-day lifetime and every
+    API call first pays a refresh round-trip that is guaranteed to fail.
+    """
+    client.cookies.clear()
+    response = await client.post("/api/v1/auth/refresh")
+
+    assert response.status_code == 401
+    expiries = response.headers.get_list("set-cookie")
+    # Both cookies, not one. Routing both through a single header mapping
+    # collapses them under one `set-cookie` key and silently drops the second.
+    assert len(expiries) == 2
+    joined = "; ".join(expiries)
+    assert "accessToken=" in joined
+    assert "refreshToken=" in joined
+    assert joined.count("Max-Age=0") == 2
+
+
+async def test_replaying_a_consumed_refresh_cookie_expires_the_session(
+    client: AsyncClient,
+):
+    """The stale-cookie path is the realistic one: a stolen-then-used token, not
+    a missing cookie."""
+    await register(client)
+    await login(client)
+    stale = client.cookies.get("refreshToken")
+    assert (await client.post("/api/v1/auth/refresh")).status_code == 200
+
+    client.cookies.set("refreshToken", stale)
+    replay = await client.post("/api/v1/auth/refresh")
+
+    assert replay.status_code == 401
+    assert "Max-Age=0" in "; ".join(replay.headers.get_list("set-cookie"))
+
+
+async def test_cookies_are_scoped_so_the_refresh_token_stays_off_other_calls(
+    client: AsyncClient,
+):
+    """The refresh token is only ever presented to /auth/refresh and
+    /auth/logout. Scoped to "/" it would ride along with every API call, putting
+    a 30-day credential into the reach of anything that logs request headers."""
+    await register(client)
+    response = await client.post(
+        "/api/v1/auth/login", json={"username": "tester", "password": "12345678"}
+    )
+
+    by_name = {
+        cookie.split("=", 1)[0].strip(): cookie
+        for cookie in response.headers.get_list("set-cookie")
+    }
+    assert "Path=/" in by_name["accessToken"]
+    assert "Path=/api/v1/auth" in by_name["refreshToken"]
+
+
 async def test_change_password_requires_the_current_one(client: AsyncClient):
     await register(client)
     await login(client)

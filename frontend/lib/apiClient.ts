@@ -12,7 +12,7 @@
  * one refresh-and-replay against `/auth/refresh`, which also needs no body.
  */
 
-import { API_BASE_URL } from "@/lib/config";
+import { API_BASE_URL, SIGN_IN_PATH } from "@/lib/config";
 
 /** The envelope every endpoint returns. */
 export type ApiEnvelope<T> = {
@@ -94,6 +94,29 @@ async function refreshSession(): Promise<boolean> {
   return refreshInFlight;
 }
 
+/**
+ * Endpoints where a 401 means "those credentials were wrong" rather than "there
+ * is no session", so a failure must not bounce the visitor anywhere.
+ */
+const CREDENTIAL_CHECKS = ["/auth/login", "/auth/register"];
+
+/**
+ * Hand a genuinely dead session over to the sign-in page.
+ *
+ * `middleware.ts` gates on cookie *presence* only, deliberately: it cannot know
+ * whether an expired access token is backed by a live refresh token, and
+ * bouncing such a user would throw away a session the client can still renew.
+ * The consequence is that ending a dead session becomes the client's job - the
+ * API has just expired the cookies on the failed refresh, and nothing else is
+ * going to navigate away from a page whose every request now 401s.
+ */
+function handOffToSignIn(failedPath: string): void {
+  if (CREDENTIAL_CHECKS.some((path) => failedPath.startsWith(path))) return;
+  if (typeof window !== "undefined") {
+    window.location.assign(SIGN_IN_PATH);
+  }
+}
+
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = "GET", body, query, skipRefresh = false } = options;
 
@@ -113,6 +136,9 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     if (await refreshSession()) {
       return request<T>(path, { ...options, skipRefresh: true });
     }
+    // The refresh cookie is gone or was already used. The server has expired
+    // both cookies, so this session cannot continue.
+    handOffToSignIn(path);
   }
 
   if (response.status === 204) return null as T;

@@ -121,5 +121,7 @@ token. The API delivers both as **httpOnly cookies**, so JavaScript cannot read
 them and an injected script cannot exfiltrate a session. The browser sends them
 automatically; the client only adds `credentials: "include"`.
 
-Non-browser clients can instead send `Authorization: Bearer <accessToken>`,
-which the API also accepts.
+The refresh cookie is scoped to `/api/v1/auth` and a rejected refresh expires
+both cookies, so a dead session does not linger. Non-browser clients can
+instead send `Authorization: Bearer <accessToken>`, which the API also
+accepts.

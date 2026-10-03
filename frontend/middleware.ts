@@ -1,39 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { ACCESS_COOKIE, REFRESH_COOKIE, SIGN_IN_PATH } from "@/lib/config";
+
 /**
- * Gate the authenticated routes.
+ * Gate the authenticated routes on session *presence*, never on validity.
  *
- * The previous version only checked that an `accessToken` *cookie existed*, so
- * an expired or forged token still rendered the whole dashboard before every
- * request came back 401. This decodes the JWT payload and honours `exp`.
+ * An earlier version decoded the JWT payload and honoured `exp`, which was a
+ * real improvement over "does a cookie exist" at the time - it was added before
+ * the client could recover from an expired token on its own. Now that
+ * `apiClient` refreshes and replays on a 401, that check works against the
+ * user: an expired access token alongside a live 30-day refresh token is an
+ * entirely normal state that the client repairs in one request, but this gate
+ * would bounce it to sign-in first.
  *
- * The signature is deliberately not verified here: this runs on the edge where
- * the signing secret is unavailable, and it is only a UX redirect. Real
- * verification happens in the API, which every request goes through anyway.
+ * Expiry is deliberately not reimplemented here. This runs on the edge, where
+ * the signing secret is unavailable, so any check is unverified - and the API
+ * verifies every request anyway.
  */
-function isTokenExpired(token: string): boolean {
-  try {
-    const payload = token.split(".")[1];
-    if (!payload) return true;
-
-    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const json = atob(base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "="));
-    const { exp } = JSON.parse(json);
-
-    return typeof exp !== "number" || exp * 1000 <= Date.now();
-  } catch {
-    return true;
-  }
-}
-
 export function middleware(request: NextRequest) {
-  const accessToken = request.cookies.get("accessToken")?.value;
+  const accessToken = request.cookies.get(ACCESS_COOKIE)?.value;
+  const refreshToken = request.cookies.get(REFRESH_COOKIE)?.value;
 
-  // Signed out, or holding a token that has expired: send them to sign-in.
-  if (!accessToken || isTokenExpired(accessToken)) {
-    const response = NextResponse.redirect(new URL("/home", request.url));
-    if (accessToken) response.cookies.delete("accessToken");
-    return response;
+  // No session at all - either never signed in, or signed out and the server
+  // expired the cookies. Anything else is allowed through to be judged by the
+  // API, which is the only component that can actually tell.
+  if (!accessToken && !refreshToken) {
+    return NextResponse.redirect(new URL(SIGN_IN_PATH, request.url));
   }
 
   return NextResponse.next();
