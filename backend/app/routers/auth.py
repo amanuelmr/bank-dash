@@ -31,9 +31,12 @@ def _cookie_specs() -> dict[str, tuple[str, int]]:
     ever presented - a cookie on "/" rides along with every API call, so any
     endpoint that logs or reflects request headers would expose a 30-day
     credential.
+
+    The access cookie's lifetime is deliberately not the JWT's: see
+    `Settings.access_cookie_max_age`, which explains why the two must differ.
     """
     return {
-        settings.access_cookie_name: ("/", settings.access_token_expire_minutes * 60),
+        settings.access_cookie_name: ("/", settings.access_cookie_max_age),
         settings.refresh_cookie_name: (
             settings.auth_cookie_path,
             settings.refresh_token_expire_days * 86400,

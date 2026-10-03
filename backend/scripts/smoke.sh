@@ -60,6 +60,14 @@ LOGIN_DUMP=$(curl -sS -m 10 --noproxy '*' -o /dev/null -D - -X POST "$BASE/auth/
 check "access cookie path"  "Path=/"            "$(grep -i 'set-cookie: accessToken='  <<<"$LOGIN_DUMP" | grep -oi 'Path=[^;]*' | tr -d '\r')"
 check "refresh cookie path" "Path=/api/v1/auth" "$(grep -i 'set-cookie: refreshToken=' <<<"$LOGIN_DUMP" | grep -oi 'Path=[^;]*' | tr -d '\r')"
 
+# The access cookie must outlive the 24h JWT it carries. The refresh cookie is
+# scoped to the API and never reaches the frontend's route gate, so if this
+# cookie died on the token's schedule the gate would sign everyone out while
+# their refresh token still had weeks left.
+check "access cookie outlives its JWT" "true" \
+  "$(grep -i 'set-cookie: accessToken=' <<<"$LOGIN_DUMP" | grep -oi 'Max-Age=[0-9]*' | cut -d= -f2 \
+     | awk '{print ($1 > 86400) ? "true" : "false"}')"
+
 section "bearer path (non-browser clients)"
 BEARER=$(curl -sS -m 10 --noproxy '*' -D - -o /dev/null -X POST "$BASE/auth/login" \
   -H 'Content-Type: application/json' -d '{"username":"tester","password":"12345678"}' \
