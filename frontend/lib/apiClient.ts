@@ -4,18 +4,15 @@
  * Centralising this fixes a class of bug the old per-service `fetch` calls
  * had: each service file read `Cookies.get("accessToken")` once at module load,
  * so any module evaluated before sign-in kept `undefined` forever and silently
- * sent unauthenticated requests. Here the token is read per request instead.
+ * sent unauthenticated requests.
  *
- * It also adds the refresh-and-retry the old code never had: a 401 triggers one
- * token refresh and a replay of the original request.
+ * Auth is cookie based. The API sets httpOnly cookies, which JavaScript cannot
+ * read, so nothing here touches the token itself - requests just send
+ * `credentials: "include"` and the browser attaches the cookie. A 401 triggers
+ * one refresh-and-replay against `/auth/refresh`, which also needs no body.
  */
 
-import Cookies from "js-cookie";
-
-import { API_BASE_URL } from "@/lib/config";
-
-const ACCESS_TOKEN_KEY = "accessToken";
-const REFRESH_TOKEN_KEY = "refreshToken";
+import { API_BASE_URL, SIGN_IN_PATH } from "@/lib/config";
 
 /** The envelope every endpoint returns. */
 export type ApiEnvelope<T> = {
@@ -51,27 +48,6 @@ export class ApiError extends Error {
   }
 }
 
-export const getAccessToken = (): string | undefined =>
-  Cookies.get(ACCESS_TOKEN_KEY);
-
-export const getRefreshToken = (): string | undefined =>
-  Cookies.get(REFRESH_TOKEN_KEY);
-
-export function setTokens(tokens: {
-  accessToken: string;
-  refreshToken: string;
-}): void {
-  // TODO: move these to httpOnly cookies set by the API. js-cookie cannot set
-  // httpOnly, so until then the tokens are readable by any script on the page.
-  Cookies.set(ACCESS_TOKEN_KEY, tokens.accessToken, { sameSite: "lax" });
-  Cookies.set(REFRESH_TOKEN_KEY, tokens.refreshToken, { sameSite: "lax" });
-}
-
-export function clearTokens(): void {
-  Cookies.remove(ACCESS_TOKEN_KEY);
-  Cookies.remove(REFRESH_TOKEN_KEY);
-}
-
 type RequestOptions = {
   method?: "GET" | "POST" | "PUT" | "DELETE";
   body?: unknown;
@@ -80,10 +56,7 @@ type RequestOptions = {
   skipRefresh?: boolean;
 };
 
-function buildUrl(
-  path: string,
-  query?: RequestOptions["query"],
-): string {
+function buildUrl(path: string, query?: RequestOptions["query"]): string {
   const url = `${API_BASE_URL}${path}`;
   if (!query) return url;
 
@@ -99,37 +72,20 @@ function buildUrl(
 
 /**
  * In-flight refresh, shared so that several 401s at once trigger one refresh
- * rather than racing to rotate the same token (which would invalidate it).
+ * rather than racing to rotate the same cookie.
  */
-let refreshInFlight: Promise<string | null> | null = null;
+let refreshInFlight: Promise<boolean> | null = null;
 
-async function refreshAccessToken(): Promise<string | null> {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return null;
-
+async function refreshSession(): Promise<boolean> {
   refreshInFlight ??= (async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken }),
+        credentials: "include",
       });
-      if (!response.ok) {
-        clearTokens();
-        return null;
-      }
-      const envelope = (await response.json()) as ApiEnvelope<{
-        accessToken: string;
-        refreshToken: string;
-      }>;
-      if (!envelope.data) {
-        clearTokens();
-        return null;
-      }
-      setTokens(envelope.data);
-      return envelope.data.accessToken;
+      return response.ok;
     } catch {
-      return null;
+      return false;
     } finally {
       refreshInFlight = null;
     }
@@ -138,31 +94,51 @@ async function refreshAccessToken(): Promise<string | null> {
   return refreshInFlight;
 }
 
-async function request<T>(
-  path: string,
-  options: RequestOptions = {},
-): Promise<T> {
+/**
+ * Endpoints where a 401 means "those credentials were wrong" rather than "there
+ * is no session", so a failure must not bounce the visitor anywhere.
+ */
+const CREDENTIAL_CHECKS = ["/auth/login", "/auth/register"];
+
+/**
+ * Hand a genuinely dead session over to the sign-in page.
+ *
+ * `proxy.ts` gates on cookie *presence* only, deliberately: it cannot know
+ * whether an expired access token is backed by a live refresh token, and
+ * bouncing such a user would throw away a session the client can still renew.
+ * The consequence is that ending a dead session becomes the client's job - the
+ * API has just expired the cookies on the failed refresh, and nothing else is
+ * going to navigate away from a page whose every request now 401s.
+ */
+function handOffToSignIn(failedPath: string): void {
+  if (CREDENTIAL_CHECKS.some((path) => failedPath.startsWith(path))) return;
+  if (typeof window !== "undefined") {
+    window.location.assign(SIGN_IN_PATH);
+  }
+}
+
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = "GET", body, query, skipRefresh = false } = options;
 
   const headers: Record<string, string> = {};
   if (body !== undefined) headers["Content-Type"] = "application/json";
 
-  const token = getAccessToken();
-  if (token) headers.Authorization = `Bearer ${token}`;
-
   const response = await fetch(buildUrl(path, query), {
     method,
     headers,
+    // Send the httpOnly auth cookie. Required, or the API sees no session.
+    credentials: "include",
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
   // Expired access token: refresh once, then replay the original request.
   if (response.status === 401 && !skipRefresh) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) {
+    if (await refreshSession()) {
       return request<T>(path, { ...options, skipRefresh: true });
     }
-    clearTokens();
+    // The refresh cookie is gone or was already used. The server has expired
+    // both cookies, so this session cannot continue.
+    handOffToSignIn(path);
   }
 
   if (response.status === 204) return null as T;
@@ -202,5 +178,4 @@ export const paginated = <T>(
   page: number,
   size: number,
   extra?: RequestOptions["query"],
-): Promise<Page<T>> =>
-  api.get<Page<T>>(path, { page, size, ...extra });
+): Promise<Page<T>> => api.get<Page<T>>(path, { page, size, ...extra });

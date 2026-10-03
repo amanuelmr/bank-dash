@@ -13,6 +13,23 @@ def error_body(message: str, data: Any = None) -> dict[str, Any]:
     return {"success": False, "message": message, "data": data}
 
 
+def app_error_response(
+    exc: "AppError", headers: dict[str, str] | None = None
+) -> JSONResponse:
+    """Render an `AppError` as a response.
+
+    Exposed so a route can return a failure itself instead of raising it. That
+    matters for the auth routes: headers set on an injected `Response` are
+    discarded once an exception handler takes over, so a route that needs to
+    both fail *and* expire cookies has to build the response rather than raise.
+    """
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=error_body(exc.message, {"code": exc.code}),
+        headers=headers,
+    )
+
+
 class AppError(Exception):
     """Base class for errors that should surface as a clean JSON envelope."""
 
@@ -71,10 +88,7 @@ def _flatten_validation_errors(exc: RequestValidationError) -> str:
 def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def _app_error(_: Request, exc: AppError) -> JSONResponse:
-        return JSONResponse(
-            status_code=exc.status_code,
-            content=error_body(exc.message, {"code": exc.code}),
-        )
+        return app_error_response(exc)
 
     @app.exception_handler(RequestValidationError)
     async def _validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:

@@ -2,41 +2,43 @@
 
 from httpx import AsyncClient
 
-from tests.conftest import auth_headers, login, register
+from tests.conftest import login, register
 
 
-async def _two_accounts(client: AsyncClient) -> tuple[dict, dict]:
-    """Register and sign in two users, each as ``{tokens, headers}``."""
-    await register(client)
+async def _two_accounts(client_factory) -> tuple[AsyncClient, AsyncClient]:
+    """Two signed-in users.
+
+    Auth is cookie based and a cookie jar belongs to one client, so each user
+    needs their own client rather than a shared one.
+    """
+    sender = await client_factory()
+    receiver = await client_factory()
+
+    await register(sender)
     await register(
-        client,
+        receiver,
         name="Alice Nguyen",
         email="alice@bankdash.dev",
         username="alice",
     )
-
-    def wrap(tokens: dict) -> dict:
-        return {"tokens": tokens, "headers": auth_headers(tokens)}
-
-    return wrap(await login(client)), wrap(await login(client, username="alice"))
+    await login(sender)
+    await login(receiver, username="alice")
+    return sender, receiver
 
 
-async def _fund(client: AsyncClient, headers: dict, amount: float = 1_000.0) -> dict:
-    response = await client.post(
-        "/api/v1/transactions/deposit", json={"amount": amount}, headers=headers
-    )
+async def _fund(client: AsyncClient, amount: float = 1_000.0) -> dict:
+    response = await client.post("/api/v1/transactions/deposit", json={"amount": amount})
     assert response.status_code == 201, response.text
     return response.json()["data"]
 
 
-async def test_transfer_moves_money_and_writes_both_legs(client: AsyncClient):
-    sender, receiver = await _two_accounts(client)
-    await _fund(client, sender["headers"], 1_000.0)
+async def test_transfer_moves_money_and_writes_both_legs(client_factory):
+    sender, receiver = await _two_accounts(client_factory)
+    await _fund(sender, 1_000.0)
 
-    response = await client.post(
+    response = await sender.post(
         "/api/v1/transactions",
         json={"type": "transfer", "amount": 250.0, "receiverUsername": "alice"},
-        headers=sender["headers"],
     )
     assert response.status_code == 201, response.text
     outgoing = response.json()["data"]
@@ -47,8 +49,8 @@ async def test_transfer_moves_money_and_writes_both_legs(client: AsyncClient):
     assert outgoing["receiverUsername"] == "alice"
 
     # The receiver has a matching IN leg.
-    received = await client.get(
-        "/api/v1/transactions", params={"page": 0, "size": 5}, headers=receiver["headers"]
+    received = await receiver.get(
+        "/api/v1/transactions", params={"page": 0, "size": 5}
     )
     leg = received.json()["data"]["items"][0]
     assert leg["direction"] == "IN"
@@ -57,82 +59,71 @@ async def test_transfer_moves_money_and_writes_both_legs(client: AsyncClient):
     assert leg["receiverUsername"] == "alice"
 
     # Balances reflect the movement.
-    sender_me = (await client.get("/api/v1/users/me", headers=sender["headers"])).json()["data"]
-    receiver_me = (
-        await client.get("/api/v1/users/me", headers=receiver["headers"])
-    ).json()["data"]
+    sender_me = (await sender.get("/api/v1/users/me")).json()["data"]
+    receiver_me = (await receiver.get("/api/v1/users/me")).json()["data"]
     assert sender_me["accountBalance"] == 750.0
     assert receiver_me["accountBalance"] == 250.0
 
 
-async def test_transfer_is_rejected_when_funds_are_insufficient(client: AsyncClient):
-    sender, _ = await _two_accounts(client)
-    await _fund(client, sender["headers"], 100.0)
+async def test_transfer_is_rejected_when_funds_are_insufficient(client_factory):
+    sender, _ = await _two_accounts(client_factory)
+    await _fund(sender, 100.0)
 
-    response = await client.post(
+    response = await sender.post(
         "/api/v1/transactions",
         json={"type": "transfer", "amount": 500.0, "receiverUsername": "alice"},
-        headers=sender["headers"],
     )
 
     assert response.status_code == 400
     assert response.json()["message"] == "Insufficient funds"
     assert response.json()["data"]["code"] == "insufficient_funds"
 
-    # Balance untouched.
-    me = (await client.get("/api/v1/users/me", headers=sender["headers"])).json()["data"]
+    me = (await sender.get("/api/v1/users/me")).json()["data"]
     assert me["accountBalance"] == 100.0
 
 
-async def test_transfer_to_an_unknown_user_is_a_404(client: AsyncClient):
-    sender, _ = await _two_accounts(client)
-    await _fund(client, sender["headers"], 500.0)
+async def test_transfer_to_an_unknown_user_is_a_404(client_factory):
+    sender, _ = await _two_accounts(client_factory)
+    await _fund(sender, 500.0)
 
-    response = await client.post(
+    response = await sender.post(
         "/api/v1/transactions",
         json={"type": "transfer", "amount": 10.0, "receiverUsername": "nobody"},
-        headers=sender["headers"],
     )
-
     assert response.status_code == 404
 
 
-async def test_transfer_to_self_is_rejected(client: AsyncClient):
-    sender, _ = await _two_accounts(client)
-    await _fund(client, sender["headers"], 500.0)
+async def test_transfer_to_self_is_rejected(client_factory):
+    sender, _ = await _two_accounts(client_factory)
+    await _fund(sender, 500.0)
 
-    response = await client.post(
+    response = await sender.post(
         "/api/v1/transactions",
         json={"type": "transfer", "amount": 10.0, "receiverUsername": "tester"},
-        headers=sender["headers"],
     )
-
     assert response.status_code == 400
     assert "yourself" in response.json()["message"]
 
 
-async def test_transfer_without_a_receiver_is_rejected(client: AsyncClient):
-    sender, _ = await _two_accounts(client)
-    await _fund(client, sender["headers"], 500.0)
+async def test_transfer_without_a_receiver_is_rejected(client_factory):
+    sender, _ = await _two_accounts(client_factory)
+    await _fund(sender, 500.0)
 
-    response = await client.post(
+    response = await sender.post(
         "/api/v1/transactions",
         json={"type": "transfer", "amount": 10.0},
-        headers=sender["headers"],
     )
-
     assert response.status_code == 400
     assert "receiverUsername" in response.json()["message"]
 
 
-async def test_shopping_needs_no_counterparty_and_is_an_outflow(client: AsyncClient):
-    sender, _ = await _two_accounts(client)
-    await _fund(client, sender["headers"], 500.0)
+async def test_shopping_needs_no_counterparty_and_is_an_outflow(client_factory):
+    sender, _ = await _two_accounts(client_factory)
+    await _fund(sender, 500.0)
 
-    response = await client.post(
+    response = await sender.post(
         "/api/v1/transactions",
         json={"type": "shopping", "amount": 40.0, "description": "Groceries"},
-        headers=sender["headers"],
     )
 
     assert response.status_code == 201, response.text
@@ -142,29 +133,20 @@ async def test_shopping_needs_no_counterparty_and_is_an_outflow(client: AsyncCli
     assert body["description"] == "Groceries"
 
 
-async def test_incomes_and_expenses_split_by_direction(client: AsyncClient):
-    sender, _ = await _two_accounts(client)
-    await _fund(client, sender["headers"], 1_000.0)
-    await client.post(
-        "/api/v1/transactions",
-        json={"type": "shopping", "amount": 100.0},
-        headers=sender["headers"],
+async def test_incomes_and_expenses_split_by_direction(client_factory):
+    sender, _ = await _two_accounts(client_factory)
+    await _fund(sender, 1_000.0)
+    await sender.post(
+        "/api/v1/transactions", json={"type": "shopping", "amount": 100.0}
     )
-    await client.post(
+    await sender.post(
         "/api/v1/transactions",
         json={"type": "transfer", "amount": 200.0, "receiverUsername": "alice"},
-        headers=sender["headers"],
     )
 
-    everything = (
-        await client.get("/api/v1/transactions", headers=sender["headers"])
-    ).json()["data"]
-    incomes = (
-        await client.get("/api/v1/transactions/incomes", headers=sender["headers"])
-    ).json()["data"]
-    expenses = (
-        await client.get("/api/v1/transactions/expenses", headers=sender["headers"])
-    ).json()["data"]
+    everything = (await sender.get("/api/v1/transactions")).json()["data"]
+    incomes = (await sender.get("/api/v1/transactions/incomes")).json()["data"]
+    expenses = (await sender.get("/api/v1/transactions/expenses")).json()["data"]
 
     assert everything["totalItems"] == 3
     assert incomes["totalItems"] == 1
@@ -173,31 +155,21 @@ async def test_incomes_and_expenses_split_by_direction(client: AsyncClient):
     assert all(e["direction"] == "OUT" for e in expenses["items"])
 
 
-async def test_pagination_is_zero_indexed_and_consistent(client: AsyncClient):
-    sender, _ = await _two_accounts(client)
-    await _fund(client, sender["headers"], 500.0)
+async def test_pagination_is_zero_indexed_and_consistent(client_factory):
+    sender, _ = await _two_accounts(client_factory)
+    await _fund(sender, 500.0)
     for index in range(7):
-        await client.post(
-            "/api/v1/transactions",
-            json={"type": "shopping", "amount": float(index + 1)},
-            headers=sender["headers"],
+        await sender.post(
+            "/api/v1/transactions", json={"type": "shopping", "amount": float(index + 1)}
         )
 
-    first = (
-        await client.get(
-            "/api/v1/transactions", params={"page": 0, "size": 3}, headers=sender["headers"]
+    async def page(n: int) -> dict:
+        response = await sender.get(
+            "/api/v1/transactions", params={"page": n, "size": 3}
         )
-    ).json()["data"]
-    second = (
-        await client.get(
-            "/api/v1/transactions", params={"page": 1, "size": 3}, headers=sender["headers"]
-        )
-    ).json()["data"]
-    third = (
-        await client.get(
-            "/api/v1/transactions", params={"page": 2, "size": 3}, headers=sender["headers"]
-        )
-    ).json()["data"]
+        return response.json()["data"]
+
+    first, second, third = await page(0), await page(1), await page(2)
 
     assert first["totalItems"] == 8
     assert first["totalPages"] == 3
@@ -206,36 +178,29 @@ async def test_pagination_is_zero_indexed_and_consistent(client: AsyncClient):
     assert second["hasNext"] is True and second["hasPrevious"] is True
     assert third["hasNext"] is False and len(third["items"]) == 2
 
-    # Pages must not overlap.
-    seen = [i["id"] for page in (first, second, third) for i in page["items"]]
+    seen = [i["id"] for p in (first, second, third) for i in p["items"]]
     assert len(set(seen)) == 8
 
 
-async def test_timestamps_serialise_as_utc_iso(client: AsyncClient):
-    sender, _ = await _two_accounts(client)
-    await _fund(client, sender["headers"], 100.0)
+async def test_timestamps_serialise_as_utc_iso(client_factory):
+    sender, _ = await _two_accounts(client_factory)
+    await _fund(sender, 100.0)
 
-    items = (
-        await client.get("/api/v1/transactions", headers=sender["headers"])
-    ).json()["data"]["items"]
-
+    items = (await sender.get("/api/v1/transactions")).json()["data"]["items"]
     assert items[0]["occurredAt"].endswith("Z")
 
 
-async def test_balance_history_reconstructs_history(client: AsyncClient):
-    sender, _ = await _two_accounts(client)
-    await _fund(client, sender["headers"], 1_000.0)
-    await client.post(
-        "/api/v1/transactions",
-        json={"type": "shopping", "amount": 400.0},
-        headers=sender["headers"],
+async def test_balance_history_reconstructs_history(client_factory):
+    sender, _ = await _two_accounts(client_factory)
+    await _fund(sender, 1_000.0)
+    await sender.post(
+        "/api/v1/transactions", json={"type": "shopping", "amount": 400.0}
     )
 
-    points = (
-        await client.get(
-            "/api/v1/transactions/balance-history", params={"months": 6}, headers=sender["headers"]
-        )
-    ).json()["data"]
+    response = await sender.get(
+        "/api/v1/transactions/balance-history", params={"months": 6}
+    )
+    points = response.json()["data"]
 
     assert len(points) == 6
     assert points[-1]["value"] == 600.0  # current balance is the final point
@@ -244,53 +209,46 @@ async def test_balance_history_reconstructs_history(client: AsyncClient):
     assert all(p["value"] == 0.0 for p in points[:-1])
 
 
-async def test_transfer_recipients_lists_other_users(client: AsyncClient):
-    sender, receiver = await _two_accounts(client)
-    await register(client, name="Bob", email="bob@bankdash.dev", username="bob")
+async def test_transfer_recipients_lists_other_users(client_factory):
+    sender, receiver = await _two_accounts(client_factory)
+    await register(receiver, name="Bob", email="bob@bankdash.dev", username="bob")
 
-    recipients = (
-        await client.get(
-            "/api/v1/transactions/transfer-recipients", headers=sender["headers"]
-        )
-    ).json()["data"]
+    response = await sender.get("/api/v1/transactions/transfer-recipients")
+    recipients = response.json()["data"]
 
     names = {r["username"] for r in recipients}
     assert "tester" not in names  # never suggest yourself
     assert {"alice", "bob"} <= names
 
 
-async def test_get_transaction_by_id_and_isolation(client: AsyncClient):
-    sender, receiver = await _two_accounts(client)
-    await _fund(client, sender["headers"], 1_000.0)
-    created = await client.post(
+async def test_get_transaction_by_id_and_isolation(client_factory):
+    sender, receiver = await _two_accounts(client_factory)
+    await _fund(sender, 1_000.0)
+    created = await sender.post(
         "/api/v1/transactions",
         json={"type": "transfer", "amount": 25.0, "receiverUsername": "alice"},
-        headers=sender["headers"],
     )
     txn_id = created.json()["data"]["id"]
 
-    own = await client.get(f"/api/v1/transactions/{txn_id}", headers=sender["headers"])
+    own = await sender.get(f"/api/v1/transactions/{txn_id}")
     assert own.status_code == 200
 
     # Alice holds her own leg under a different id, so the sender's row must not
     # be readable by anyone else.
     assert (
-        await client.get(f"/api/v1/transactions/{txn_id}", headers=receiver["headers"])
+        await receiver.get(f"/api/v1/transactions/{txn_id}")
     ).status_code == 404
 
     assert (
-        await client.get("/api/v1/transactions/does-not-exist", headers=sender["headers"])
+        await sender.get("/api/v1/transactions/does-not-exist")
     ).status_code == 404
 
 
-async def test_amount_must_be_positive(client: AsyncClient):
-    sender, _ = await _two_accounts(client)
+async def test_amount_must_be_positive(client_factory):
+    sender, _ = await _two_accounts(client_factory)
 
-    response = await client.post(
-        "/api/v1/transactions",
-        json={"type": "shopping", "amount": -5},
-        headers=sender["headers"],
+    response = await sender.post(
+        "/api/v1/transactions", json={"type": "shopping", "amount": -5}
     )
-
     assert response.status_code == 422
     assert response.json()["success"] is False

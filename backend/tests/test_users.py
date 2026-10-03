@@ -7,9 +7,9 @@ from tests.conftest import auth_headers, login, register
 
 async def test_me_returns_the_full_profile(client: AsyncClient):
     await register(client)
-    headers = auth_headers(await login(client))
+    await login(client)
 
-    body = (await client.get("/api/v1/users/me", headers=headers)).json()
+    body = (await client.get("/api/v1/users/me")).json()
 
     assert body["success"] is True
     assert body["message"] is None
@@ -20,16 +20,15 @@ async def test_me_returns_the_full_profile(client: AsyncClient):
 
 async def test_update_profile(client: AsyncClient):
     await register(client)
-    headers = auth_headers(await login(client))
+    await login(client)
 
     response = await client.put(
         "/api/v1/users/me",
         json={"name": "Renamed User", "city": "Boston"},
-        headers=headers,
     )
     assert response.status_code == 200
 
-    body = (await client.get("/api/v1/users/me", headers=headers)).json()["data"]
+    body = (await client.get("/api/v1/users/me")).json()["data"]
     assert body["name"] == "Renamed User"
     assert body["city"] == "Boston"
     # Untouched fields survive a partial update.
@@ -39,10 +38,10 @@ async def test_update_profile(client: AsyncClient):
 async def test_update_profile_rejects_an_email_already_in_use(client: AsyncClient):
     await register(client)
     await register(client, username="alice", email="alice@bankdash.dev")
-    headers = auth_headers(await login(client))
+    await login(client)
 
     response = await client.put(
-        "/api/v1/users/me", json={"email": "alice@bankdash.dev"}, headers=headers
+        "/api/v1/users/me", json={"email": "alice@bankdash.dev"}
     )
 
     assert response.status_code == 409
@@ -50,7 +49,7 @@ async def test_update_profile_rejects_an_email_already_in_use(client: AsyncClien
 
 async def test_update_preferences_round_trips(client: AsyncClient):
     await register(client)
-    headers = auth_headers(await login(client))
+    await login(client)
 
     response = await client.put(
         "/api/v1/users/me/preferences",
@@ -60,12 +59,11 @@ async def test_update_preferences_round_trips(client: AsyncClient):
             "sentOrReceiveDigitalCurrency": True,
             "twoFactorAuthentication": True,
         },
-        headers=headers,
     )
     assert response.status_code == 200
     assert response.json()["data"]["currency"] == "EUR"
 
-    me = (await client.get("/api/v1/users/me", headers=headers)).json()["data"]
+    me = (await client.get("/api/v1/users/me")).json()["data"]
     assert me["preferences"]["currency"] == "EUR"
     assert me["preferences"]["timeZone"] == "GMT+1"
     assert me["preferences"]["twoFactorAuthentication"] is True
@@ -75,16 +73,16 @@ async def test_update_preferences_round_trips(client: AsyncClient):
 
 async def test_summary_reflects_movements(client: AsyncClient):
     await register(client)
-    headers = auth_headers(await login(client))
+    await login(client)
 
     await client.post(
-        "/api/v1/transactions/deposit", json={"amount": 900.0}, headers=headers
+        "/api/v1/transactions/deposit", json={"amount": 900.0}
     )
     await client.post(
-        "/api/v1/transactions", json={"type": "shopping", "amount": 250.0}, headers=headers
+        "/api/v1/transactions", json={"type": "shopping", "amount": 250.0}
     )
 
-    summary = (await client.get("/api/v1/users/me/summary", headers=headers)).json()["data"]
+    summary = (await client.get("/api/v1/users/me/summary")).json()["data"]
 
     assert summary["accountBalance"] == 650.0
     assert summary["totalIncome"] == 900.0
@@ -94,12 +92,11 @@ async def test_summary_reflects_movements(client: AsyncClient):
 
 async def test_investment_summary_shape_and_stability(client: AsyncClient):
     await register(client)
-    headers = auth_headers(await login(client))
+    await login(client)
 
     response = await client.get(
         "/api/v1/users/me/investment-summary",
         params={"years": 4, "months": 6},
-        headers=headers,
     )
     assert response.status_code == 200
     body = response.json()["data"]
@@ -116,7 +113,6 @@ async def test_investment_summary_shape_and_stability(client: AsyncClient):
         await client.get(
             "/api/v1/users/me/investment-summary",
             params={"years": 4, "months": 6},
-            headers=headers,
         )
     ).json()["data"]
     assert again == body
@@ -138,17 +134,17 @@ async def test_public_profile_hides_private_fields(client: AsyncClient):
 
 async def test_unknown_public_profile_is_a_404(client: AsyncClient):
     await register(client)
-    headers = auth_headers(await login(client))
+    await login(client)
 
-    assert (await client.get("/api/v1/users/ghost", headers=headers)).status_code == 404
+    assert (await client.get("/api/v1/users/ghost")).status_code == 404
 
 
 async def test_validation_errors_use_the_envelope(client: AsyncClient):
     await register(client)
-    headers = auth_headers(await login(client))
+    await login(client)
 
     response = await client.put(
-        "/api/v1/users/me", json={"email": "not-an-email"}, headers=headers
+        "/api/v1/users/me", json={"email": "not-an-email"}
     )
 
     assert response.status_code == 422

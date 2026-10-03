@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -28,7 +29,59 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24
     refresh_token_expire_days: int = 30
 
+    # --- auth cookies -------------------------------------------------------
+    # Tokens are delivered as httpOnly cookies so page scripts cannot read them,
+    # which closes the XSS token-exfiltration hole. The API still accepts an
+    # Authorization: Bearer header, so CLI and test clients keep working.
+    access_cookie_name: str = "accessToken"
+    refresh_cookie_name: str = "refreshToken"
+
+    # Must be True wherever the app is served over HTTPS. Browsers drop
+    # Secure cookies sent over plain http, so it stays False for localhost dev.
+    cookie_secure: bool = False
+
+    # "lax" works while the frontend and API are same-site (localhost:3000 ->
+    # localhost:8000). A separately-hosted production frontend is cross-site and
+    # needs "none", which browsers only accept together with Secure.
+    cookie_samesite: str = "lax"
+    cookie_domain: str | None = None
+
+    @property
+    def auth_cookie_path(self) -> str:
+        """Path the refresh cookie is scoped to.
+
+        The refresh token is only ever presented to /auth/refresh and
+        /auth/logout. Scoping it there rather than to "/" keeps it off every
+        other API call, so any endpoint that logs or reflects request headers
+        cannot leak a 30-day credential.
+        """
+        return f"{self.api_v1_prefix}/auth"
+
+    @property
+    def access_cookie_max_age(self) -> int:
+        """How long the access cookie survives in the browser, in seconds.
+
+        Deliberately decoupled from the JWT TTL, and this is load-bearing rather
+        than cosmetic:
+
+        * The cookie's only jobs are to prove a session to the frontend's route
+          gate and to carry the token to the API. The authoritative expiry is
+          the JWT's `exp`, which the API checks on every request.
+        * The refresh cookie is scoped to the API's auth routes, so the browser
+          never presents it to the frontend. That makes the access cookie the
+          *only* thing the gate can see.
+        * So if the cookie died at the same moment the JWT did, a session that
+          still had 29 days of refresh token left would be bounced to sign-in
+          without the client ever getting the chance to renew.
+
+        Keeping the cookie alive lets the client's normal 401-refresh-replay path
+        do its job: past the JWT's expiry the first call 401s, the client
+        refreshes, and the user never sees an interruption.
+        """
+        return self.refresh_token_expire_days * 86400
+
     # --- cors ---------------------------------------------------------------
+    # Credentials must be allowed for cookie auth to work cross-origin.
     cors_origins: list[str] = ["http://localhost:3000"]
 
     # --- pagination defaults ------------------------------------------------
@@ -38,6 +91,34 @@ class Settings(BaseSettings):
     @property
     def is_sqlite(self) -> bool:
         return self.database_url.startswith("sqlite")
+
+    @property
+    def cookies_are_cross_site(self) -> bool:
+        """True when the browser will attach these cookies to other origins.
+
+        `SameSite=None` is the only way to send a cookie cross-site, and it is
+        exactly the setting that disables the browser's built-in CSRF
+        protection. Callers rely on this to decide whether extra CSRF defence
+        is required.
+        """
+        return self.cookie_samesite.strip().lower() == "none"
+
+    @model_validator(mode="after")
+    def _reject_cookie_settings_browsers_would_drop(self) -> "Settings":
+        # Fail at startup rather than issuing cookies a browser silently ignores:
+        # a cross-site cookie without Secure is rejected outright, which looks
+        # exactly like a login that works on localhost and fails in production.
+        if self.cookies_are_cross_site and not self.cookie_secure:
+            raise ValueError(
+                "COOKIE_SAMESITE=none requires COOKIE_SECURE=true - browsers "
+                "reject a cross-site cookie that is not Secure."
+            )
+        if self.cookie_samesite.strip().lower() not in {"lax", "strict", "none"}:
+            raise ValueError(
+                f"COOKIE_SAMESITE must be lax, strict or none, got "
+                f"{self.cookie_samesite!r}."
+            )
+        return self
 
 
 @lru_cache

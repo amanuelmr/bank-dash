@@ -51,6 +51,11 @@ frontend/.env
 frontend/.env.local
 frontend/.env.*.local
 
+# Next.js auto-generates these agent instruction files (they exist only because
+# Next 16 is installed here); never commit them.
+AGENTS.md
+CLAUDE.md
+
 # ---------------------------------------------------------------------------
 # Next.js 16 auto-generated agent instructions (regenerated on dev/build)
 # ---------------------------------------------------------------------------

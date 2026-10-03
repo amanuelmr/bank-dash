@@ -14,7 +14,6 @@ import QuickTransfer from "@/components/QuickTransfer";
 import LineChart from "@/components/LineChart";
 import Link from "next/link";
 import { getAllCards } from "@/services/cardfetch";
-import { getAccessToken } from "@/lib/apiClient";
 import type { Card } from "@/types/api";
 import Image from "next/image";
 import MyCardsLoad from "@/components/loadingComponents/MyCardsLoad";
@@ -22,7 +21,6 @@ import { TbFileSad } from "react-icons/tb";
 
 const Page = () => {
   const [cards, setCards] = useState<Card[]>([]);
-  const [hasToken, setHasToken] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -30,12 +28,6 @@ const Page = () => {
     let cancelled = false;
 
     const fetchCards = async () => {
-      if (!getAccessToken()) {
-        setHasToken(false);
-        setLoading(false);
-        return;
-      }
-      setHasToken(true);
       try {
         const { items } = await getAllCards(0, 20);
         if (!cancelled) {
@@ -83,7 +75,7 @@ const Page = () => {
                     />
                   </div>
                 ))
-              ) : hasToken ? (
+              ) : (
                 <div className="w-screen bg-white py-16 rounded-xl flex flex-col justify-center dark:bg-dark dark:border-[1px] dark:border-gray-700">
                   <TbFileSad
                     className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
@@ -93,8 +85,6 @@ const Page = () => {
                     {error ? error : "There are no cards for now!"}
                   </span>
                 </div>
-              ) : (
-                <MyCardsLoad count={2} />
               )}
             </div>
           </div>

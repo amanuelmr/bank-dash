@@ -1,8 +1,21 @@
-"""Auth: registration, login, token rotation, and password changes."""
+"""Auth: registration, cookie issuance, rotation, and password changes."""
 
 from httpx import AsyncClient
 
-from tests.conftest import auth_headers, login, register
+from app.core.config import settings
+from tests.conftest import access_token_from_cookies, auth_headers, login, register
+
+
+def _set_cookies(response) -> dict[str, str]:
+    """Set-Cookie headers keyed by cookie name."""
+    return {
+        cookie.split("=", 1)[0].strip(): cookie
+        for cookie in response.headers.get_list("set-cookie")
+    }
+
+
+def _cookie_max_age(response, name: str) -> int:
+    return int(_set_cookies(response)[name].split("Max-Age=", 1)[1].split(";", 1)[0])
 
 
 async def test_register_returns_the_created_user(client: AsyncClient):
@@ -40,21 +53,38 @@ async def test_register_rejects_a_duplicate_username(client: AsyncClient):
     assert "username" in response.json()["message"]
 
 
-async def test_login_returns_camel_case_token_pair(client: AsyncClient):
+async def test_login_sets_httponly_cookies(client: AsyncClient):
     await register(client)
-    tokens = await login(client)
+    response = await client.post(
+        "/api/v1/auth/login", json={"username": "tester", "password": "12345678"}
+    )
 
-    assert tokens["tokenType"] == "Bearer"
-    assert tokens["accessToken"]
-    assert tokens["refreshToken"]
-    assert tokens["expiresIn"] > 0
+    assert response.status_code == 200
+    cookies = response.headers.get_list("set-cookie")
+    joined = "; ".join(cookies)
+    assert "accessToken=" in joined
+    assert "refreshToken=" in joined
+    # The whole point of this change: page scripts must not be able to read them.
+    assert "HttpOnly" in joined
+    assert joined.lower().count("httponly") == 2
+
+
+async def test_login_does_not_return_tokens_in_the_body(client: AsyncClient):
+    await register(client)
+    response = await client.post(
+        "/api/v1/auth/login", json={"username": "tester", "password": "12345678"}
+    )
+
+    text = response.text
+    assert "accessToken" not in text
+    assert "refreshToken" not in text
+    assert response.json()["data"]["username"] == "tester"
 
 
 async def test_login_is_case_insensitive_on_username(client: AsyncClient):
     await register(client)
-    tokens = await login(client, username="TeStEr")
-
-    assert tokens["accessToken"]
+    body = await login(client, username="TeStEr")
+    assert body["username"] == "tester"
 
 
 async def test_login_rejects_a_bad_password(client: AsyncClient):
@@ -73,93 +103,191 @@ async def test_login_rejects_a_bad_password(client: AsyncClient):
 
 async def test_protected_route_requires_a_token(client: AsyncClient):
     response = await client.get("/api/v1/users/me")
-
     assert response.status_code == 401
-    assert response.json()["data"]["code"] == "unauthorized"
 
 
 async def test_protected_route_rejects_a_garbage_token(client: AsyncClient):
     response = await client.get(
         "/api/v1/users/me", headers={"Authorization": "Bearer not-a-jwt"}
     )
-
     assert response.status_code == 401
     assert response.json()["data"]["code"] == "invalid_token"
 
 
-async def test_refresh_rotates_and_invalidates_the_old_token(client: AsyncClient):
+async def test_cookie_alone_authenticates_a_request(client: AsyncClient):
+    """The browser sends no Authorization header - the cookie must be enough."""
     await register(client)
-    tokens = await login(client)
+    await login(client)
 
-    refreshed = await client.post(
-        "/api/v1/auth/refresh", json={"refreshToken": tokens["refreshToken"]}
-    )
-    assert refreshed.status_code == 200
-    new_tokens = refreshed.json()["data"]
-    assert new_tokens["refreshToken"] != tokens["refreshToken"]
+    client.cookies.clear()  # start from a clean jar, then restore from login
+    await login(client)
 
-    # The new access token works.
-    ok = await client.get("/api/v1/users/me", headers=auth_headers(new_tokens))
-    assert ok.status_code == 200
+    response = await client.get("/api/v1/users/me")
+    assert response.status_code == 200
+    assert response.json()["data"]["username"] == "tester"
 
-    # Replaying the old refresh token is rejected.
-    replay = await client.post(
-        "/api/v1/auth/refresh", json={"refreshToken": tokens["refreshToken"]}
-    )
+
+async def test_bearer_header_still_works_for_non_browser_clients(client: AsyncClient):
+    """Regression guard: CLI clients and the smoke script send a header."""
+    await register(client)
+    await login(client)
+    token = access_token_from_cookies(client)
+
+    client.cookies.clear()  # drop the cookies: the header must stand alone
+    response = await client.get("/api/v1/users/me", headers=auth_headers(token))
+    assert response.status_code == 200
+    assert response.json()["data"]["username"] == "tester"
+
+
+async def test_refresh_rotates_the_cookie_with_no_body(client: AsyncClient):
+    await register(client)
+    await login(client)
+    before = client.cookies.get("refreshToken")
+
+    response = await client.post("/api/v1/auth/refresh")
+    assert response.status_code == 200
+    assert client.cookies.get("refreshToken") != before
+
+
+async def test_replaying_an_old_refresh_token_is_rejected(client: AsyncClient):
+    await register(client)
+    await login(client)
+    stale = client.cookies.get("refreshToken")
+
+    assert (await client.post("/api/v1/auth/refresh")).status_code == 200
+
+    # Restore the consumed token and try to use it again.
+    client.cookies.set("refreshToken", stale)
+    replay = await client.post("/api/v1/auth/refresh")
     assert replay.status_code == 401
     assert "already been used" in replay.json()["message"]
 
 
+async def test_refresh_without_a_token_is_rejected(client: AsyncClient):
+    client.cookies.clear()
+    response = await client.post("/api/v1/auth/refresh")
+    assert response.status_code == 401
+
+
+async def test_failed_refresh_expires_both_cookies(client: AsyncClient):
+    """A rejected refresh must clear the cookies, not just report the failure.
+
+    JavaScript cannot delete an httpOnly cookie, so only the server can. Without
+    this the dead cookie stays attached for its full 30-day lifetime and every
+    API call first pays a refresh round-trip that is guaranteed to fail.
+    """
+    client.cookies.clear()
+    response = await client.post("/api/v1/auth/refresh")
+
+    assert response.status_code == 401
+    expiries = response.headers.get_list("set-cookie")
+    # Both cookies, not one. Routing both through a single header mapping
+    # collapses them under one `set-cookie` key and silently drops the second.
+    assert len(expiries) == 2
+    joined = "; ".join(expiries)
+    assert "accessToken=" in joined
+    assert "refreshToken=" in joined
+    assert joined.count("Max-Age=0") == 2
+
+
+async def test_replaying_a_consumed_refresh_cookie_expires_the_session(
+    client: AsyncClient,
+):
+    """The stale-cookie path is the realistic one: a stolen-then-used token, not
+    a missing cookie."""
+    await register(client)
+    await login(client)
+    stale = client.cookies.get("refreshToken")
+    assert (await client.post("/api/v1/auth/refresh")).status_code == 200
+
+    client.cookies.set("refreshToken", stale)
+    replay = await client.post("/api/v1/auth/refresh")
+
+    assert replay.status_code == 401
+    assert "Max-Age=0" in "; ".join(replay.headers.get_list("set-cookie"))
+
+
+async def test_cookies_are_scoped_so_the_refresh_token_stays_off_other_calls(
+    client: AsyncClient,
+):
+    """The refresh token is only ever presented to /auth/refresh and
+    /auth/logout. Scoped to "/" it would ride along with every API call, putting
+    a 30-day credential into the reach of anything that logs request headers."""
+    await register(client)
+    response = await client.post(
+        "/api/v1/auth/login", json={"username": "tester", "password": "12345678"}
+    )
+
+    by_name = _set_cookies(response)
+    assert "Path=/" in by_name["accessToken"]
+    assert "Path=/api/v1/auth" in by_name["refreshToken"]
+
+
+async def test_access_cookie_outlives_its_token(client: AsyncClient):
+    """Wires the config invariant to what the server actually sends.
+
+    A regression here is invisible in normal use: the session works right up
+    until the exact hour the cookie dies, then everyone is silently signed out
+    while still holding a valid refresh token.
+    """
+    await register(client)
+    response = await client.post(
+        "/api/v1/auth/login", json={"username": "tester", "password": "12345678"}
+    )
+
+    max_age = _cookie_max_age(response, "accessToken")
+    assert max_age > settings.access_token_expire_minutes * 60
+
+
 async def test_change_password_requires_the_current_one(client: AsyncClient):
     await register(client)
-    tokens = await login(client)
+    await login(client)
 
     rejected = await client.post(
         "/api/v1/auth/change-password",
         json={"currentPassword": "nope", "newPassword": "newpassword123"},
-        headers=auth_headers(tokens),
     )
     assert rejected.status_code == 401
 
     accepted = await client.post(
         "/api/v1/auth/change-password",
         json={"currentPassword": "12345678", "newPassword": "newpassword123"},
-        headers=auth_headers(tokens),
     )
     assert accepted.status_code == 200
 
-    assert (await login(client, password="newpassword123"))["accessToken"]
-    assert (await client.post(
-        "/api/v1/auth/login", json={"username": "tester", "password": "12345678"}
-    )).status_code == 401
+    client.cookies.clear()
+    assert (await login(client, password="newpassword123"))["username"] == "tester"
+    assert (
+        await client.post(
+            "/api/v1/auth/login", json={"username": "tester", "password": "12345678"}
+        )
+    ).status_code == 401
 
 
 async def test_change_password_revokes_outstanding_refresh_tokens(client: AsyncClient):
     await register(client)
-    tokens = await login(client)
+    await login(client)
+    stale = client.cookies.get("refreshToken")
 
     await client.post(
         "/api/v1/auth/change-password",
         json={"currentPassword": "12345678", "newPassword": "newpassword123"},
-        headers=auth_headers(tokens),
     )
 
-    response = await client.post(
-        "/api/v1/auth/refresh", json={"refreshToken": tokens["refreshToken"]}
-    )
-    assert response.status_code == 401
+    client.cookies.set("refreshToken", stale)
+    assert (await client.post("/api/v1/auth/refresh")).status_code == 401
 
 
-async def test_logout_revokes_the_refresh_token(client: AsyncClient):
+async def test_logout_revokes_the_token_and_clears_cookies(client: AsyncClient):
     await register(client)
-    tokens = await login(client)
+    await login(client)
+    stale = client.cookies.get("refreshToken")
 
-    assert (await client.post(
-        "/api/v1/auth/logout",
-        json={"refreshToken": tokens["refreshToken"]},
-        headers=auth_headers(tokens),
-    )).status_code == 200
+    response = await client.post("/api/v1/auth/logout")
+    assert response.status_code == 200
 
-    assert (await client.post(
-        "/api/v1/auth/refresh", json={"refreshToken": tokens["refreshToken"]}
-    )).status_code == 401
+    cleared = "; ".join(response.headers.get_list("set-cookie"))
+    assert "accessToken=" in cleared and "Max-Age=0" in cleared
+
+    client.cookies.set("refreshToken", stale)
+    assert (await client.post("/api/v1/auth/refresh")).status_code == 401

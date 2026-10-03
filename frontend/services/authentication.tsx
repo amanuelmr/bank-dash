@@ -1,41 +1,34 @@
-import { api, clearTokens, getRefreshToken, setTokens } from "@/lib/apiClient";
+import { api } from "@/lib/apiClient";
 import type {
   ChangePasswordRequest,
   RegisterRequest,
-  TokenPair,
   User,
 } from "@/types/api";
 
-/** Create an account. The caller is redirected to sign-in afterwards. */
+/**
+ * Create an account. The caller is redirected to sign-in afterwards.
+ */
 export const registerUser = (payload: RegisterRequest): Promise<User> =>
   api.post<User>("/auth/register", payload);
 
 /**
- * Exchange credentials for tokens and store them for later requests.
- *
- * Storing here (rather than in the form) keeps every caller of `loginUser`
- * authenticated automatically.
+ * Sign in. The API sets httpOnly auth cookies, so there is no token for this
+ * module to store - the browser attaches the session to later requests itself.
  */
-export const loginUser = async (username: string, password: string): Promise<TokenPair> => {
-  const tokens = await api.post<TokenPair>("/auth/login", { username, password });
-  setTokens(tokens);
-  return tokens;
-};
+export const loginUser = async (
+  username: string,
+  password: string,
+): Promise<User> => api.post<User>("/auth/login", { username, password });
 
-export const refreshToken = (): Promise<TokenPair> => {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return Promise.reject(new Error("Not signed in"));
-  return api.post<TokenPair>("/auth/refresh", { refreshToken });
-};
+export const refreshSession = (): Promise<User> =>
+  api.post<User>("/auth/refresh");
+
+/**
+ * Revoke the refresh token server-side and expire the cookies. The endpoint is
+ * the authoritative sign-out; no local state needs clearing because the tokens
+ * were never readable by JavaScript.
+ */
+export const logout = (): Promise<null> => api.post<null>("/auth/logout");
 
 export const changePassword = (payload: ChangePasswordRequest): Promise<null> =>
   api.post<null>("/auth/change-password", payload);
-
-/** Revoke the stored refresh token server-side, then drop it locally. */
-export const logout = async (): Promise<void> => {
-  try {
-    await api.post<null>("/auth/logout", { refreshToken: getRefreshToken() });
-  } finally {
-    clearTokens();
-  }
-};

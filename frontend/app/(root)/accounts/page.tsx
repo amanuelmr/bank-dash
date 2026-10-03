@@ -7,7 +7,6 @@ import AccountBarChart from "@/components/AccountBarChart";
 import Link from "next/link";
 import ResponsiveCreditCard from "@/components/CreditCard";
 import { getAllCards } from "@/services/cardfetch";
-import { getAccessToken } from "@/lib/apiClient";
 import type { Card } from "@/types/api";
 import { colors } from "@/constants";
 import { TbFileSad } from "react-icons/tb";
@@ -16,7 +15,6 @@ import CurrencyConverter from "@/components/CurrencyConverter";
 
 const Accounts = () => {
   const [cards, setCards] = useState<Card[]>([]);
-  const [hasToken, setHasToken] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -24,12 +22,6 @@ const Accounts = () => {
     let cancelled = false;
 
     const fetchCards = async () => {
-      if (!getAccessToken()) {
-        setHasToken(false);
-        setLoading(false);
-        return;
-      }
-      setHasToken(true);
       try {
         const { items } = await getAllCards(0, 20);
         if (!cancelled) {
@@ -102,7 +94,7 @@ const Accounts = () => {
                     />
                   </div>
                 ))
-              ) : hasToken ? (
+              ) : (
                 <div className="w-screen bg-white py-16 rounded-xl flex flex-col justify-center dark:bg-dark dark:border-[1px] dark:border-gray-700">
                   <TbFileSad
                     className={`text-gray-300 dark:text-[#993d4b] w-[80px] h-[80px] pb-2 block mx-auto font-thin`}
@@ -113,8 +105,6 @@ const Accounts = () => {
                     {error ? error : "There are no cards for now!"}
                   </span>
                 </div>
-              ) : (
-                <MyCardsLoad count={1} />
               )}
             </div>
           </div>
