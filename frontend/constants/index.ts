@@ -57,19 +57,6 @@ export const mockNotifications = [
 
 
 
-// src/constants/index.ts
-
-export const ITEMS_PER_PAGE = 5;
-
-export const TABLE_HEADERS = [
-  'Description',
-  'Transaction ID',
-  'Type',
-  'Card',
-  'Date',
-  'Amount',
-  'Receipt',
-];
 
 
 // src/constants/index.ts

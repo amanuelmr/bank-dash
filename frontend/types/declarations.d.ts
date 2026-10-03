@@ -1,9 +1,4 @@
-declare module "*.svg" {
-  import React from "react";
-  const ReactComponent: React.FC<React.SVGProps<SVGSVGElement>>;
-  export default ReactComponent;
-}
-
+// Static image imports (the app mostly references /public paths as plain URLs).
 declare module "*.png" {
   import type { StaticImageData } from "next/image";
   const value: StaticImageData;
