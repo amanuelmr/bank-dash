@@ -124,6 +124,32 @@ automatically; the client only adds `credentials: "include"`.
 The refresh cookie is scoped to `/api/v1/auth`, the access cookie deliberately
 outlives the JWT it carries, and a rejected refresh expires both cookies — so an
 expired access token is renewed silently instead of ending a session that still
-has weeks of refresh token left. Non-browser clients can
-instead send `Authorization: Bearer <accessToken>`, which the API also
-accepts.
+has weeks of refresh token left. Non-browser clients can instead send
+`Authorization: Bearer <accessToken>`, which the API also accepts.
+
+---
+
+## Deploying the frontend to Vercel
+
+Vercel needs **one project setting**, and this repository cannot substitute for
+it:
+
+> **Settings → General → Root Directory → `frontend`**
+
+The deployable app is `frontend/`, so its `package.json` must be the one at the
+Root Directory. Without this Vercel cannot find `next` and the build fails with
+*"No Next.js version detected."*
+
+No `vercel.json` is used on purpose. With Root Directory set to `frontend`,
+Vercel auto-detects the framework and derives the install, build, and output
+directories correctly. Adding one with `frontend/`-prefixed paths would break
+exactly that, since those paths would resolve relative to `frontend/`.
+
+The Node version does **not** need a dashboard change: `frontend/package.json`
+declares `engines#node: 24.x`, and Vercel reports that it overrides the
+project-level setting. The root `package.json` mirrors this and exists purely as
+a convenience wrapper for running `npm run build` / `lint` / `typecheck` from
+the repo root locally.
+
+Set `NEXT_PUBLIC_API_BASE_URL` in the Vercel project's environment variables to
+the deployed backend URL.

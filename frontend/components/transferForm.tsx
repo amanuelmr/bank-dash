@@ -8,7 +8,7 @@ import { createTransaction } from '@/services/transactionfetch';
 const TransferPage: React.FC = () => {
   const [visible, setVisible] = useState(false); 
   const { register, reset, handleSubmit, formState: { errors  } } = useForm();
-  let account = 5000;
+  const account = 5000;
 
   const onSubmit = async (data: any) => {
     console.log(data)
