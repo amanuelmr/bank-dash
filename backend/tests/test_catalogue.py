@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from app.models.bank_service import BankService, BankServiceStatus
 from app.models.company import Company
-from tests.conftest import auth_headers, login, register
+from tests.conftest import login, register
 
 SERVICES = [
     ("High-Yield Savings", "4.2% APY, no monthly fee.", "Savings", 120),
@@ -21,9 +21,10 @@ COMPANIES = [
 ]
 
 
-async def _catalogue(client: AsyncClient, session_factory) -> dict:
+async def _catalogue(client: AsyncClient, session_factory) -> None:
+    """Sign in and seed the service/company catalogue."""
     await register(client)
-    headers = auth_headers(await login(client))
+    await login(client)
     async with session_factory() as db:
         db.add_all(
             BankService(
@@ -37,13 +38,13 @@ async def _catalogue(client: AsyncClient, session_factory) -> dict:
             for n, s, sec, p, c, t in COMPANIES
         )
         await db.commit()
-    return headers
+    return None
 
 
 async def test_services_are_listed_and_paged(client: AsyncClient, session_factory):
-    headers = await _catalogue(client, session_factory)
+    await _catalogue(client, session_factory)
 
-    page = (await client.get("/api/v1/bank-services", headers=headers)).json()["data"]
+    page = (await client.get("/api/v1/bank-services")).json()["data"]
 
     assert page["totalItems"] == 4
     assert [s["name"] for s in page["items"]] == sorted(s[0] for s in SERVICES)
@@ -52,60 +53,60 @@ async def test_services_are_listed_and_paged(client: AsyncClient, session_factor
 
 
 async def test_services_can_be_filtered_and_searched(client: AsyncClient, session_factory):
-    headers = await _catalogue(client, session_factory)
+    await _catalogue(client, session_factory)
 
     insurance = (
-        await client.get("/api/v1/bank-services", params={"type": "Insurance"}, headers=headers)
+        await client.get("/api/v1/bank-services", params={"type": "Insurance"})
     ).json()["data"]
     assert insurance["totalItems"] == 1
     assert insurance["items"][0]["name"] == "Life Insurance"
 
     found = (
-        await client.get("/api/v1/bank-services/search", params={"q": "points"}, headers=headers)
+        await client.get("/api/v1/bank-services/search", params={"q": "points"})
     ).json()["data"]
     assert [s["name"] for s in found] == ["Travel Rewards"]
 
     by_name = (
-        await client.get("/api/v1/bank-services", params={"search": "savings"}, headers=headers)
+        await client.get("/api/v1/bank-services", params={"search": "savings"})
     ).json()["data"]
     assert by_name["totalItems"] == 1
 
 
 async def test_service_detail_and_admin_mutations(client: AsyncClient, session_factory):
-    headers = await _catalogue(client, session_factory)
+    await _catalogue(client, session_factory)
 
-    page = (await client.get("/api/v1/bank-services", headers=headers)).json()["data"]
+    page = (await client.get("/api/v1/bank-services")).json()["data"]
     service_id = page["items"][0]["id"]
 
     assert (
-        await client.get(f"/api/v1/bank-services/{service_id}", headers=headers)
+        await client.get(f"/api/v1/bank-services/{service_id}")
     ).status_code == 200
 
     # A plain user cannot modify the catalogue.
     assert (
         await client.put(
-            f"/api/v1/bank-services/{service_id}", json={"details": "hacked"}, headers=headers
+            f"/api/v1/bank-services/{service_id}", json={"details": "hacked"}
         )
     ).status_code == 403
     assert (
-        await client.delete(f"/api/v1/bank-services/{service_id}", headers=headers)
+        await client.delete(f"/api/v1/bank-services/{service_id}")
     ).status_code == 403
 
 
 async def test_companies_are_listed(client: AsyncClient, session_factory):
-    headers = await _catalogue(client, session_factory)
+    await _catalogue(client, session_factory)
 
-    page = (await client.get("/api/v1/companies", headers=headers)).json()["data"]
+    page = (await client.get("/api/v1/companies")).json()["data"]
 
     assert page["totalItems"] == 3
     assert [c["symbol"] for c in page["items"]] == ["AAPL", "JPM", "TSLA"]
 
 
 async def test_trending_companies_are_filtered_and_ranked(client: AsyncClient, session_factory):
-    headers = await _catalogue(client, session_factory)
+    await _catalogue(client, session_factory)
 
     trending = (
-        await client.get("/api/v1/companies/trending", headers=headers)
+        await client.get("/api/v1/companies/trending")
     ).json()["data"]
 
     assert {c["symbol"] for c in trending} == {"AAPL", "TSLA"}
@@ -129,26 +130,26 @@ async def test_health_is_public(client: AsyncClient):
 
 
 async def test_unknown_service_is_a_404(client: AsyncClient, session_factory):
-    headers = await _catalogue(client, session_factory)
+    await _catalogue(client, session_factory)
 
     assert (
-        await client.get("/api/v1/bank-services/nope", headers=headers)
+        await client.get("/api/v1/bank-services/nope")
     ).status_code == 404
 
 
 async def test_search_requires_a_query(client: AsyncClient, session_factory):
-    headers = await _catalogue(client, session_factory)
+    await _catalogue(client, session_factory)
 
     assert (
-        await client.get("/api/v1/bank-services/search", headers=headers)
+        await client.get("/api/v1/bank-services/search")
     ).status_code == 422
 
 
 async def test_service_name_filter_is_case_insensitive(client: AsyncClient, session_factory):
-    headers = await _catalogue(client, session_factory)
+    await _catalogue(client, session_factory)
 
     page = (
-        await client.get("/api/v1/bank-services", params={"search": "SAVINGS"}, headers=headers)
+        await client.get("/api/v1/bank-services", params={"search": "SAVINGS"})
     ).json()["data"]
 
     assert page["totalItems"] == 1

@@ -52,16 +52,39 @@ async def session_factory(engine):
 
 
 @pytest_asyncio.fixture
-async def client(session_factory) -> AsyncIterator[AsyncClient]:
+async def client_factory(session_factory):
+    """Build extra HTTP clients against the same isolated database.
+
+    Auth is cookie based and a cookie jar belongs to one client, so acting as
+    two different users means using two clients.
+    """
+
     async def override_get_db() -> AsyncIterator[AsyncSession]:
         async with session_factory() as session:
             yield session
 
     app.dependency_overrides[get_db] = override_get_db
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as http_client:
+    created: list[AsyncClient] = []
+
+    async def make() -> AsyncClient:
+        http_client = AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        )
+        created.append(http_client)
+        return http_client
+
+    try:
+        yield make
+    finally:
+        for http_client in created:
+            await http_client.aclose()
+        app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture
+async def client(client_factory) -> AsyncIterator[AsyncClient]:
+    async with await client_factory() as http_client:
         yield http_client
-    app.dependency_overrides.clear()
 
 
 async def register(client: AsyncClient, **overrides) -> dict:
@@ -72,6 +95,8 @@ async def register(client: AsyncClient, **overrides) -> dict:
 
 
 async def login(client: AsyncClient, username: str = "tester", password: str = "12345678") -> dict:
+    """Sign in. httpx keeps the Set-Cookie values, so later calls are authenticated
+    by cookie without any header."""
     response = await client.post(
         "/api/v1/auth/login", json={"username": username, "password": password}
     )
@@ -79,17 +104,14 @@ async def login(client: AsyncClient, username: str = "tester", password: str = "
     return response.json()["data"]
 
 
-def auth_headers(tokens: dict) -> dict[str, str]:
-    return {"Authorization": f"Bearer {tokens['accessToken']}"}
+def access_token_from_cookies(client: AsyncClient) -> str:
+    """Read the access token out of the client cookie jar.
+
+    Only for tests that need to exercise the `Authorization: Bearer` path, which
+    exists so CLI clients keep working now that the browser uses cookies.
+    """
+    return client.cookies.get("accessToken", "")
 
 
-@pytest_asyncio.fixture
-async def account(client: AsyncClient) -> dict:
-    """A registered + authenticated user, with tokens and an auth header helper."""
-    await register(client)
-    tokens = await login(client)
-    return {
-        "tokens": tokens,
-        "headers": auth_headers(tokens),
-        "user": await client.get("/api/v1/users/me", headers=auth_headers(tokens)),
-    }
+def auth_headers(token: str) -> dict[str, str]:
+    return {"Authorization": f"Bearer {token}"}
