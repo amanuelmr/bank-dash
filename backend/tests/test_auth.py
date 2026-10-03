@@ -2,7 +2,20 @@
 
 from httpx import AsyncClient
 
+from app.core.config import settings
 from tests.conftest import access_token_from_cookies, auth_headers, login, register
+
+
+def _set_cookies(response) -> dict[str, str]:
+    """Set-Cookie headers keyed by cookie name."""
+    return {
+        cookie.split("=", 1)[0].strip(): cookie
+        for cookie in response.headers.get_list("set-cookie")
+    }
+
+
+def _cookie_max_age(response, name: str) -> int:
+    return int(_set_cookies(response)[name].split("Max-Age=", 1)[1].split(";", 1)[0])
 
 
 async def test_register_returns_the_created_user(client: AsyncClient):
@@ -205,12 +218,25 @@ async def test_cookies_are_scoped_so_the_refresh_token_stays_off_other_calls(
         "/api/v1/auth/login", json={"username": "tester", "password": "12345678"}
     )
 
-    by_name = {
-        cookie.split("=", 1)[0].strip(): cookie
-        for cookie in response.headers.get_list("set-cookie")
-    }
+    by_name = _set_cookies(response)
     assert "Path=/" in by_name["accessToken"]
     assert "Path=/api/v1/auth" in by_name["refreshToken"]
+
+
+async def test_access_cookie_outlives_its_token(client: AsyncClient):
+    """Wires the config invariant to what the server actually sends.
+
+    A regression here is invisible in normal use: the session works right up
+    until the exact hour the cookie dies, then everyone is silently signed out
+    while still holding a valid refresh token.
+    """
+    await register(client)
+    response = await client.post(
+        "/api/v1/auth/login", json={"username": "tester", "password": "12345678"}
+    )
+
+    max_age = _cookie_max_age(response, "accessToken")
+    assert max_age > settings.access_token_expire_minutes * 60
 
 
 async def test_change_password_requires_the_current_one(client: AsyncClient):

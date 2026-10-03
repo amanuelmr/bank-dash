@@ -71,6 +71,13 @@ Fields are declared snake_case in Python and serialised camelCase, so
 * **The refresh cookie is scoped to `/api/v1/auth`**, the only two places it is
   ever presented. On `/` it would ride along with every API call, putting a
   30-day credential within reach of anything that logs request headers.
+* **The access cookie outlives the JWT inside it** (30 days vs 24 hours). This
+  is load-bearing, not slack. The refresh cookie is scoped to the API's auth
+  routes, so the browser never presents it to the frontend — the access cookie
+  is the only proof of session the route gate can see. Were it to die alongside
+  the token, a user with weeks of refresh token left would be bounced to sign-in
+  before the client ever got to renew. An expired JWT in the cookie is harmless:
+  the API rejects it and `apiClient` refreshes and replays in one round-trip.
 * **A failed refresh expires the cookies.** JavaScript cannot delete an httpOnly
   cookie, so only the server can. Without this the rejected cookie stays
   attached for its full lifetime and every request first pays a refresh that is

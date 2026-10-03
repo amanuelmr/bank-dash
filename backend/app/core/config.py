@@ -57,6 +57,29 @@ class Settings(BaseSettings):
         """
         return f"{self.api_v1_prefix}/auth"
 
+    @property
+    def access_cookie_max_age(self) -> int:
+        """How long the access cookie survives in the browser, in seconds.
+
+        Deliberately decoupled from the JWT TTL, and this is load-bearing rather
+        than cosmetic:
+
+        * The cookie's only jobs are to prove a session to the frontend's route
+          gate and to carry the token to the API. The authoritative expiry is
+          the JWT's `exp`, which the API checks on every request.
+        * The refresh cookie is scoped to the API's auth routes, so the browser
+          never presents it to the frontend. That makes the access cookie the
+          *only* thing the gate can see.
+        * So if the cookie died at the same moment the JWT did, a session that
+          still had 29 days of refresh token left would be bounced to sign-in
+          without the client ever getting the chance to renew.
+
+        Keeping the cookie alive lets the client's normal 401-refresh-replay path
+        do its job: past the JWT's expiry the first call 401s, the client
+        refreshes, and the user never sees an interruption.
+        """
+        return self.refresh_token_expire_days * 86400
+
     # --- cors ---------------------------------------------------------------
     # Credentials must be allowed for cookie auth to work cross-origin.
     cors_origins: list[str] = ["http://localhost:3000"]

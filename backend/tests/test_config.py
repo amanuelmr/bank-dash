@@ -56,3 +56,33 @@ def test_refresh_cookie_is_scoped_to_the_auth_routes():
     assert _settings(api_v1_prefix="/api/v1").auth_cookie_path == "/api/v1/auth"
     # Derived, not hardcoded, so moving the API prefix cannot silently break it.
     assert _settings(api_v1_prefix="/bank/v2").auth_cookie_path == "/bank/v2/auth"
+
+
+def test_access_cookie_outlives_the_jwt_it_carries():
+    """The invariant that keeps a renewable session reachable.
+
+    The refresh cookie is scoped to the API's auth routes, so the frontend's
+    route gate can only ever see the access cookie. If the cookie died at the
+    same moment the JWT did, a user with a live refresh token would be bounced
+    to sign-in and the client's refresh-and-replay would never get to run.
+    """
+    settings = _settings()
+
+    assert settings.access_cookie_max_age > settings.access_token_expire_minutes * 60
+
+
+def test_access_cookie_lifetime_tracks_the_refresh_token():
+    """Both cookies are reissued together on every refresh, so tying the access
+    cookie to the refresh window is what makes the session a sliding one."""
+    settings = _settings(refresh_token_expire_days=7)
+
+    assert settings.access_cookie_max_age == 7 * 86400
+
+
+def test_shortening_the_refresh_window_shortens_both_cookies():
+    """Guards the reverse mistake: shrinking the refresh lifetime must not leave
+    the access cookie alive long after there is anything left to refresh with."""
+    long_window = _settings(refresh_token_expire_days=30)
+    short_window = _settings(refresh_token_expire_days=1)
+
+    assert short_window.access_cookie_max_age < long_window.access_cookie_max_age
