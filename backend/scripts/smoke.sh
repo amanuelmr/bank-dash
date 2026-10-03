@@ -45,6 +45,21 @@ check "auth cookies are httponly" "true" \
       -H 'Content-Type: application/json' -d '{"username":"tester","password":"12345678"}' \
      | grep -ci 'set-cookie:.*httponly' | awk '{print ($1 >= 2) ? "true" : "false"}')"
 
+# Deliberately cookie-less: an httpOnly cookie can only be expired by the server,
+# so a rejected refresh has to clear them. Otherwise the dead cookie rides along
+# for its full 30-day lifetime and every call pays a doomed refresh first.
+COOKIE_DUMP=$(curl -sS -m 10 --noproxy '*' -o /dev/null -D - -X POST "$BASE/auth/refresh")
+check "failed refresh -> 401"  "401" "$(awk '/^HTTP/{print $2}' <<<"$COOKIE_DUMP" | tail -1)"
+check "failed refresh clears both cookies" "true" \
+  "$(grep -ci 'set-cookie:.*Max-Age=0' <<<"$COOKIE_DUMP" | awk '{print ($1 == 2) ? "true" : "false"}')"
+
+# The refresh token is only ever presented to /auth/*, so it is scoped there
+# rather than riding along with every API call.
+LOGIN_DUMP=$(curl -sS -m 10 --noproxy '*' -o /dev/null -D - -X POST "$BASE/auth/login" \
+  -H 'Content-Type: application/json' -d '{"username":"tester","password":"12345678"}')
+check "access cookie path"  "Path=/"            "$(grep -i 'set-cookie: accessToken='  <<<"$LOGIN_DUMP" | grep -oi 'Path=[^;]*' | tr -d '\r')"
+check "refresh cookie path" "Path=/api/v1/auth" "$(grep -i 'set-cookie: refreshToken=' <<<"$LOGIN_DUMP" | grep -oi 'Path=[^;]*' | tr -d '\r')"
+
 section "bearer path (non-browser clients)"
 BEARER=$(curl -sS -m 10 --noproxy '*' -D - -o /dev/null -X POST "$BASE/auth/login" \
   -H 'Content-Type: application/json' -d '{"username":"tester","password":"12345678"}' \
