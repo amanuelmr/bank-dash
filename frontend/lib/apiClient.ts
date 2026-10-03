@@ -103,7 +103,7 @@ const CREDENTIAL_CHECKS = ["/auth/login", "/auth/register"];
 /**
  * Hand a genuinely dead session over to the sign-in page.
  *
- * `middleware.ts` gates on cookie *presence* only, deliberately: it cannot know
+ * `proxy.ts` gates on cookie *presence* only, deliberately: it cannot know
  * whether an expired access token is backed by a live refresh token, and
  * bouncing such a user would throw away a session the client can still renew.
  * The consequence is that ending a dead session becomes the client's job - the

@@ -5,6 +5,8 @@ import { ACCESS_COOKIE, SIGN_IN_PATH } from "@/lib/config";
 /**
  * Gate the authenticated routes on session *presence*, never on validity.
  *
+ * Next 16 renamed `middleware.ts` to `proxy.ts`; `middleware` is deprecated.
+ *
  * An earlier version decoded the JWT payload and honoured `exp`, which was a
  * real improvement over "does a cookie exist" at the time - it was added before
  * the client could recover from an expired token on its own. Now that
@@ -26,7 +28,7 @@ import { ACCESS_COOKIE, SIGN_IN_PATH } from "@/lib/config";
  * the signing secret is unavailable, so any check is unverified - and the API
  * verifies every request anyway.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const accessToken = request.cookies.get(ACCESS_COOKIE)?.value;
 
   // No session at all - either never signed in, or signed out and the server
