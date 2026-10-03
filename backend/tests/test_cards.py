@@ -2,7 +2,7 @@
 
 from httpx import AsyncClient
 
-from tests.conftest import auth_headers, login, register
+from tests.conftest import login, register
 
 NEW_CARD = {
     "cardType": "Platinum",
@@ -15,9 +15,9 @@ NEW_CARD = {
 
 async def test_list_cards_is_empty_for_a_new_account(client: AsyncClient):
     await register(client)
-    headers = auth_headers(await login(client))
+    await login(client)
 
-    page = (await client.get("/api/v1/cards", headers=headers)).json()["data"]
+    page = (await client.get("/api/v1/cards")).json()["data"]
 
     assert page["items"] == []
     assert page["totalItems"] == 0
@@ -27,9 +27,9 @@ async def test_list_cards_is_empty_for_a_new_account(client: AsyncClient):
 
 async def test_create_card_never_exposes_a_full_number(client: AsyncClient):
     await register(client)
-    headers = auth_headers(await login(client))
+    await login(client)
 
-    response = await client.post("/api/v1/cards", json=NEW_CARD, headers=headers)
+    response = await client.post("/api/v1/cards", json=NEW_CARD)
     assert response.status_code == 201
     card = response.json()["data"]
 
@@ -47,21 +47,22 @@ async def test_create_card_never_exposes_a_full_number(client: AsyncClient):
     assert "4821" not in serialised or "masked" in card
 
 
-async def test_cards_are_listed_and_scoped_to_their_owner(client: AsyncClient):
-    await register(client)
-    alice = auth_headers(await login(client))
-    await register(client, username="alice", email="alice@bankdash.dev")
-    bob = auth_headers(await login(client, username="alice"))
+async def test_cards_are_listed_and_scoped_to_their_owner(client_factory):
+    # Cookie auth means each identity needs its own client/jar.
+    tester = await client_factory()
+    alice = await client_factory()
+    await register(tester)
+    await login(tester)
+    await register(alice, username="alice", email="alice@bankdash.dev")
+    await login(alice, username="alice")
 
-    await client.post("/api/v1/cards", json=NEW_CARD, headers=alice)
-    await client.post(
-        "/api/v1/cards",
-        json={**NEW_CARD, "cardHolder": "Alice Nguyen"},
-        headers=bob,
+    await tester.post("/api/v1/cards", json=NEW_CARD)
+    await alice.post(
+        "/api/v1/cards", json={**NEW_CARD, "cardHolder": "Alice Nguyen"}
     )
 
-    mine = (await client.get("/api/v1/cards", headers=alice)).json()["data"]
-    theirs = (await client.get("/api/v1/cards", headers=bob)).json()["data"]
+    mine = (await tester.get("/api/v1/cards")).json()["data"]
+    theirs = (await alice.get("/api/v1/cards")).json()["data"]
 
     assert mine["totalItems"] == 1
     assert mine["items"][0]["cardHolder"] == "Test User"
@@ -71,33 +72,33 @@ async def test_cards_are_listed_and_scoped_to_their_owner(client: AsyncClient):
 
 async def test_card_is_ordered_newest_first(client: AsyncClient):
     await register(client)
-    headers = auth_headers(await login(client))
+    await login(client)
 
     for holder in ("First", "Second", "Third"):
         await client.post(
-            "/api/v1/cards", json={**NEW_CARD, "cardHolder": holder}, headers=headers
+            "/api/v1/cards", json={**NEW_CARD, "cardHolder": holder}
         )
 
-    items = (await client.get("/api/v1/cards", headers=headers)).json()["data"]["items"]
+    items = (await client.get("/api/v1/cards")).json()["data"]["items"]
     assert [c["cardHolder"] for c in items] == ["Third", "Second", "First"]
 
 
 async def test_get_and_delete_card(client: AsyncClient):
     await register(client)
-    headers = auth_headers(await login(client))
-    created = (await client.post("/api/v1/cards", json=NEW_CARD, headers=headers)).json()["data"]
+    await login(client)
+    created = (await client.post("/api/v1/cards", json=NEW_CARD)).json()["data"]
 
     assert (
-        await client.get(f"/api/v1/cards/{created['id']}", headers=headers)
+        await client.get(f"/api/v1/cards/{created['id']}")
     ).status_code == 200
     assert (
-        await client.delete(f"/api/v1/cards/{created['id']}", headers=headers)
+        await client.delete(f"/api/v1/cards/{created['id']}")
     ).status_code == 200
     assert (
-        await client.get(f"/api/v1/cards/{created['id']}", headers=headers)
+        await client.get(f"/api/v1/cards/{created['id']}")
     ).status_code == 404
     assert (
-        await client.delete(f"/api/v1/cards/{created['id']}", headers=headers)
+        await client.delete(f"/api/v1/cards/{created['id']}")
     ).status_code == 404
 
 
@@ -107,14 +108,14 @@ async def test_card_requires_authentication(client: AsyncClient):
 
 async def test_card_validates_its_input(client: AsyncClient):
     await register(client)
-    headers = auth_headers(await login(client))
+    await login(client)
 
     bad_passcode = await client.post(
-        "/api/v1/cards", json={**NEW_CARD, "passcode": "1"}, headers=headers
+        "/api/v1/cards", json={**NEW_CARD, "passcode": "1"}
     )
     assert bad_passcode.status_code == 422
 
     bad_balance = await client.post(
-        "/api/v1/cards", json={**NEW_CARD, "balance": -10}, headers=headers
+        "/api/v1/cards", json={**NEW_CARD, "balance": -10}
     )
     assert bad_balance.status_code == 422

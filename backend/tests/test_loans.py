@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 from app.models.loan import Loan, LoanStatus
 from app.models.user import User, UserRole
-from tests.conftest import auth_headers, login, register
+from tests.conftest import login, register
 
 APPLICATION = {
     "loanType": "Personal Loan",
@@ -16,9 +16,10 @@ APPLICATION = {
 }
 
 
-async def _borrower(client: AsyncClient, username: str = "tester") -> dict:
+async def _borrower(client: AsyncClient, username: str = "tester") -> None:
+    """Register and sign in on `client`; the session cookie lives in its jar."""
     await register(client, username=username, email=f"{username}@bankdash.dev")
-    return auth_headers(await login(client, username=username))
+    await login(client, username=username)
 
 
 async def _promote(session_factory, username: str = "tester") -> None:
@@ -37,9 +38,9 @@ async def _activate(session_factory, loan_id: str) -> None:
 
 
 async def test_apply_for_a_loan_computes_an_amortised_installment(client: AsyncClient):
-    headers = await _borrower(client)
+    await _borrower(client)
 
-    response = await client.post("/api/v1/loans", json=APPLICATION, headers=headers)
+    response = await client.post("/api/v1/loans", json=APPLICATION)
     assert response.status_code == 201
     loan = response.json()["data"]
 
@@ -52,76 +53,76 @@ async def test_apply_for_a_loan_computes_an_amortised_installment(client: AsyncC
     assert loan["installment"] * loan["loanDuration"] > loan["loanAmount"]
 
 
-async def test_loans_are_scoped_to_their_owner(client: AsyncClient):
-    alice = await _borrower(client)
-    await _borrower(client, "bob")
-    bob = auth_headers(await login(client, username="bob"))
+async def test_loans_are_scoped_to_their_owner(client_factory):
+    alice = await client_factory()
+    bob = await client_factory()
+    await _borrower(alice)
+    await _borrower(bob, "bob")
 
-    await client.post("/api/v1/loans", json=APPLICATION, headers=alice)
+    await alice.post("/api/v1/loans", json=APPLICATION)
 
-    assert (await client.get("/api/v1/loans", headers=alice)).json()["data"]["totalItems"] == 1
-    assert (await client.get("/api/v1/loans", headers=bob)).json()["data"]["totalItems"] == 0
+    assert (await alice.get("/api/v1/loans")).json()["data"]["totalItems"] == 1
+    assert (await bob.get("/api/v1/loans")).json()["data"]["totalItems"] == 0
 
 
 async def test_a_plain_user_cannot_approve(client: AsyncClient):
-    headers = await _borrower(client)
+    await _borrower(client)
     loan = (
-        await client.post("/api/v1/loans", json=APPLICATION, headers=headers)
+        await client.post("/api/v1/loans", json=APPLICATION)
     ).json()["data"]
 
     assert (
-        await client.post(f"/api/v1/loans/{loan['id']}/approve", headers=headers)
+        await client.post(f"/api/v1/loans/{loan['id']}/approve")
     ).status_code == 403
-    assert (await client.get("/api/v1/loans/all", headers=headers)).status_code == 403
+    assert (await client.get("/api/v1/loans/all")).status_code == 403
 
 
 async def test_admin_can_approve(client: AsyncClient, session_factory):
-    headers = await _borrower(client)
+    await _borrower(client)
     loan = (
-        await client.post("/api/v1/loans", json=APPLICATION, headers=headers)
+        await client.post("/api/v1/loans", json=APPLICATION)
     ).json()["data"]
 
     await _promote(session_factory)
 
-    approved = await client.post(f"/api/v1/loans/{loan['id']}/approve", headers=headers)
+    approved = await client.post(f"/api/v1/loans/{loan['id']}/approve")
     assert approved.status_code == 200
     assert approved.json()["data"]["status"] == "ACTIVE"
     assert approved.json()["data"]["startDate"] is not None
 
     # Only pending loans can be decided.
     assert (
-        await client.post(f"/api/v1/loans/{loan['id']}/approve", headers=headers)
+        await client.post(f"/api/v1/loans/{loan['id']}/approve")
     ).status_code == 400
 
 
 async def test_admin_can_reject(client: AsyncClient, session_factory):
-    headers = await _borrower(client)
+    await _borrower(client)
     loan = (
-        await client.post("/api/v1/loans", json=APPLICATION, headers=headers)
+        await client.post("/api/v1/loans", json=APPLICATION)
     ).json()["data"]
 
     await _promote(session_factory)
-    rejected = await client.post(f"/api/v1/loans/{loan['id']}/reject", headers=headers)
+    rejected = await client.post(f"/api/v1/loans/{loan['id']}/reject")
 
     assert rejected.status_code == 200
     assert rejected.json()["data"]["status"] == "REJECTED"
 
 
 async def test_summary_counts_only_active_loans(client: AsyncClient, session_factory):
-    headers = await _borrower(client)
+    await _borrower(client)
     personal = (
-        await client.post("/api/v1/loans", json=APPLICATION, headers=headers)
+        await client.post("/api/v1/loans", json=APPLICATION)
     ).json()["data"]
     business = (
         await client.post(
             "/api/v1/loans",
             json={**APPLICATION, "loanType": "Business Loan", "loanAmount": 12_000.0},
-            headers=headers,
         )
     ).json()["data"]
 
     # Pending loans are not yet outstanding.
-    pending = (await client.get("/api/v1/loans/summary", headers=headers)).json()["data"]
+    pending = (await client.get("/api/v1/loans/summary")).json()["data"]
     assert pending["totalOutstanding"] == 0.0
     assert pending["personalLoan"] == 0.0
 
@@ -131,7 +132,7 @@ async def test_summary_counts_only_active_loans(client: AsyncClient, session_fac
             loan.status = LoanStatus.ACTIVE
         await db.commit()
 
-    summary = (await client.get("/api/v1/loans/summary", headers=headers)).json()["data"]
+    summary = (await client.get("/api/v1/loans/summary")).json()["data"]
     assert summary["personalLoan"] == 6_000.0
     assert summary["businessLoan"] == 12_000.0
     assert summary["corporateLoan"] == 0.0
@@ -139,17 +140,17 @@ async def test_summary_counts_only_active_loans(client: AsyncClient, session_fac
 
 
 async def test_repayment_debits_the_account(client: AsyncClient, session_factory):
-    headers = await _borrower(client)
+    await _borrower(client)
     await client.post(
-        "/api/v1/transactions/deposit", json={"amount": 2_000.0}, headers=headers
+        "/api/v1/transactions/deposit", json={"amount": 2_000.0}
     )
     loan = (
-        await client.post("/api/v1/loans", json=APPLICATION, headers=headers)
+        await client.post("/api/v1/loans", json=APPLICATION)
     ).json()["data"]
     await _activate(session_factory, loan["id"])
 
     response = await client.post(
-        f"/api/v1/loans/{loan['id']}/repay", json={"amount": 2_000.0}, headers=headers
+        f"/api/v1/loans/{loan['id']}/repay", json={"amount": 2_000.0}
     )
     assert response.status_code == 200
     body = response.json()["data"]
@@ -158,26 +159,26 @@ async def test_repayment_debits_the_account(client: AsyncClient, session_factory
     assert body["loan"]["amountLeftToRepay"] == 4_000.0
     assert body["loan"]["status"] == "ACTIVE"
 
-    me = (await client.get("/api/v1/users/me", headers=headers)).json()["data"]
+    me = (await client.get("/api/v1/users/me")).json()["data"]
     assert me["accountBalance"] == 0.0
 
     # The repayment also appears as an outflow on the statement.
-    items = (await client.get("/api/v1/transactions/expenses", headers=headers)).json()["data"]
+    items = (await client.get("/api/v1/transactions/expenses")).json()["data"]
     assert items["items"][0]["type"] == "loan_repayment"
     assert items["items"][0]["amount"] == 2_000.0
 
 
 async def test_omitting_the_amount_clears_the_whole_loan(client: AsyncClient, session_factory):
-    headers = await _borrower(client)
+    await _borrower(client)
     await client.post(
-        "/api/v1/transactions/deposit", json={"amount": 20_000.0}, headers=headers
+        "/api/v1/transactions/deposit", json={"amount": 20_000.0}
     )
     loan = (
-        await client.post("/api/v1/loans", json=APPLICATION, headers=headers)
+        await client.post("/api/v1/loans", json=APPLICATION)
     ).json()["data"]
     await _activate(session_factory, loan["id"])
 
-    body = (await client.post(f"/api/v1/loans/{loan['id']}/repay", headers=headers)).json()["data"]
+    body = (await client.post(f"/api/v1/loans/{loan['id']}/repay")).json()["data"]
 
     assert body["amountPaid"] == 6_000.0
     assert body["loan"]["amountLeftToRepay"] == 0.0
@@ -187,47 +188,47 @@ async def test_omitting_the_amount_clears_the_whole_loan(client: AsyncClient, se
 async def test_overpayment_is_clamped_to_the_outstanding_amount(
     client: AsyncClient, session_factory
 ):
-    headers = await _borrower(client)
+    await _borrower(client)
     await client.post(
-        "/api/v1/transactions/deposit", json={"amount": 20_000.0}, headers=headers
+        "/api/v1/transactions/deposit", json={"amount": 20_000.0}
     )
     loan = (
-        await client.post("/api/v1/loans", json=APPLICATION, headers=headers)
+        await client.post("/api/v1/loans", json=APPLICATION)
     ).json()["data"]
     await _activate(session_factory, loan["id"])
 
     body = (
         await client.post(
-            f"/api/v1/loans/{loan['id']}/repay", json={"amount": 99_999.0}, headers=headers
+            f"/api/v1/loans/{loan['id']}/repay", json={"amount": 99_999.0}
         )
     ).json()["data"]
 
     assert body["amountPaid"] == 6_000.0
     assert body["loan"]["status"] == "PAID"
-    me = (await client.get("/api/v1/users/me", headers=headers)).json()["data"]
+    me = (await client.get("/api/v1/users/me")).json()["data"]
     assert me["accountBalance"] == 14_000.0
 
 
 async def test_repayment_beyond_the_balance_is_rejected(client: AsyncClient, session_factory):
-    headers = await _borrower(client)
+    await _borrower(client)
     loan = (
-        await client.post("/api/v1/loans", json=APPLICATION, headers=headers)
+        await client.post("/api/v1/loans", json=APPLICATION)
     ).json()["data"]
     await _activate(session_factory, loan["id"])
 
-    response = await client.post(f"/api/v1/loans/{loan['id']}/repay", headers=headers)
+    response = await client.post(f"/api/v1/loans/{loan['id']}/repay")
 
     assert response.status_code == 400
     assert response.json()["data"]["code"] == "insufficient_funds"
 
 
 async def test_a_rejected_loan_cannot_be_repaid(client: AsyncClient, session_factory):
-    headers = await _borrower(client)
+    await _borrower(client)
     await client.post(
-        "/api/v1/transactions/deposit", json={"amount": 20_000.0}, headers=headers
+        "/api/v1/transactions/deposit", json={"amount": 20_000.0}
     )
     loan = (
-        await client.post("/api/v1/loans", json=APPLICATION, headers=headers)
+        await client.post("/api/v1/loans", json=APPLICATION)
     ).json()["data"]
 
     async with session_factory() as db:
@@ -235,24 +236,23 @@ async def test_a_rejected_loan_cannot_be_repaid(client: AsyncClient, session_fac
         row.status = LoanStatus.REJECTED
         await db.commit()
 
-    response = await client.post(f"/api/v1/loans/{loan['id']}/repay", headers=headers)
+    response = await client.post(f"/api/v1/loans/{loan['id']}/repay")
     assert response.status_code == 400
     assert "not currently repayable" in response.json()["message"]
 
 
-async def test_cannot_repay_someone_elses_loan(client: AsyncClient, session_factory):
-    alice = await _borrower(client)
-    await _borrower(client, "bob")
-    bob = auth_headers(await login(client, username="bob"))
-    await client.post(
-        "/api/v1/transactions/deposit", json={"amount": 20_000.0}, headers=bob
-    )
+async def test_cannot_repay_someone_elses_loan(client_factory, session_factory):
+    alice = await client_factory()
+    bob = await client_factory()
+    await _borrower(alice)
+    await _borrower(bob, "bob")
+    await bob.post("/api/v1/transactions/deposit", json={"amount": 20_000.0})
 
-    loan = (await client.post("/api/v1/loans", json=APPLICATION, headers=alice)).json()["data"]
+    loan = (await alice.post("/api/v1/loans", json=APPLICATION)).json()["data"]
     await _activate(session_factory, loan["id"])
 
-    assert (await client.post(f"/api/v1/loans/{loan['id']}/repay", headers=bob)).status_code == 404
-    assert (await client.get(f"/api/v1/loans/{loan['id']}", headers=bob)).status_code == 404
+    assert (await bob.post(f"/api/v1/loans/{loan['id']}/repay")).status_code == 404
+    assert (await bob.get(f"/api/v1/loans/{loan['id']}")).status_code == 404
 
 
 @pytest.mark.parametrize(
@@ -265,8 +265,8 @@ async def test_cannot_repay_someone_elses_loan(client: AsyncClient, session_fact
     ],
 )
 async def test_loan_input_is_validated(client: AsyncClient, payload: dict):
-    headers = await _borrower(client)
-    assert (await client.post("/api/v1/loans", json=payload, headers=headers)).status_code == 422
+    await _borrower(client)
+    assert (await client.post("/api/v1/loans", json=payload)).status_code == 422
 
 
 async def test_loan_endpoints_require_authentication(client: AsyncClient):

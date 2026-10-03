@@ -28,7 +28,25 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24
     refresh_token_expire_days: int = 30
 
+    # --- auth cookies -------------------------------------------------------
+    # Tokens are delivered as httpOnly cookies so page scripts cannot read them,
+    # which closes the XSS token-exfiltration hole. The API still accepts an
+    # Authorization: Bearer header, so CLI and test clients keep working.
+    access_cookie_name: str = "accessToken"
+    refresh_cookie_name: str = "refreshToken"
+
+    # Must be True wherever the app is served over HTTPS. Browsers drop
+    # Secure cookies sent over plain http, so it stays False for localhost dev.
+    cookie_secure: bool = False
+
+    # "lax" works while the frontend and API are same-site (localhost:3000 ->
+    # localhost:8000). A separately-hosted production frontend is cross-site and
+    # needs "none", which browsers only accept together with Secure.
+    cookie_samesite: str = "lax"
+    cookie_domain: str | None = None
+
     # --- cors ---------------------------------------------------------------
+    # Credentials must be allowed for cookie auth to work cross-origin.
     cors_origins: list[str] = ["http://localhost:3000"]
 
     # --- pagination defaults ------------------------------------------------
