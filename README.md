@@ -116,7 +116,7 @@ object:
 }
 ```
 
-Authentication uses a short-lived JWT access token plus a rotating refresh
+Authentication uses a 30-minute JWT access token plus a rotating refresh
 token. The API delivers both as **httpOnly cookies**, so JavaScript cannot read
 them and an injected script cannot exfiltrate a session. The browser sends them
 automatically; the client only adds `credentials: "include"`.

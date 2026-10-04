@@ -64,6 +64,19 @@ Fields are declared snake_case in Python and serialised camelCase, so
 * **Cards never store a PAN.** Only a masked number is persisted.
 * **Refresh tokens rotate.** Only their SHA-256 is stored, and each is revoked
   when exchanged.
+* **Access tokens live 30 minutes.** A token cannot be revoked before it expires,
+  so its lifetime is exactly how long a leak stays usable. An active session
+  renews itself about twice an hour and the user sees nothing. Nothing depends
+  on the token being long-lived: the access *cookie* outlives it deliberately,
+  and `proxy.ts` gates on cookie presence rather than expiry, so the route gate
+  cannot pre-empt the refresh. If your deployment sets
+  `ACCESS_TOKEN_EXPIRE_MINUTES`, that overrides the default - lower it or delete
+  the line.
+* **Logout is per-device.** It revokes only the refresh token the request
+  presented. An earlier version revoked every outstanding token for the user when
+  none was presented, so one device with a missing cookie could silently sign
+  someone out everywhere. "Sign out everywhere" is a separate feature and should
+  be asked for explicitly.
 * **Tokens are httpOnly cookies.** `login`/`refresh` set them and return the
   user instead of the tokens; a body token would undo the protection. The
   `Authorization: Bearer` header is still accepted for CLI clients and
