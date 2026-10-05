@@ -1,10 +1,15 @@
-"""Re-export every response/request schema for convenient importing."""
+"""Re-export every response/request schema for convenient importing.
+
+Deliberately excludes `TokenPair`: it is the internal return type of the auth
+service, not part of the wire contract. No route takes or returns it, and it is
+absent from the published OpenAPI schemas - re-exporting it here would imply
+otherwise to anyone reading the API surface.
+"""
 
 from app.schemas.auth import (
     ChangePasswordRequest,
     LoginRequest,
     RefreshRequest,
-    TokenPair,
 )
 from app.schemas.bank_service import (
     BankServiceOut,
@@ -67,7 +72,6 @@ __all__ = [
     "RepayLoanRequest",
     "RepayResultOut",
     "SeriesPoint",
-    "TokenPair",
     "TransactionOut",
     "TransferRecipientOut",
     "UpdateBankServiceRequest",

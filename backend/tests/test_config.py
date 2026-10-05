@@ -52,6 +52,29 @@ def test_samesite_comparison_ignores_case_and_padding():
     assert settings.cookies_are_cross_site is True
 
 
+def test_access_token_default_is_short_lived():
+    """An access token cannot be revoked before it expires, so its lifetime is
+    exactly how long a leak stays usable - through a log line, a proxy, a shared
+    machine. 24 hours was a placeholder predating refresh-on-401, and nothing
+    should quietly restore it.
+
+    Asserted against the *default*, so it stays deterministic regardless of what
+    any local .env happens to set.
+    """
+    assert _settings().access_token_expire_minutes <= 60
+
+
+def test_refresh_window_is_longer_than_the_access_token():
+    """The sliding window only works if the refresh token outlives the access
+    token by a wide margin - otherwise a session would expire mid-use."""
+    settings = _settings()
+
+    assert (
+        settings.refresh_token_expire_days * 24 * 60
+        > settings.access_token_expire_minutes
+    )
+
+
 def test_refresh_cookie_is_scoped_to_the_auth_routes():
     assert _settings(api_v1_prefix="/api/v1").auth_cookie_path == "/api/v1/auth"
     # Derived, not hardcoded, so moving the API prefix cannot silently break it.

@@ -64,6 +64,15 @@ check "refresh cookie path" "Path=/api/v1/auth" "$(grep -i 'set-cookie: refreshT
 # scoped to the API and never reaches the frontend's route gate, so if this
 # cookie died on the token's schedule the gate would sign everyone out while
 # their refresh token still had weeks left.
+# An access token cannot be revoked before it expires, so this is how long a
+# leak stays usable. Decoded from the issued token rather than read from config,
+# so it verifies what is actually handed out.
+TTL=$(grep -i 'set-cookie: accessToken=' <<<"$LOGIN_DUMP" \
+  | sed 's/.*accessToken=\([^;]*\).*/\1/' | tr -d '\r' \
+  | cut -d. -f2 | tr '_-' '/+' | awk '{l=length($0)%4; if(l==2)$0=$0"=="; else if(l==3)$0=$0"="; print}' \
+  | base64 -d 2>/dev/null | jq -r '.exp - .iat')
+check "access token short-lived" "true" \
+  "$(awk -v t="$TTL" 'BEGIN{print (t > 0 && t <= 3600) ? "true" : "false"}')"
 check "access cookie outlives its JWT" "true" \
   "$(grep -i 'set-cookie: accessToken=' <<<"$LOGIN_DUMP" | grep -oi 'Max-Age=[0-9]*' | cut -d= -f2 \
      | awk '{print ($1 > 86400) ? "true" : "false"}')"
