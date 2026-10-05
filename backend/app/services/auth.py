@@ -137,22 +137,27 @@ async def change_password(
 
 
 async def logout(db: AsyncSession, user: User, raw_token: str | None) -> None:
-    """Revoke the presented refresh token, or every token for the user."""
+    """Revoke only the refresh token this request presented.
+
+    When no token is presented there is nothing to revoke for this session, and
+    the cookies are expired client-side regardless. The earlier version fell back
+    to revoking *every* outstanding token for the user, so one device missing its
+    cookie - or someone clearing cookies partially - silently signed them out on
+    every other device too. Signing out is a per-device action; "sign out
+    everywhere" is a different feature and should be asked for explicitly rather
+    than falling out of a missing cookie.
+    """
+    if not raw_token:
+        return
+
     now = utcnow()
-    if raw_token:
-        await db.execute(
-            RefreshToken.__table__.update()
-            .where(
-                RefreshToken.user_id == user.id,
-                RefreshToken.token_hash == hash_refresh_token(raw_token),
-            )
-            .values(revoked_at=now)
+    await db.execute(
+        RefreshToken.__table__.update()
+        .where(
+            RefreshToken.user_id == user.id,
+            RefreshToken.token_hash == hash_refresh_token(raw_token),
         )
-    else:
-        await db.execute(
-            RefreshToken.__table__.update()
-            .where(RefreshToken.user_id == user.id, RefreshToken.revoked_at.is_(None))
-            .values(revoked_at=now)
-        )
+        .values(revoked_at=now)
+    )
     await db.commit()
 

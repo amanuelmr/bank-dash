@@ -291,3 +291,46 @@ async def test_logout_revokes_the_token_and_clears_cookies(client: AsyncClient):
 
     client.cookies.set("refreshToken", stale)
     assert (await client.post("/api/v1/auth/refresh")).status_code == 401
+
+
+async def test_logging_out_one_device_leaves_the_others_signed_in(client_factory):
+    """Signing out is per-device. This used to revoke every outstanding token for
+    the user, so a single logout could silently end sessions elsewhere."""
+    phone = await client_factory()
+    laptop = await client_factory()
+    # One user, two sessions - the second client signs in rather than registering
+    # again, since a second registration would be a duplicate username.
+    await register(phone)
+    await login(phone)
+    await login(laptop)
+
+    assert (await phone.post("/api/v1/auth/logout")).status_code == 200
+
+    # The laptop's refresh token is untouched, so it still renews.
+    assert (await laptop.post("/api/v1/auth/refresh")).status_code == 200
+    assert (await laptop.get("/api/v1/users/me")).status_code == 200
+
+
+async def test_logout_without_a_refresh_cookie_does_not_revoke_other_sessions(
+    client_factory,
+):
+    """The realistic trigger: a device whose refresh cookie is already gone.
+
+    Revoking "everything" because nothing was presented meant one stale device
+    could sign a user out of all of them.
+    """
+    other = await client_factory()
+    await register(other)
+    await login(other)
+    others_refresh = other.cookies.get("refreshToken")
+
+    # A second session for the same user, holding an access token but no
+    # refresh cookie at all - which is what a cleared or expired cookie looks
+    # like from the API's side.
+    orphan = await client_factory()
+    orphan.cookies.set("accessToken", access_token_from_cookies(other))
+
+    assert (await orphan.post("/api/v1/auth/logout")).status_code == 200
+
+    other.cookies.set("refreshToken", others_refresh)
+    assert (await other.post("/api/v1/auth/refresh")).status_code == 200

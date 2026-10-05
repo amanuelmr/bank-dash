@@ -26,7 +26,21 @@ class Settings(BaseSettings):
     # Override SECRET_KEY in .env for anything beyond local development.
     secret_key: str = "dev-only-insecure-secret-change-me"
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60 * 24
+
+    # Access tokens are deliberately short-lived. A token is a bearer credential
+    # that cannot be revoked before it expires, so its lifetime *is* the exposure
+    # window if it ever leaks - through a log line, a proxy, a shared machine, a
+    # referrer. 24 hours was a placeholder chosen before refresh-on-401 existed;
+    # with that working, there is no reason to keep a credential usable for a
+    # whole day.
+    #
+    # 30 minutes is the trade: a session that is actively in use silently
+    # renews about twice an hour and the user never notices, while a stolen
+    # token stops working 48x sooner. Nothing depends on this being long - the
+    # access *cookie* deliberately outlives it (see `access_cookie_max_age`) and
+    # `proxy.ts` gates on cookie presence rather than expiry, so the route gate
+    # cannot pre-empt the refresh.
+    access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 30
 
     # --- auth cookies -------------------------------------------------------
