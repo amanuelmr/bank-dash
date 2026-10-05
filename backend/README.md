@@ -14,6 +14,13 @@ cp .env.example .env
 alembic upgrade head
 python -m app.seed
 
+Run the migration before seeding. `create_all` (which the seeder uses) creates
+missing *tables* but never adds missing *columns*, so seeding an existing
+database after adding a column to a model leaves it without that column - and
+every login then fails with a 500 while the test suite, which builds its schema
+from the models, stays green. `tests/test_schema_drift.py` fails if the two ever
+disagree.
+
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -61,9 +68,20 @@ Fields are declared snake_case in Python and serialised camelCase, so
   accounts in a single statement ordered by id, so concurrent transfers cannot
   overdraw an account or deadlock against each other. SQLite has no row locks
   but serialises writes, so the clause is applied on Postgres only.
+* **`SECRET_KEY` must be set in production.** The development default is
+  published in this repository, so signing with it lets anyone mint a token for any
+  user. Setting `ENVIRONMENT=production` makes the app refuse to start until it is
+  replaced.
 * **Cards never store a PAN.** Only a masked number is persisted.
-* **Refresh tokens rotate.** Only their SHA-256 is stored, and each is revoked
-  when exchanged.
+* **Refresh tokens rotate, and rotate as a family.** Only their SHA-256 is
+  stored. Every token descended from one sign-in shares a `family_id`, so a spent
+  token presented a second time is treated as theft and revokes the whole chain —
+  not just the token presented. Rejecting only that token would leave everything
+  the thief had already rotated to working, which is the entire value of stealing
+  one. The cost of a false positive is one re-login.
+* **Logout revokes the family, which is one device.** A family is a device's
+  session chain, so this stays per-device while also killing the copies that chain
+  rotated to.
 * **Access tokens live 30 minutes.** A token cannot be revoked before it expires,
   so its lifetime is exactly how long a leak stays usable. An active session
   renews itself about twice an hour and the user sees nothing. Nothing depends

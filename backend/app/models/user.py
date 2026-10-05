@@ -88,5 +88,10 @@ class RefreshToken(Base, TimestampMixin):
     )
     # Only the SHA-256 of the token is stored; a DB leak yields nothing usable.
     token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
+
+    # Every token descended from one sign-in shares this id, so replaying a spent
+    # token can revoke the whole stolen chain rather than one link of it.
+    family_id: Mapped[str] = mapped_column(String(36), index=True, nullable=False)
+
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
