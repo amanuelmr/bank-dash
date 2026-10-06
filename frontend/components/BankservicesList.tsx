@@ -124,7 +124,7 @@ const BankservicesList: React.FC = () => {
   if (status === "loading") {
     return (
       <div className="max-w-[1110px] px-4 md:mx-auto">
-        <h2 className="text-xl font-bold mb-4 dark:text-blue-500 animate-pulse">
+        <h2 className="text-xl font-bold mb-4 dark:text-brand animate-pulse">
           Bank Services List
         </h2>
         {renderShimmer(3)}
@@ -133,12 +133,12 @@ const BankservicesList: React.FC = () => {
   } else if (status === "error") {
     return (
       <div className="max-w-[1110px] px-4 md:mx-auto">
-        <h2 className="text-xl font-bold mb-4 dark:text-blue-500 animate-pulse">
+        <h2 className="text-xl font-bold mb-4 dark:text-brand animate-pulse">
           Bank Services List
         </h2>
         <div className="text-xl w-[100%] text-center gap-4 flex flex-col items-center  font-bold mb-4 text-red-500">
         <TbFileSad
-          className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+          className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
           strokeWidth={1}
         />
           <div> Failed to fetch the data</div>
@@ -150,7 +150,7 @@ const BankservicesList: React.FC = () => {
       <>
         {services.length == 0 ? (
           <div className="max-w-[1110px] px-4 md:mx-auto mt-4">
-            <div className="shadow-lg p-4 rounded-md flex items-center justify-between bg-gray-100">
+            <div className="shadow-lg p-4 rounded-md flex items-center justify-between bg-gray-100 dark:bg-surface-2">
               <div className="flex items-center space-x-4">
                 <div className="w-13 h-13 bg-gray-300 rounded-full"></div>
                 <div>
@@ -169,7 +169,7 @@ const BankservicesList: React.FC = () => {
   
         : (
           <div className="max-w-[1110px] px-4 md:mx-auto">
-            <h2 className="text-xl font-bold mb-4 dark:text-blue-500">
+            <h2 className="text-xl font-bold mb-4 dark:text-brand">
               Bank Services List
             </h2>
             <input type="text" onChange={filter} placeholder="search" />

@@ -11,7 +11,7 @@ export const BalanceCard: React.FC<{ balance: BalanceCardProps }> = ({ balance }
     const { iconSrc, altText, title, amount } = balance;
   
     return (
-      <div className="bg-white rounded-lg shadow-md p-3 flex items-center space-x-3 w-full">
+      <div className="bg-surface-1 rounded-lg shadow-md p-3 flex items-center space-x-3 w-full">
         {/* Icon */}
         <div className="rounded-full p-2">
           <Image 

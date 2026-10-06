@@ -15,10 +15,10 @@ const CardList: React.FC<Props> = ({ card_list }) => {
         card_list.map((card, index) => (
         <div
           key={index}
-          className="flex flex-row justify-between w-full bg-white p-4 mb-4 rounded-lg shadow-md dark:bg-dark dark:text-white"
+          className="flex flex-row justify-between w-full bg-surface-1 p-4 mb-4 rounded-lg shadow-md dark:bg-dark dark:text-white"
         >
           {/* Icon */}
-          <div className="h-12 w-12 rounded-xl bg-[#E7EDFF] flex items-center justify-center">
+          <div className="h-12 w-12 rounded-xl bg-[#E7EDFF] dark:bg-[#E7EDFF]/15 flex items-center justify-center">
             <CgCreditCard className="w-7 h-7" />
           </div>
 
@@ -59,7 +59,7 @@ const CardList: React.FC<Props> = ({ card_list }) => {
           </a>
         </div>
       ))) : (
-        <div className=" pr-6 py-32 bg-white w-full flex flex-col justify-center align-middle rounded-xl scrollbar-none">
+        <div className=" pr-6 py-32 bg-surface-1 w-full flex flex-col justify-center align-middle rounded-xl scrollbar-none">
           <Image
                 src="/icons/null.png"
                 width={80}

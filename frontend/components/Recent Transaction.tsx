@@ -40,16 +40,16 @@ const RecentTransaction = () => {
         {Array.from({ length: 2 }).map((_, index) => (
           <div
             key={index}
-            className="flex justify-between p-4 mb-4 rounded-lg bg-gray-200 dark:bg-gray-700 animate-pulse"
+            className="flex justify-between p-4 mb-4 rounded-lg bg-gray-200 dark:bg-surface-3 animate-pulse"
           >
             <div className="flex gap-4 items-center">
-              <div className="w-16 h-16 bg-gray-300 dark:bg-gray-600 rounded-full" />
+              <div className="w-16 h-16 bg-gray-300 dark:bg-surface-2 rounded-full" />
               <div>
-                <div className="w-24 h-4 bg-gray-300 dark:bg-gray-600 mb-2" />
-                <div className="w-32 h-4 bg-gray-300 dark:bg-gray-600" />
+                <div className="w-24 h-4 bg-gray-300 dark:bg-surface-2 mb-2" />
+                <div className="w-32 h-4 bg-gray-300 dark:bg-surface-2" />
               </div>
             </div>
-            <div className="w-20 h-4 bg-gray-300 dark:bg-gray-600" />
+            <div className="w-20 h-4 bg-gray-300 dark:bg-surface-2" />
           </div>
         ))}
       </div>
@@ -60,7 +60,7 @@ const RecentTransaction = () => {
     return (
       <div className="flex flex-col items-center justify-center h-full text-red-500">
         <TbFileSad
-          className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+          className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
           strokeWidth={1}
         />
         <div>Error fetching the recent transactions</div>
@@ -71,7 +71,7 @@ const RecentTransaction = () => {
   return (
     <>
       {recentTransaction.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-full text-white dark:text-blue-500">
+        <div className="flex flex-col items-center justify-center h-full text-white dark:text-brand">
         
         <div>No data to display</div>
       </div>

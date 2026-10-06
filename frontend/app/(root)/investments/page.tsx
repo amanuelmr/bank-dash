@@ -216,7 +216,7 @@ const Investments = () => {
       <div className="  flex flex-col py-5 px-6 gap-14 lg:grid lg:grid-cols-2 lg:gap-6  ">
         <div className="flex flex-col gap-3 lg:gap-4 xl:gap-5 ">
           <h2
-            className={`font-semibold text-[22px] ${colors.navbartext} dark:text-blue-500`}
+            className={`font-semibold text-[22px] ${colors.navbartext} dark:text-brand`}
           >
             Yearly Total Investments
           </h2>
@@ -228,7 +228,7 @@ const Investments = () => {
         </div>
         <div className="flex  flex-col gap-3 lg:gap-4 xl:gap-5 ">
           <h2
-            className={`font-semibold text-[22px] ${colors.navbartext} dark:text-blue-500`}
+            className={`font-semibold text-[22px] ${colors.navbartext} dark:text-brand`}
           >
             Monthly Revenue
           </h2>
@@ -241,7 +241,7 @@ const Investments = () => {
       <div className="flex flex-col lg:grid lg:grid-cols-5 ">
         <div className="px-6  lg:col-span-3 flex flex-col gap-5">
           <h2
-            className={`font-semibold text-[22px] ${colors.navbartext} dark:text-blue-500`}
+            className={`font-semibold text-[22px] ${colors.navbartext} dark:text-brand`}
           >
             My Investment
           </h2>
@@ -262,7 +262,7 @@ const Investments = () => {
         <div className="lg:col-span-2">
           <div className="p-6 lg:p-0">
             <h2
-              className={`font-semibold text-[22px] ${colors.navbartext} dark:text-blue-500`}
+              className={`font-semibold text-[22px] ${colors.navbartext} dark:text-brand`}
             >
               Trending Stock
             </h2>

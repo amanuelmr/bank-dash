@@ -50,8 +50,8 @@ const Page = () => {
       <div className="flex flex-col justify-between md:flex-row  gap-10 ">
         <div className=" py-4 md:w-3/5 md:max-w-full">
           <div className={`${colors.navbartext} flex justify-between `}>
-            <h1 className="font-bold text-2xl dark:text-blue-500">My Cards</h1>
-            <Link href="/credit-card" className="py-2 dark:text-blue-500">
+            <h1 className="font-bold text-2xl dark:text-brand">My Cards</h1>
+            <Link href="/credit-card" className="py-2 dark:text-brand">
               {""}
               See All
             </Link>
@@ -76,9 +76,9 @@ const Page = () => {
                   </div>
                 ))
               ) : (
-                <div className="w-screen bg-white py-16 rounded-xl flex flex-col justify-center dark:bg-dark dark:border-[1px] dark:border-gray-700">
+                <div className="w-screen bg-white py-16 rounded-xl flex flex-col justify-center dark:bg-dark dark:border-[1px] dark:border-line">
                   <TbFileSad
-                    className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+                    className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
                     strokeWidth={1}
                   />
                   <span className="mx-auto my-auto md:text-xl text-sm text-red-500 mb-5">
@@ -91,7 +91,7 @@ const Page = () => {
         </div>
         <div className="  md:w-2/5  flex flex-col ">
           <div className={`${colors.navbartext} flex justify-between  py-4`}>
-            <h1 className="font-bold text-2xl dark:text-blue-500 ">
+            <h1 className="font-bold text-2xl dark:text-brand ">
               Recent Transaction
             </h1>
           </div>
@@ -103,7 +103,7 @@ const Page = () => {
       <div className=" w-[100%] flex flex-col justify-between  md:grid md:grid-cols-5 md:gap-10 ">
         <div className=" md:col-span-3 ">
           <div className={`${colors.navbartext} flex justify-between py-4`}>
-            <h1 className="font-bold text-2xl dark:text-blue-500">
+            <h1 className="font-bold text-2xl dark:text-brand">
               Weekly Activity
             </h1>
           </div>
@@ -113,7 +113,7 @@ const Page = () => {
         </div>
         <div className=" w-[100%] py-5 flex flex-col gap-5 md:col-span-2 ">
           <div className={`${colors.navbartext}`}>
-            <h1 className="font-bold text-2xl dark:text-blue-500">
+            <h1 className="font-bold text-2xl dark:text-brand">
               Expense Statstics
             </h1>
           </div>
@@ -126,7 +126,7 @@ const Page = () => {
       <div className="flex flex-col justify-between w-full  md:grid md:grid-cols-5 md:gap-10 ">
         <div className=" md:col-span-2 py-4  ">
           <div className={`${colors.navbartext} flex justify-between `}>
-            <h1 className="font-bold text-2xl dark:text-blue-500">
+            <h1 className="font-bold text-2xl dark:text-brand">
               Quick Transfer
             </h1>
           </div>
@@ -139,7 +139,7 @@ const Page = () => {
         </div>
         <div className=" md:col-span-3 ">
           <div className={`${colors.navbartext} flex justify-between  py-4`}>
-            <h1 className="font-bold text-2xl dark:text-blue-500">
+            <h1 className="font-bold text-2xl dark:text-brand">
               Balance History
             </h1>
           </div>

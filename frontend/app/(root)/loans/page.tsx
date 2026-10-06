@@ -201,7 +201,7 @@ const LoansPage: React.FC = () => {
   );
 
   return (
-    <div className="flex lg:ml-64 lg:max-w-[100%] px-6 dark:text-blue-500 bg-gray-100 dark:bg-dark ">
+    <div className="flex lg:ml-64 lg:max-w-[100%] px-6 dark:text-brand bg-gray-100 dark:bg-dark ">
       {/* Mobile and Tablet View */}
 
       {contextHolder}
@@ -235,7 +235,7 @@ const LoansPage: React.FC = () => {
         ) : loanCardsError ? (
           <div className="flex flex-col items-center justify-center text-center space-y-4">
             <TbFileSad
-          className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+          className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
           strokeWidth={1}
         />
             <div className="text-red-500 ">{loanCardsError}</div>
@@ -262,7 +262,7 @@ const LoansPage: React.FC = () => {
         )}
 
         <div className="w-[100%] flex flex-col items-center mt-8 text-sm">
-          <h2 className="text-lg font-bold mb-4 ml-5 dark:text-blue-500">
+          <h2 className="text-lg font-bold mb-4 ml-5 dark:text-brand">
             Active Loans Overview
           </h2>
           {loansLoading ? (
@@ -270,13 +270,13 @@ const LoansPage: React.FC = () => {
               <table className="w-[70%]  h-[85px] bg-white rounded-lg shadow-md text-[12px] dark:bg-dark dark:text-white animate-pulse">
                 <thead>
                   <tr>
-                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-gray-700 h-6">
+                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-surface-3 h-6">
                       Loan Money
                     </th>
-                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-gray-700 h-6">
+                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-surface-3 h-6">
                       Left to Repay
                     </th>
-                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-gray-700 h-6">
+                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-surface-3 h-6">
                       {" "}
                       Repay
                     </th>
@@ -285,9 +285,9 @@ const LoansPage: React.FC = () => {
                 <tbody>
                   {Array.from({ length: 10 }).map((_, index) => (
                     <tr key={index}>
-                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-gray-700 h-6"></td>
-                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-gray-700 h-6"></td>
-                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-gray-700 h-6"></td>
+                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-surface-3 h-6"></td>
+                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-surface-3 h-6"></td>
+                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-surface-3 h-6"></td>
                     </tr>
                   ))}
                 </tbody>
@@ -296,7 +296,7 @@ const LoansPage: React.FC = () => {
           ) : loansError ? (
             <div className="w-[100%] flex justify-center items-center flex-col p-4">
               <TbFileSad
-          className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+          className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
           strokeWidth={1}
         />
               <div className="text-red-500 ">{loansError}</div>
@@ -361,7 +361,7 @@ const LoansPage: React.FC = () => {
       </div>
 
       {/* Desktop and Tablet View */}
-      <div className="hidden lg:block lg:w-[100%] lg:bg-gary-100 lg:dark:bg-dark dark:text-blue-500 ">
+      <div className="hidden lg:block lg:w-[100%] lg:bg-gary-100 lg:dark:bg-dark dark:text-brand ">
         {loanCardsLoading ? (
           <div className="flex justify-evenly py-10   space-x-6">
             {Array.from({ length: 4 }).map((_, index) => (
@@ -380,7 +380,7 @@ const LoansPage: React.FC = () => {
         ) : loanCardsError ? (
           <div className="hidden  lg:flex lg:flex-col lg:items-center lg:justify-center lg:text-center lg:space-y-4 lg:h-200px lg:bg-gray-100 lg:dark:bg-gray-800 lg:py-8">
             <TbFileSad
-          className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+          className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
           strokeWidth={1}
         />
             <div className="text-red-500 ">
@@ -407,7 +407,7 @@ const LoansPage: React.FC = () => {
         )}
 
         <div className="mt-8">
-          <h2 className="text-lg font-bold mb-4 dark:text-blue-500">
+          <h2 className="text-lg font-bold mb-4 dark:text-brand">
             Active Loans Overview
           </h2>
           {loansLoading ? (
@@ -415,25 +415,25 @@ const LoansPage: React.FC = () => {
               <table className="w-[100%] bg-white rounded-2xl shadow-md table-fixed dark:bg-dark text-gray-900 dark:text-white animate-pulse">
                 <thead>
                   <tr>
-                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-gray-700 h-6">
+                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-surface-3 h-6">
                       SL No
                     </th>
-                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-gray-700 h-6">
+                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-surface-3 h-6">
                       Loan Money
                     </th>
-                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-gray-700 h-6">
+                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-surface-3 h-6">
                       Left to Repay
                     </th>
-                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-gray-700 h-6">
+                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-surface-3 h-6">
                       Duration
                     </th>
-                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-gray-700 h-6">
+                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-surface-3 h-6">
                       Interest Rate
                     </th>
-                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-gray-700 h-6">
+                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-surface-3 h-6">
                       Monthly Installment
                     </th>
-                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-gray-700 h-6">
+                    <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-surface-3 h-6">
                       Repay
                     </th>
                   </tr>
@@ -441,13 +441,13 @@ const LoansPage: React.FC = () => {
                 <tbody>
                   {Array.from({ length: 10 }).map((_, index) => (
                     <tr key={index}>
-                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-gray-700 h-6"></td>
-                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-gray-700 h-6"></td>
-                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-gray-700 h-6"></td>
-                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-gray-700 h-6"></td>
-                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-gray-700 h-6"></td>
-                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-gray-700 h-6"></td>
-                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-gray-700 h-6"></td>
+                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-surface-3 h-6"></td>
+                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-surface-3 h-6"></td>
+                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-surface-3 h-6"></td>
+                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-surface-3 h-6"></td>
+                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-surface-3 h-6"></td>
+                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-surface-3 h-6"></td>
+                      <td className="border-t px-4 py-2 bg-gray-300 dark:bg-surface-3 h-6"></td>
                     </tr>
                   ))}
                 </tbody>
@@ -456,7 +456,7 @@ const LoansPage: React.FC = () => {
           ) : loansError ? (
             <div className="hidden lg:flex lg:bg-gray-100 lg:dark:bg-gray-800 lg:h-[400px] lg:flex-col lg:items-center lg:justify-center h-20">
               <TbFileSad
-          className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+          className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
           strokeWidth={1}
         />
               <div className="text-red-500 text-center">{loansError}</div>

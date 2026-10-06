@@ -64,21 +64,21 @@ const Landing: React.FC = () => {
 
         <div className="relative   md:w-full md:mt-16 flex flex-col justify-center items-center  p-6 pt-12">
           <div className="md:w-4/5 z-50 flex flex-wrap  justify-between items-center gap-5">
-            <div className="w-[45%] rounded-lg md:w-1/5 flex flex-col items-center justify-center text-center gap-1 dark:bg-gray-600 dark:text-white bg-white shadow-xl hover:scale-105 h-24">
+            <div className="w-[45%] rounded-lg md:w-1/5 flex flex-col items-center justify-center text-center gap-1 dark:bg-surface-2 dark:text-white bg-white shadow-xl hover:scale-105 h-24">
               <div className="font-bold text-2xl">100% Safe</div>
               <div className="">Your money is safe</div>
             </div>
-            <div className="w-[45%] rounded-lg md:w-1/5 flex flex-col items-center justify-center text-center gap-1 dark:bg-gray-600 dark:text-white bg-white shadow-xl hover:scale-105 h-24">
+            <div className="w-[45%] rounded-lg md:w-1/5 flex flex-col items-center justify-center text-center gap-1 dark:bg-surface-2 dark:text-white bg-white shadow-xl hover:scale-105 h-24">
               <div className="font-bold text-2xl">Quick Send</div>
               <div className="">Transfer money in 1 click</div>
             </div>
-            <div className="w-[45%] rounded-lg md:w-1/5 flex flex-col items-center justify-center text-center gap-1 dark:bg-gray-600 dark:text-white bg-white shadow-xl hover:scale-105 h-24">
+            <div className="w-[45%] rounded-lg md:w-1/5 flex flex-col items-center justify-center text-center gap-1 dark:bg-surface-2 dark:text-white bg-white shadow-xl hover:scale-105 h-24">
               <div className="font-bold text-2xl">Loan</div>
               <div className="">
                 Manage your loans efficiently
               </div>
             </div>
-            <div className="w-[45%] rounded-lg md:w-1/5 flex flex-col items-center justify-center text-center gap-1 dark:bg-gray-600 dark:text-white bg-white shadow-xl hover:scale-105 h-24">
+            <div className="w-[45%] rounded-lg md:w-1/5 flex flex-col items-center justify-center text-center gap-1 dark:bg-surface-2 dark:text-white bg-white shadow-xl hover:scale-105 h-24">
               <div className="font-bold text-2xl">Investment</div>
               <div className="">
                 Grow your wealth with smart investments

@@ -9,17 +9,17 @@ export default function NotFound() {
       <div className="flex flex-col gap-5 p-10 lg:p-20">
         <div className="flex flex-col gap-2">
           <h2
-            className={`text-[32px] font-bold ${colors.textblack} dark:text-blue-500`}
+            className={`text-[32px] font-bold ${colors.textblack} dark:text-brand`}
           >
             Ooops...
           </h2>
           <p
-            className={`text-[20px] font-semibold ${colors.textblack} dark:text-blue-500`}
+            className={`text-[20px] font-semibold ${colors.textblack} dark:text-brand`}
           >
             Page not found
           </p>
           <p
-            className={`text-[14px] font-light ${colors.textblack} dark:text-blue-500`}
+            className={`text-[14px] font-light ${colors.textblack} dark:text-brand`}
           >
             to access our services please go back to the dashboard page
           </p>

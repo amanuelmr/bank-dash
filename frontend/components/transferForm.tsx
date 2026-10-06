@@ -31,7 +31,7 @@ const TransferPage: React.FC = () => {
 
   return (
     <div className="flex justify-center items-center p-6 lg:p-14">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
+      <div className="bg-surface-1 p-6 rounded-lg shadow-lg w-full max-w-lg">
         <div className="text-center text-2xl font-bold mb-4 flex justify-center items-center gap-3">
           <p>
             {visible ? `$${account}` : '$****'}
@@ -48,7 +48,7 @@ const TransferPage: React.FC = () => {
           </button>
         </div>
 
-        <div className="border-t border-gray-200 pt-4">
+        <div className="border-t border-gray-200 dark:border-line pt-4">
           <h2 className="text-xl font-bold mb-4">Transfer Details</h2>
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
             <div>

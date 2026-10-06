@@ -135,22 +135,22 @@ const QuickTransfer: React.FC = () => {
       <div className="flex  rounded-2xl flex-col py-4 items-start gap-3 w-[100%] bg-gray-200 dark:bg-dark text-gray-900 dark:text-white animate-pulse">
         {/* Loading skeleton */}
         <div className="flex justify-between items-center h-35 w-[100%] px-2">
-          <div className="w-[40px] h-[40px] rounded-full bg-gray-300 dark:bg-gray-600 flex justify-center items-center shadow-lg"></div>
+          <div className="w-[40px] h-[40px] rounded-full bg-gray-300 dark:bg-surface-2 flex justify-center items-center shadow-lg"></div>
           <div className="flex py-6 gap-2">
             {Array.from({ length: 3 }).map((_, index) => (
               <div key={index} className="flex flex-col gap-2 flex-1 cursor-pointer">
-                <div className="w-[70px] h-[70px] bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                <div className="w-[70px] h-[70px] bg-gray-300 dark:bg-surface-2 rounded-full"></div>
                 <div className="flex flex-col items-center">
-                  <div className="w-24 h-4 bg-gray-300 dark:bg-gray-600"></div>
+                  <div className="w-24 h-4 bg-gray-300 dark:bg-surface-2"></div>
                 </div>
               </div>
             ))}
           </div>
-          <div className="w-[40px] h-[40px] rounded-full bg-gray-300 dark:bg-gray-600 flex justify-center items-center shadow-lg"></div>
+          <div className="w-[40px] h-[40px] rounded-full bg-gray-300 dark:bg-surface-2 flex justify-center items-center shadow-lg"></div>
         </div>
         <div className="grid grid-cols-5 w-[100%] justify-center items-center px-2">
-          <div className="w-24 h-4 bg-gray-300 dark:bg-gray-600 col-span-2"></div>
-          <div className="w-44 h-10 bg-gray-300 rounded-xl dark:bg-gray-600 col-span-3"></div>
+          <div className="w-24 h-4 bg-gray-300 dark:bg-surface-2 col-span-2"></div>
+          <div className="w-44 h-10 bg-gray-300 rounded-xl dark:bg-surface-2 col-span-3"></div>
         </div>
       </div>
     );
@@ -160,7 +160,7 @@ const QuickTransfer: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center h-full text-red-500">
         <TbFileSad
-          className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+          className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
           strokeWidth={1}
         />
         <div>Error fetching the users</div>
@@ -181,7 +181,7 @@ const QuickTransfer: React.FC = () => {
 
         <div className="flex py-6 overflow-hidden gap-2">
           {users.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-white dark:text-blue-500">
+            <div className="flex flex-col items-center justify-center h-full text-white dark:text-brand">
               <div>No data to display</div>
             </div>
           ) : (

@@ -105,7 +105,7 @@ export default function Component() {
     return (
       <div className="p-3 gap-4  flex flex-col justify-center items-center h-auto  dark:bg-dark   text-center ">
         <TbFileSad
-          className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+          className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
           strokeWidth={1}
         />
         <p className="text-red-500" >Failed to fetch</p>
