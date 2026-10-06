@@ -5,6 +5,10 @@ from functools import lru_cache
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Public in the repository, so it must never sign anything real. Deployments that
+# leave it in place can have tokens forged by anyone who has read this file.
+DEV_SECRET_KEY = "dev-only-insecure-secret-change-me"
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -17,14 +21,18 @@ class Settings(BaseSettings):
     debug: bool = False
     api_v1_prefix: str = "/api/v1"
 
+    # "development" or "production". Gates the checks that would break a local
+    # setup but are unacceptable once real users exist - chiefly the signing key.
+    environment: str = "development"
+
     # --- database -----------------------------------------------------------
     # Swap to `postgresql+asyncpg://...` for Postgres; no other change needed.
     database_url: str = "sqlite+aiosqlite:///./bankdash.db"
     db_echo: bool = False
 
     # --- auth ---------------------------------------------------------------
-    # Override SECRET_KEY in .env for anything beyond local development.
-    secret_key: str = "dev-only-insecure-secret-change-me"
+    # Must be overridden in production - see the validator below.
+    secret_key: str = DEV_SECRET_KEY
     algorithm: str = "HS256"
 
     # Access tokens are deliberately short-lived. A token is a bearer credential
@@ -116,6 +124,19 @@ class Settings(BaseSettings):
         is required.
         """
         return self.cookie_samesite.strip().lower() == "none"
+
+    @model_validator(mode="after")
+    def _production_must_not_use_the_development_secret(self) -> "Settings":
+        # Signing with a key that is published in this repository means anyone can
+        # mint a token for any user id, so this is worth failing on rather than
+        # warning about. Kept to `production` so a fresh clone still runs.
+        if self.environment == "production" and self.secret_key == DEV_SECRET_KEY:
+            raise ValueError(
+                "SECRET_KEY is still the development default, which is published "
+                "in this repository. Set a long random value: "
+                "python -c \"import secrets; print(secrets.token_urlsafe(64))\""
+            )
+        return self
 
     @model_validator(mode="after")
     def _reject_cookie_settings_browsers_would_drop(self) -> "Settings":

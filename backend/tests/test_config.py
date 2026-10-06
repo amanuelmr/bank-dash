@@ -8,7 +8,7 @@ fails because the browser rejects the cookie.
 import pytest
 from pydantic import ValidationError
 
-from app.core.config import Settings
+from app.core.config import DEV_SECRET_KEY, Settings
 
 
 def _settings(**overrides) -> Settings:
@@ -109,3 +109,25 @@ def test_shortening_the_refresh_window_shortens_both_cookies():
     short_window = _settings(refresh_token_expire_days=1)
 
     assert short_window.access_cookie_max_age < long_window.access_cookie_max_age
+
+
+def test_production_refuses_the_development_signing_key():
+    """The dev key is published in this repository.
+
+    Signing with it means anyone who has read the source can mint an access token
+    for any user id, so this is worth failing startup over rather than warning.
+    """
+    with pytest.raises(ValidationError, match="SECRET_KEY"):
+        _settings(environment="production")
+
+
+def test_production_accepts_a_real_signing_key():
+    settings = _settings(environment="production", secret_key="k" * 64)
+
+    assert settings.environment == "production"
+
+
+def test_development_still_boots_on_the_dev_key():
+    """A fresh clone has to run before anyone has configured a secret."""
+    assert _settings().environment == "development"
+    assert _settings().secret_key == DEV_SECRET_KEY

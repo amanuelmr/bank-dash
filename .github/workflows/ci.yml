@@ -37,6 +37,15 @@ jobs:
       # The smoke script drives a live server, so it needs real demo data and a
       # running API. These are the checks that catch what unit tests cannot -
       # Set-Cookie headers, cookie paths, and status codes over real HTTP.
+      #
+      # Migrate first, deliberately. The seeder builds tables from the models
+      # rather than running migrations, so seeding alone would produce a schema
+      # that looks correct while never executing the migration - and a broken or
+      # missing migration would ship green. Running alembic first means the smoke
+      # step exercises the same path a real deployment takes.
+      - name: Migrate
+        run: alembic upgrade head
+
       - name: Seed demo data
         run: python -m app.seed
 

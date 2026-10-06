@@ -18,6 +18,29 @@ def _cookie_max_age(response, name: str) -> int:
     return int(_set_cookies(response)[name].split("Max-Age=", 1)[1].split(";", 1)[0])
 
 
+def _api_domain(client: AsyncClient) -> str:
+    """The cookie domain httpx recorded for this client's host.
+
+    Read off the jar rather than derived from base_url: httpx normalises a bare
+    hostname, so "http://test" is stored as "test.local".
+    """
+    return next((c.domain for c in client.cookies.jar if c.domain), "")
+
+
+def _present_as(client: AsyncClient, token: str, domain: str) -> None:
+    """Make `token` the client's refresh cookie, replacing whatever was there.
+
+    Domain and path both have to match the cookie the API sets, because a cookie
+    is keyed on (domain, path, name). Get either wrong and the two coexist, and
+    httpx raises CookieConflict instead of guessing which to send.
+
+    The domain is passed in because the client presenting a stolen token is often
+    brand new - it has no cookies to copy it from - and its own jar is empty.
+    """
+    client.cookies.clear()
+    client.cookies.set("refreshToken", token, domain=domain, path="/api/v1/auth")
+
+
 async def test_register_returns_the_created_user(client: AsyncClient):
     body = await register(client)
 
@@ -157,7 +180,7 @@ async def test_replaying_an_old_refresh_token_is_rejected(client: AsyncClient):
     assert (await client.post("/api/v1/auth/refresh")).status_code == 200
 
     # Restore the consumed token and try to use it again.
-    client.cookies.set("refreshToken", stale)
+    _present_as(client, stale, _api_domain(client))
     replay = await client.post("/api/v1/auth/refresh")
     assert replay.status_code == 401
     assert "already been used" in replay.json()["message"]
@@ -200,7 +223,7 @@ async def test_replaying_a_consumed_refresh_cookie_expires_the_session(
     stale = client.cookies.get("refreshToken")
     assert (await client.post("/api/v1/auth/refresh")).status_code == 200
 
-    client.cookies.set("refreshToken", stale)
+    _present_as(client, stale, _api_domain(client))
     replay = await client.post("/api/v1/auth/refresh")
 
     assert replay.status_code == 401
@@ -334,3 +357,96 @@ async def test_logout_without_a_refresh_cookie_does_not_revoke_other_sessions(
 
     other.cookies.set("refreshToken", others_refresh)
     assert (await other.post("/api/v1/auth/refresh")).status_code == 200
+
+
+async def test_replaying_a_stolen_token_kills_everything_it_rotated_to(
+    client_factory,
+):
+    """The attack this defends against.
+
+    A thief steals one refresh token and quietly rotates it, so they hold a
+    freshly-minted token. When the legitimate client later presents the stolen
+    original, rejecting that token alone would leave the thief's replacement
+    working for the full 30 days - which makes stealing one token a permanent
+    takeover no matter how loudly the victim complains.
+    """
+    victim = await client_factory()
+    await register(victim)
+    await login(victim)
+
+    stolen = victim.cookies.get("refreshToken")
+
+    # The thief rotates the stolen token and keeps the replacement.
+    thief = await client_factory()
+    domain = _api_domain(victim)
+    _present_as(thief, stolen, domain)
+    assert (await thief.post("/api/v1/auth/refresh")).status_code == 200
+    thief_token = thief.cookies.get("refreshToken")
+
+    # The victim's copy is now the spent token, so presenting it is the replay
+    # that reveals the theft.
+    replay = await victim.post("/api/v1/auth/refresh")
+    assert replay.status_code == 401
+    assert "already been used" in replay.json()["message"]
+
+    # ...and the thief's replacement dies with the family.
+    _present_as(thief, thief_token, _api_domain(victim))
+    assert (await thief.post("/api/v1/auth/refresh")).status_code == 401
+
+
+async def test_replay_does_not_touch_other_devices(client_factory):
+    """Killing the family must not become killing every session - that was the
+    bug fixed in the previous branch, in a different direction."""
+    victim = await client_factory()
+    laptop = await client_factory()
+    await register(victim)
+    await login(victim)
+    await login(laptop)
+
+    stolen = victim.cookies.get("refreshToken")
+    domain = _api_domain(victim)
+    _present_as(victim, stolen, domain)
+    assert (await victim.post("/api/v1/auth/refresh")).status_code == 200
+    _present_as(victim, stolen, domain)
+
+    assert (await victim.post("/api/v1/auth/refresh")).status_code == 401
+
+    # The laptop signed in separately, so it has its own family and survives.
+    assert (await laptop.post("/api/v1/auth/refresh")).status_code == 200
+    assert (await laptop.get("/api/v1/users/me")).status_code == 200
+
+
+async def test_logout_kills_tokens_the_session_had_rotated_to(client: AsyncClient):
+    """Signing out must not leave a rotated copy of the same session usable."""
+    await register(client)
+    await login(client)
+
+    rotated = client.cookies.get("refreshToken")
+    assert (await client.post("/api/v1/auth/refresh")).status_code == 200
+
+    domain = _api_domain(client)  # logout empties the jar; read this first
+    assert (await client.post("/api/v1/auth/logout")).status_code == 200
+
+    _present_as(client, rotated, domain)
+    assert (await client.post("/api/v1/auth/refresh")).status_code == 401
+
+
+async def test_separate_sign_ins_get_separate_families(
+    client_factory, session_factory
+):
+    """A family is one device's chain, so two devices must not share one."""
+    first = await client_factory()
+    second = await client_factory()
+    await register(first)
+    await login(first)
+    await login(second)
+
+    from sqlalchemy import select
+
+    from app.models.user import RefreshToken
+
+    async with session_factory() as db:
+        families = list(await db.scalars(select(RefreshToken.family_id)))
+
+    assert len(families) == 2
+    assert len(set(families)) == 2
