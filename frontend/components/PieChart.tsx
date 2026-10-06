@@ -47,7 +47,7 @@ export default function Component() {
     }
   }, [pierad])
   return (
-    <Card className=" w-[100%] py-6">
+    <Card className=" w-[100%] h-full py-6">
 
       <CardContent className=" w-[100%] ">
         <ChartContainer

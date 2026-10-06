@@ -101,49 +101,48 @@ const Page = () => {
         </div>
       </div>
       <div className=" w-[100%] flex flex-col justify-between  md:grid md:grid-cols-5 md:gap-10 ">
-        <div className=" md:col-span-3 ">
+        <div className="md:col-span-3 flex flex-col">
           <div className={`${colors.navbartext} flex justify-between py-4`}>
             <h1 className="font-bold text-2xl dark:text-brand">
               Weekly Activity
             </h1>
           </div>
-          <div className="w-[100%]">
+          <div className="w-[100%] flex-1">
             <BarChart />
           </div>
         </div>
-        <div className=" w-[100%] py-5 flex flex-col gap-5 md:col-span-2 ">
-          <div className={`${colors.navbartext}`}>
+        <div className="w-[100%] flex flex-col md:col-span-2">
+          <div className={`${colors.navbartext} py-4`}>
             <h1 className="font-bold text-2xl dark:text-brand">
-              Expense Statstics
+              Expense Statistics
             </h1>
           </div>
-          <div className="w-[100%] pr-">
+          <div className="w-[100%] flex-1">
             <PieChart />
           </div>
         </div>
       </div>
 
       <div className="flex flex-col justify-between w-full  md:grid md:grid-cols-5 md:gap-10 ">
-        <div className=" md:col-span-2 py-4  ">
-          <div className={`${colors.navbartext} flex justify-between `}>
+        <div className="md:col-span-2 flex flex-col">
+          <div className={`${colors.navbartext} flex justify-between py-4`}>
             <h1 className="font-bold text-2xl dark:text-brand">
               Quick Transfer
             </h1>
           </div>
-          <div className="flex  gap-3 ">
-            <div className="flex py-3 ">
-              {" "}
+          <div className="flex-1">
+            <div className="flex h-full w-full">
               <QuickTransfer />
             </div>
           </div>
         </div>
-        <div className=" md:col-span-3 ">
-          <div className={`${colors.navbartext} flex justify-between  py-4`}>
+        <div className="md:col-span-3 flex flex-col">
+          <div className={`${colors.navbartext} flex justify-between py-4`}>
             <h1 className="font-bold text-2xl dark:text-brand">
               Balance History
             </h1>
           </div>
-          <div className="pr-6">
+          <div className="flex-1">
             <LineChart />
           </div>
         </div>

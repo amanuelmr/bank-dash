@@ -15,7 +15,7 @@ export const Sidebar: FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     <>
       {/* Sidebar for Mobile Screens */}
       <div
-        className={`fixed top-0 left-0 z-40 flex flex-col w-64 h-full bg-white shadow-lg p-4 transition-transform duration-300  dark:bg-dark text-gray-900 dark:text-white
+        className={`fixed top-0 left-0 z-40 flex flex-col w-64 h-full bg-white shadow-lg p-4 transition-transform duration-300  dark:bg-surface-1 text-gray-900 dark:text-white
                 ${isOpen ? "translate-x-0" : "-translate-x-full"} lg:hidden`}
       >
         {/* Close Button - Only visible on mobile */}
@@ -63,7 +63,7 @@ export const Sidebar: FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       </div>
 
       {/* Sidebar for Large Screens */}
-      <div className="hidden lg:flex fixed top-0 left-0 z-20 flex-col w-64 h-full bg-white shadow-lg p-4  dark:bg-dark text-gray-900 dark:text-white">
+      <div className="hidden lg:flex fixed top-0 left-0 z-20 flex-col w-64 h-full bg-white shadow-lg p-4  dark:bg-surface-1 text-gray-900 dark:text-white">
         <div className="text-2xl font-bold mb-6 dark:text-brand">
         BankDash.
         </div>
@@ -112,7 +112,7 @@ export const Sidebar: FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 //     <>
 //       {/* Sidebar for Mobile Screens */}
 //       <div
-//         className={`fixed top-0 left-0 z-40 flex flex-col w-64 h-full bg-white shadow-lg p-4 transition-transform duration-300  dark:bg-dark text-gray-900 dark:text-white
+//         className={`fixed top-0 left-0 z-40 flex flex-col w-64 h-full bg-white shadow-lg p-4 transition-transform duration-300  dark:bg-surface-1 text-gray-900 dark:text-white
 //         ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:hidden`}
 //       >
 //         {/* Close Button - Only visible on mobile */}

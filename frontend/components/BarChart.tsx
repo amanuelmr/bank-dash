@@ -35,7 +35,7 @@ const chartConfig = {
 
 export default function Component() {
   return (
-    <Card className="w-[100%] flex items-end justify-start ">
+    <Card className="w-[100%] h-full flex items-end justify-start ">
       <CardContent className=" p-0 w-[100%] flex items-end justify-start " >
         <ChartContainer className="w-[100%] " config={chartConfig}>
               
