@@ -86,7 +86,7 @@ const TransferPage: React.FC = () => {
               <select
                 id="type"
                 {...register('type', { required: "This field is required" })}
-                className="shadow appearance-none border placeholder-current rounded w-full py-2 px-3 text-gray-700 dark:text-dark dark:bg-white leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none border placeholder-current rounded w-full py-2 px-3 text-gray-700 dark:text-dark dark:bg-surface-1 leading-tight focus:outline-none focus:shadow-outline"
                 defaultValue=""
               >
                 <option value="" disabled>Select a transaction type</option>
@@ -101,7 +101,7 @@ const TransferPage: React.FC = () => {
               <textarea
                 {...register('description')}
                 id="description"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-dark dark:bg-white leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-dark dark:bg-surface-1 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Enter a brief description"
               />
             </div>
@@ -111,7 +111,7 @@ const TransferPage: React.FC = () => {
                 {...register('amount', { required: "This field is required" })}
                 type="number"
                 id="amount"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-dark dark:bg-white leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-dark dark:bg-surface-1 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Enter amount"
                 required
               />
@@ -122,7 +122,7 @@ const TransferPage: React.FC = () => {
                 {...register('receiverUsername', { required: "This field is required" })}
                 type="text"
                 id="receiverUsername"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-dark dark:bg-white leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-dark dark:bg-surface-1 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Enter receiver's username"
                 required
               />

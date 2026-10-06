@@ -43,7 +43,7 @@ const Transaction: React.FC = () => {
       <div className=" hidden lg:grid lg:grid-cols-2 lg:gap-5 lg:space-x-8 lg:pb-8 lg:ml-72 lg:pt-16">
         {/* Cards Section */}
         <div className="flex flex-col">
-          <h1 className="text-2xl font-bold mb-4 dark:text-blue-500">
+          <h1 className="text-2xl font-bold mb-4 dark:text-brand">
             My Cards
           </h1>
           <div className=" w-[100%] overflow-x-auto flex space-x-4 scrollbar-thin scrollbar-track-[#F5F7FA] dark:scrollbar-track-dark scrollbar-thumb-[#92a7c5] scrollbar-thumb-rounded-full">
@@ -64,9 +64,9 @@ const Transaction: React.FC = () => {
                   </div>
                 ))
               ) : (
-                <div className="w-screen bg-white py-16 rounded-xl flex flex-col justify-center dark:bg-dark dark:border-[1px] dark:border-gray-700">
+                <div className="w-screen bg-white py-16 rounded-xl flex flex-col justify-center dark:bg-dark dark:border-[1px] dark:border-line">
                   <TbFileSad
-                    className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+                    className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
                     strokeWidth={1}
                   />
                   <span className="mx-auto my-auto md:text-xl text-sm text-[#993d4b] mb-5">
@@ -79,7 +79,7 @@ const Transaction: React.FC = () => {
 
         {/* Chart Section */}
         <div className="flex-1 ml-0">
-          <h1 className="text-2xl font-bold dark:text-blue-500">My Expenses</h1>
+          <h1 className="text-2xl font-bold dark:text-brand">My Expenses</h1>
 
           <div className="pl-8">
             <ExpensesChart />
@@ -89,7 +89,7 @@ const Transaction: React.FC = () => {
 
       {/* Mobile Layout */}
       <div className="lg:hidden pt-10">
-        <h1 className="text-2xl font-bold mb-4 dark:text-blue-500">My Cards</h1>
+        <h1 className="text-2xl font-bold mb-4 dark:text-brand">My Cards</h1>
         {loading ? (
           <MyCardsLoad count={2}/>
         ) : Array.isArray(cards) && cards.length > 0 ? (
@@ -107,9 +107,9 @@ const Transaction: React.FC = () => {
             </div>
           ))
         ) : (
-          <div className="w-screen bg-white py-16 rounded-xl flex flex-col justify-center dark:bg-dark dark:border-[1px] dark:border-gray-700">
+          <div className="w-screen bg-white py-16 rounded-xl flex flex-col justify-center dark:bg-dark dark:border-[1px] dark:border-line">
             <TbFileSad
-              className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+              className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
               strokeWidth={1}
             />
             <span className="mx-auto my-auto md:text-xl text-sm text-[#993d4b] mb-5">
@@ -117,7 +117,7 @@ const Transaction: React.FC = () => {
             </span>
           </div>
               )}
-        <h1 className="text-2xl font-bold mb-4 dark:text-blue-500">
+        <h1 className="text-2xl font-bold mb-4 dark:text-brand">
           My Expenses
         </h1>
         <div className="w-full">
@@ -127,7 +127,7 @@ const Transaction: React.FC = () => {
 
       {/* Recent Transactions Section */}
       <div>
-        <h1 className="text-2xl font-bold text-balance lg:text-center mb-4 dark:text-blue-500">
+        <h1 className="text-2xl font-bold text-balance lg:text-center mb-4 dark:text-brand">
           Recent Transactions
         </h1>
 

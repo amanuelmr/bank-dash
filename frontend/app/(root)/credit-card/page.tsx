@@ -42,7 +42,7 @@ const CreditCard = () => {
   return (
     <div className="lg:ml-72 ml-5 overflow-x-hidden mx-auto">
       <div className="myCards max-w-[97%] mt-4">
-        <h1 className="text-[19px] mb-3 font-bold text-[#333B69] dark:text-blue-500">My Cards</h1>
+        <h1 className="text-[19px] mb-3 font-bold text-[#333B69] dark:text-brand">My Cards</h1>
         <div className="flex overflow-x-auto space-x-4 md:pr-3 pr-1 scrollbar-thin scrollbar-track-[#F5F7FA] dark:scrollbar-track-dark scrollbar-thumb-[#92a7c5] scrollbar-thumb-rounded-full">
           {loading ? (
             <MyCardsLoad count={3}/>
@@ -59,9 +59,9 @@ const CreditCard = () => {
               </span>
             ))
           ) : (
-            <div className="max-h-[400px] lg:w-[730px] md:w-[487px] bg-white py-16 rounded-xl flex flex-col justify-center dark:bg-dark dark:border-[1px] dark:border-gray-700">
+            <div className="max-h-[400px] lg:w-[730px] md:w-[487px] bg-white py-16 rounded-xl flex flex-col justify-center dark:bg-dark dark:border-[1px] dark:border-line">
               <TbFileSad
-                className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+                className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
                 strokeWidth={1}
               />
               <span className="mx-auto my-auto md:text-xl text-sm text-red-500 mb-5">
@@ -74,20 +74,20 @@ const CreditCard = () => {
 
       <div className="flex flex-col md:flex-row gap-16">
         <div className="doughnutChart lg:w-[360px] md:w-[231] w-[325px] my-6">
-          <h1 className="text-[19px] mb-6 font-bold text-[#333B69] dark:text-blue-500">
+          <h1 className="text-[19px] mb-6 font-bold text-[#333B69] dark:text-brand">
             Card Expense Statistics
           </h1>
           <Component />
         </div>
         <div className="cardlist lg:w-[730px] md:w-[487px] sm-w-[325] my-6">
-          <h1 className="text-[19px] mb-3 font-bold text-[#333B69] dark:text-blue-500">Card List</h1>
+          <h1 className="text-[19px] mb-3 font-bold text-[#333B69] dark:text-brand">Card List</h1>
           {loading ? (
             <CardListLoad />
           ) : (
             error ? (
-              <div className="pr-6 py-32 bg-white max-h-[400px] lg:w-[730px] md:w-[487px] w-[325] flex flex-col justify-center align-middle rounded-xl scrollbar-none dark:bg-dark dark:border-[1px] dark:border-gray-700 ">
+              <div className="pr-6 py-32 bg-white max-h-[400px] lg:w-[730px] md:w-[487px] w-[325] flex flex-col justify-center align-middle rounded-xl scrollbar-none dark:bg-dark dark:border-[1px] dark:border-line ">
                 <TbFileSad
-                    className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+                    className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
                     strokeWidth={1}
                   />
                 <span className="mx-auto my-auto md:text-xl text-sm text-red-500">
@@ -103,12 +103,12 @@ const CreditCard = () => {
 
       <div className="flex flex-col md:flex-row w-[80%] mb-16">
         <div className="md:mb-2 mb-0 md:mr-5 lg:mr-10">
-          <h1 className="text-[20px] mb-3 font-bold text-[#333B69] dark:text-blue-500">Add New Card</h1>
+          <h1 className="text-[20px] mb-3 font-bold text-[#333B69] dark:text-brand">Add New Card</h1>
           <AddNewCard />
         </div>
 
         <div>
-          <h1 className="text-[19px] mb-3 font-bold text-[#333B69] md:mt-0 mt-6 dark:text-blue-500">Card Setting</h1>
+          <h1 className="text-[19px] mb-3 font-bold text-[#333B69] md:mt-0 mt-6 dark:text-brand">Card Setting</h1>
           <CardSetting />
         </div>
       </div>

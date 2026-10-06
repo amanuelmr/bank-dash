@@ -76,7 +76,7 @@ const LoginForm: React.FC = () => {
           placeholder="Username"  
           defaultValue="tester"
           {...register("username", { required: "Username is required" })}
-          className="w-full m-auto border-gray-200  dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
+          className="w-full m-auto border-gray-200  dark:text-dark dark:bg-surface-1 border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
           />
           {errors.username && (
           <div className="flex gap-1">
@@ -98,7 +98,7 @@ const LoginForm: React.FC = () => {
           placeholder="Password"
           defaultValue={"12345678"}
           {...register("password", { required: "Password is required" })}
-          className="w-full m-auto border-gray-200 dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
+          className="w-full m-auto border-gray-200 dark:text-dark dark:bg-surface-1 border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
           />
           {errors.password && (
           <div className="flex gap-1">
@@ -137,10 +137,10 @@ const LoginForm: React.FC = () => {
         <p className={`${colors.textgray}`}>
           Don&apos;t have an account?{" "}
           <span className={`${colors.textblue} font-medium text-l`}>
-          <Link href="./signup" className="dark:text-gray-300" >Sign Up</Link>
+          <Link href="./signup" className="dark:text-content-primary" >Sign Up</Link>
           </span>
         </p>
-        <span className={`${colors.textblue} dark:text-gray-300 font-medium text-l py-2`}>
+        <span className={`${colors.textblue} dark:text-content-primary font-medium text-l py-2`}>
           <Link href="/forgotpassword">Forgot password?</Link>
         </span>
         </div>

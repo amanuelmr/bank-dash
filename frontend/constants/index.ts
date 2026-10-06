@@ -234,7 +234,7 @@ export const creditcardstyles = [{
 
 export const colors = {
   blue: 'bg-[#1814F9]',
-  white: 'bg-white',
+  white: 'bg-white dark:bg-surface-2',
   navbartext:' text-[#343C6A]',
   black: 'bg-[#000000]',
   textwhite: 'text-white',
@@ -243,13 +243,13 @@ export const colors = {
   textgreen: 'text-[#41D4A8]',
   green :'bg-[#16DBCC]',
   red : 'bg-[#FF82AC]',
-  textgray : 'text-[#718EBF]',
+  textgray : 'text-content-secondary',
   gradientcard:'linear-gradient(to bottom, #4C49ED,#0A06F4)',
   gradientchart:'linear-gradient(to bottom, #2D60FF,#2D60FF)',
   textblue : "text-[#1814F3]",
-  lightblue : "bg-gray-100",
-  lightorange : 'bg-[#FFF5D9]',
-  lightpurple : 'bg-[#E7EDFF]',
+  lightblue : "bg-gray-100 dark:bg-surface-3",
+  lightorange : 'bg-[#FFF5D9] dark:bg-surface-3 dark:text-content-primary',
+  lightpurple : 'bg-[#E7EDFF] dark:bg-surface-3 dark:text-content-primary',
   lightgreen : 'bg-[#DCFAF8]',
   graybg : 'bg-[#F5F7FA]'
 

@@ -98,7 +98,7 @@ const RecentTransactions = () => {
           role="alert"
         >
           <TbFileSad
-          className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+          className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
           strokeWidth={1}
         />
           <div>
@@ -114,7 +114,7 @@ const RecentTransactions = () => {
 
   return (
     <div className="p-4 md:ml-64">
-      <div className="flex flex-wrap mb-4 dark:text-blue-500">
+      <div className="flex flex-wrap mb-4 dark:text-brand">
         <button
           onClick={() => {
             setFilter("all");
