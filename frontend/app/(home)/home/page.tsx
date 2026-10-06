@@ -94,16 +94,19 @@ const Landing: React.FC = () => {
           </div>
         </div>
 
-        {/* This section *is* the grey band, rather than a grey div positioned
-            absolutely behind it. Absolutely positioned, it had no way to know
-            where the page ended: it stopped short of the bottom edge, and its
-            height plus offsets put it out of line with the cards sitting on it.
-            As the section's own background it reaches the bottom by
-            construction, and the cards sit at its top. */}
-        <div className="w-full shrink-0 flex flex-col items-center bg-gray-200 dark:bg-gray-400 dark:bg-darkComponent rounded-t-3xl md:rounded-t-full px-6 pt-8 pb-10 xl:pt-[3vh] xl:pb-[4vh]">
+        {/* The section is the grey band, so it reaches the bottom of the page by
+            construction rather than guessing at it.
+
+            The cards deliberately straddle its top edge - half on the page
+            background, half over the grey - which is what the negative margin
+            does. Half of a 6rem card is 3rem, so -mt-12 splits them exactly.
+            It only applies from md, where the four cards fit in one row; below
+            that they wrap to two or three rows and a half-overlap would strand
+            the lower rows outside the band entirely. */}
+        <div className="w-full shrink-0 bg-gray-200 dark:bg-gray-400 dark:bg-darkComponent rounded-t-3xl md:rounded-t-full px-6 pt-6 pb-6 md:pt-0 md:pb-5">
           {/* items-stretch so the cards share the tallest card's height rather
               than centring on differing text lengths. */}
-          <div className="md:w-4/5 flex flex-wrap justify-between items-stretch gap-5">
+          <div className="md:w-4/5 mx-auto flex flex-wrap justify-between items-stretch gap-5 md:-mt-12">
             {/* min-h rather than a fixed h-24: at this width the longer lines
                 wrap to two lines and were being clipped. */}
             <div className="w-[45%] rounded-lg md:w-1/5 flex flex-col items-center justify-center text-center gap-1 dark:bg-gray-600 dark:text-white bg-white shadow-xl hover:scale-105 min-h-[6rem] px-2 py-3">
