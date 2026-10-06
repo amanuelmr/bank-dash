@@ -30,7 +30,7 @@ export const Navbar: FC<NavbarProps> = ({ pageTitle, toggleSidebar }) => {
   };
 
   return (
-    <nav className="flex flex-col p-4 bg-white shadow-md lg:pl-64 dark:bg-dark text-gray-900 dark:text-white fixed w-full z-10">
+    <nav className="flex flex-col p-4 bg-white shadow-md lg:pl-64 dark:bg-surface-1 text-gray-900 dark:text-white fixed w-full z-10">
       {/* Mobile View: Hamburger Menu */}
       <div className="lg:hidden flex justify-between items-center">
         <button onClick={toggleSidebar} aria-label="Toggle Sidebar" className="cursor-pointer focus:outline-none dark:text-brand">
