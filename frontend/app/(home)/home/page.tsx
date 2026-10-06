@@ -18,24 +18,37 @@ const Landing: React.FC = () => {
           not have the height for this, and pinning it there would clip content
           rather than fit it. */}
       <div className="flex flex-col w-full min-h-screen xl:h-screen xl:overflow-hidden dark:bg-dark dark:text-white bg-gray-300 items-center justify-center text-gray-80">
-        <div className="p-4 w-[90%] flex flex-col xl:flex-1 xl:min-h-0">
-          <div className="flex items-center justify-between shrink-0">
-            <div className="flex items-center">
-              <Image src='/icons/logo.svg' alt="Logo" width={36} height={36} />
-              <div className="text-[#343C6A] dark:text-gray-200 pl-2 md:text-xl md:pl-1 lg:pl-2 lg:text-2xl text-base xl:text-4xl md:text-[21px] font-[800] font-mont">
+        <div className="px-3 py-4 sm:p-4 w-[90%] flex flex-col xl:flex-1 xl:min-h-0">
+          {/* The two buttons were a fixed w-32 each, so on a 390px screen the
+              header needed ~387px in a ~319px row and SignUp was pushed off
+              the edge. They are content-sized below sm and only take a fixed
+              width from md up, where there is room and the original 128px is
+              preserved. min-w-0 + truncate on the brand means that on a very
+              narrow phone the wordmark yields instead of the buttons being
+              clipped. */}
+          <div className="flex items-center justify-between gap-2 shrink-0">
+            <div className="flex items-center min-w-0">
+              <Image
+                src='/icons/logo.svg'
+                alt="Logo"
+                width={36}
+                height={36}
+                className="shrink-0"
+              />
+              <div className="text-[#343C6A] dark:text-gray-200 pl-2 md:text-xl md:pl-1 lg:pl-2 lg:text-2xl text-sm sm:text-base xl:text-4xl md:text-[21px] font-[800] font-mont truncate">
                 BankDash.
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               <Link
                 href="./signin"
-                className="text-lg border text-white bg-indigo-500 border-[#343C6A] hover:bg-indigo-600 hover:text-white px-4 py-2 rounded-3xl text-center w-32"
+                className="text-base sm:text-lg border text-white bg-indigo-500 border-[#343C6A] hover:bg-indigo-600 hover:text-white px-3 sm:px-4 py-2 rounded-3xl text-center w-auto sm:w-28 md:w-32"
               >
                 Login
               </Link>
               <Link
                 href="./signup"
-                className="w-32 text-lg border border-indigo-500  hover:bg-indigo-600 text-indigo-600 px-4 py-2 rounded-3xl text-center hover:text-white "
+                className="w-auto sm:w-28 md:w-32 text-base sm:text-lg border border-indigo-500  hover:bg-indigo-600 text-indigo-600 px-3 sm:px-4 py-2 rounded-3xl text-center hover:text-white "
               >
                 SignUp
               </Link>
