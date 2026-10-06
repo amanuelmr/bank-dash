@@ -94,10 +94,16 @@ const Landing: React.FC = () => {
           </div>
         </div>
 
-        {/* shrink-0 so the cards keep their size and the hero yields the space
-            instead. */}
-        <div className="relative   md:w-full xl:mt-[1vh] shrink-0 flex flex-col justify-center items-center  p-6 xl:pt-[3vh]">
-          <div className="md:w-4/5 z-50 flex flex-wrap  justify-between items-center gap-5">
+        {/* This section *is* the grey band, rather than a grey div positioned
+            absolutely behind it. Absolutely positioned, it had no way to know
+            where the page ended: it stopped short of the bottom edge, and its
+            height plus offsets put it out of line with the cards sitting on it.
+            As the section's own background it reaches the bottom by
+            construction, and the cards sit at its top. */}
+        <div className="w-full shrink-0 flex flex-col items-center bg-gray-200 dark:bg-gray-400 dark:bg-darkComponent rounded-t-3xl md:rounded-t-full px-6 pt-8 pb-10 xl:pt-[3vh] xl:pb-[4vh]">
+          {/* items-stretch so the cards share the tallest card's height rather
+              than centring on differing text lengths. */}
+          <div className="md:w-4/5 flex flex-wrap justify-between items-stretch gap-5">
             {/* min-h rather than a fixed h-24: at this width the longer lines
                 wrap to two lines and were being clipped. */}
             <div className="w-[45%] rounded-lg md:w-1/5 flex flex-col items-center justify-center text-center gap-1 dark:bg-gray-600 dark:text-white bg-white shadow-xl hover:scale-105 min-h-[6rem] px-2 py-3">
@@ -121,7 +127,6 @@ const Landing: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="absolute -z-0 h-24 md:w-full xl:mt-[1vh]  dark:bg-gray-400 bg-gray-200 flex flex-col justify-center items-center dark:bg-darkComponent md:rounded-t-full rounded-t-3xl p-6 pt-12"></div>
         </div>
       </div>
     </>
