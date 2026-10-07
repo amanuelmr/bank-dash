@@ -189,24 +189,38 @@ const BankservicesList: React.FC = () => {
             {filtered.map((service: any, index: any) => (
               <div key={index} className="mb-4">
              
-                {/* Mobile View */}
-                <div className="lg:hidden shadow-lg p-4 rounded-md flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    {icons[index % icons.length] &&
-                      React.createElement(icons[index % icons.length], {
-                        className: "w-13 h-13",
-                        "aria-hidden": "true",
-                      })}
-                    <div>
-                      <h3 className="text-[14px] font-semibold">
-                        {service.name}
-                      </h3>
-                      <p className="text-[12px] text-gray-500">
-                        {service.details}
-                      </p>
+                {/* Narrow screens. This row had a shadow but no background of its own, so it
+                    rendered as a floating shadow on the grey page - which is what
+                    made the list look broken. `w-13 h-13` is also not a real
+                    Tailwind size, so the icons fell back to their intrinsic
+                    dimensions and some overflowed their box. */}
+                <div className="mb-4 flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 lg:hidden dark:border-line dark:bg-surface-1">
+                  {icons[index % icons.length] &&
+                    React.createElement(icons[index % icons.length], {
+                      className: "h-6 w-6 shrink-0",
+                      "aria-hidden": "true",
+                    })}
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-sm font-semibold text-content-primary">
+                      {service.name}
+                    </h3>
+                    <p className="truncate text-xs text-content-muted">
+                      {service.details}
+                    </p>
+                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-content-muted">
+                      <span>{service.type}</span>
+                      <span aria-hidden>·</span>
+                      <span>{service.status}</span>
+                      <span aria-hidden>·</span>
+                      <span className="tabular-nums">
+                        {service.numberOfUsers} users
+                      </span>
                     </div>
                   </div>
-                  <Link href="/details" className="text-[12px] text-blue-600">
+                  <Link
+                    href="/details"
+                    className="shrink-0 whitespace-nowrap rounded-full border border-blue-600 px-3 py-1 text-xs text-blue-600 transition-colors hover:bg-blue-600 hover:text-white"
+                  >
                     View Details
                   </Link>
                 </div>
@@ -217,7 +231,7 @@ const BankservicesList: React.FC = () => {
                     entirely - which is why the View Details button fell off the
                     right edge whenever the page was not exactly 1110px wide. A
                     grid of fractions tracks whatever width it is given. */}
-                <div className="hidden lg:grid lg:grid-cols-[1.5rem_minmax(0,1fr)_7rem_5rem_5rem_auto] lg:items-center lg:gap-6 shadow-lg p-4 rounded-md bg-white dark:bg-surface-1 border border-slate-200 dark:border-line">
+                <div className="hidden lg:grid lg:grid-cols-[1.5rem_minmax(0,2.4fr)_minmax(0,1fr)_minmax(0,0.95fr)_minmax(0,0.8fr)_auto] lg:items-center lg:gap-4 p-4 rounded-md bg-white dark:bg-surface-1 border border-slate-200 dark:border-line">
                   {icons[index % icons.length] &&
                     React.createElement(icons[index % icons.length], {
                       className: "w-6 h-6",
