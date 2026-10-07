@@ -130,7 +130,7 @@ const Transaction: React.FC = () => {
 
       {/* Recent Transactions Section */}
       <div>
-        <h1 className="text-2xl font-bold text-balance lg:text-center mb-4 dark:text-brand">
+        <h1 className="mb-4 text-2xl font-bold dark:text-brand">
           Recent Transactions
         </h1>
 
