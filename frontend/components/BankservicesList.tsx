@@ -10,7 +10,6 @@ import SafetyIcon from "@/public/icons/SafetyIcon";
 import Pagination from "./Pagination";
 import { TbFileSad } from "react-icons/tb";
 import { FaSearch } from "react-icons/fa";
-import { colors } from "@/constants";
 import type { BankService } from "@/types/api";
 
 
@@ -124,7 +123,7 @@ const BankservicesList: React.FC = () => {
 
   if (status === "loading") {
     return (
-      <div className="max-w-[1110px] px-4 md:mx-auto">
+      <div className="w-full">
         <h2 className="text-xl font-bold mb-4 dark:text-brand animate-pulse">
           Bank Services List
         </h2>
@@ -133,7 +132,7 @@ const BankservicesList: React.FC = () => {
     );
   } else if (status === "error") {
     return (
-      <div className="max-w-[1110px] px-4 md:mx-auto">
+      <div className="w-full">
         <h2 className="text-xl font-bold mb-4 dark:text-brand animate-pulse">
           Bank Services List
         </h2>
@@ -150,7 +149,7 @@ const BankservicesList: React.FC = () => {
     return (
       <>
         {services.length == 0 ? (
-          <div className="max-w-[1110px] px-4 md:mx-auto mt-4">
+          <div className="w-full mt-4">
             <div className="shadow-lg p-4 rounded-md flex items-center justify-between bg-gray-100 dark:bg-surface-2">
               <div className="flex items-center space-x-4">
                 <div className="w-13 h-13 bg-gray-300 rounded-full"></div>
@@ -169,7 +168,7 @@ const BankservicesList: React.FC = () => {
       )
   
         : (
-          <div className="max-w-[1110px] px-4 md:mx-auto">
+          <div className="w-full">
             <h2 className="text-xl font-bold mb-4 dark:text-brand">
               Bank Services List
             </h2>
@@ -212,53 +211,47 @@ const BankservicesList: React.FC = () => {
                   </Link>
                 </div>
 
-                {/* Larger Screens */}
-                <div
-                  className="hidden lg:flex shadow-lg p-4 rounded-md items-center"
-                  style={{ width: "1110px", height: "90px" }}
-                >
+                {/* Larger Screens. This row carried an inline
+                    style={{ width: "1110px" }} plus `space-x-28` gaps, so its
+                    width was fixed in pixels and ignored the container
+                    entirely - which is why the View Details button fell off the
+                    right edge whenever the page was not exactly 1110px wide. A
+                    grid of fractions tracks whatever width it is given. */}
+                <div className="hidden lg:grid lg:grid-cols-[1.5rem_minmax(0,1fr)_7rem_5rem_5rem_auto] lg:items-center lg:gap-6 shadow-lg p-4 rounded-md bg-white dark:bg-surface-1 border border-slate-200 dark:border-line">
                   {icons[index % icons.length] &&
                     React.createElement(icons[index % icons.length], {
-                      className: "w-13 h-13",
+                      className: "w-6 h-6",
                       "aria-hidden": "true",
                     })}
-                  <div className="flex-1 ml-3">
-                    <div className="flex justify-between">
-                      <div>
-                        <h3 className="text-[16px] font-semibold">
-                          {service.name}
-                        </h3>
-                        <p className="text-[15px] text-gray-500">
-                          {service.details}
-                        </p>
-                      </div>
-                      <div className="flex space-x-28">
-                        <div>
-                          <h4 className="text-[14px] font-semibold">
-                            {service.type}
-                          </h4>
-                          <p className="text-[12px] text-gray-500">type</p>
-                        </div>
-                        <div>
-                          <h4 className="text-[14px] font-semibold">
-                            {service.status}
-                          </h4>
-                          <p className="text-[12px] text-gray-500">status</p>
-                        </div>
-                        <div>
-                          <h4 className="text-[14px] font-semibold">
-                            {service.numberOfUsers}
-                          </h4>
-                          <p className="text-[12px] text-gray-500">
-                            number of users
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="min-w-0">
+                    <h3 className="truncate text-[16px] font-semibold text-content-primary">
+                      {service.name}
+                    </h3>
+                    <p className="truncate text-[14px] text-content-muted">
+                      {service.details}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="text-[14px] font-semibold text-content-primary">
+                      {service.type}
+                    </h4>
+                    <p className="text-[12px] text-content-muted">type</p>
+                  </div>
+                  <div>
+                    <h4 className="text-[14px] font-semibold text-content-primary">
+                      {service.status}
+                    </h4>
+                    <p className="text-[12px] text-content-muted">status</p>
+                  </div>
+                  <div>
+                    <h4 className="text-[14px] font-semibold tabular-nums text-content-primary">
+                      {service.numberOfUsers}
+                    </h4>
+                    <p className="text-[12px] text-content-muted">users</p>
                   </div>
                   <Link
                     href="/details"
-                    className="text-[15px] text-blue-600 ml-28 border border-blue-600 px-2 py-1 rounded-full"
+                    className="justify-self-end whitespace-nowrap text-[14px] text-blue-600 border border-blue-600 px-3 py-1 rounded-full transition-colors hover:bg-blue-600 hover:text-white"
                   >
                     View Details
                   </Link>

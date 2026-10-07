@@ -28,7 +28,7 @@ const services = [
 
 const ServiceProvided: React.FC = () => {
   return (
-    <div className="lg:max-w-[1110px] lg:mx-auto">
+    <div className="w-full">
       <Carousel className="lg:hidden">
         <CarouselContent className="py-4">
           {services.map((service, index) => (
@@ -50,12 +50,14 @@ const ServiceProvided: React.FC = () => {
         </CarouselContent>
       </Carousel>
 
-      {/* For Large Screens */}
-      <div className="hidden lg:flex gap-8">
+      {/* For Large Screens. The cards were a fixed w-[350px] in a flex row, so
+          three of them overflowed the container and the last was clipped. Each
+          card now takes an equal share of whatever width it is given. */}
+      <div className="hidden lg:grid lg:grid-cols-3 gap-8">
         {services.map((service, index) => (
           <div
             key={index}
-            className="w-[350px] h-[120px] shadow-lg p-4 rounded-md flex items-center"
+            className="h-[120px] shadow-lg p-4 rounded-md flex items-center bg-white dark:bg-surface-1 border border-slate-200 dark:border-line"
           >
             <service.icon className="w-130 h-130 mr-4" aria-hidden="true" />
             <div>

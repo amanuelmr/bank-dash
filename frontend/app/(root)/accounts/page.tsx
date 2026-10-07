@@ -8,10 +8,10 @@ import Link from "next/link";
 import ResponsiveCreditCard from "@/components/CreditCard";
 import { getAllCards } from "@/services/cardfetch";
 import type { Card } from "@/types/api";
-import { colors } from "@/constants";
 import { TbFileSad } from "react-icons/tb";
 import MyCardsLoad from "@/components/loadingComponents/MyCardsLoad";
 import CurrencyConverter from "@/components/CurrencyConverter";
+import PageContainer from "@/components/PageContainer";
 
 const Accounts = () => {
   const [cards, setCards] = useState<Card[]>([]);
@@ -40,14 +40,7 @@ const Accounts = () => {
   }, []);
 
   return (
-    <div className="flex dark:bg-dark text-gray-900 dark:text-white">
-      {/* Sidebar */}
-      <div className="hidden lg:block w-64 bg-white h-screen fixed top-0 left-0">
-        {/* Your Sidebar content goes here */}
-      </div>
-
-      {/* Main content */}
-      <div className="flex-1 lg:ml-64 p-4 sm:p-8 bg-gray-100 dark:bg-dark text-gray-900 dark:text-white">
+    <PageContainer>
         {/* Top Section */}
         <div className="mb-8">
           <h1 className="text-2xl font-semibold mb-6 dark:text-brand">
@@ -84,9 +77,7 @@ const Accounts = () => {
                 cards.map((card: any, index: number) => (
                   <div key={index} className="p-1 flex gap-1">
                     <ResponsiveCreditCard
-                      backgroundColor={
-                        index % 2 === 0 ? colors.blue : colors.white
-                      }
+                      tone={(index % 3 === 0 ? "brand" : index % 3 === 1 ? "midnight" : "light")}
                       balance={card.balance}
                       cardHolder={card.cardHolder}
                       expiryDate={card.expiryDate}
@@ -112,11 +103,11 @@ const Accounts = () => {
 
         {/* Bottom Section */}
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 sm:gap-8 mt-8">
-          <div className="lg:col-span-7 flex flex-col h-full">
+          <div className="lg:col-span-7 flex flex-col">
             <h2 className="text-lg font-semibold mb-4 dark:text-brand">
               Debit & Credit Overview
             </h2>
-            <div className="flex-1">
+            <div className="h-[360px]">
               <AccountBarChart />
             </div>
           </div>
@@ -134,8 +125,7 @@ const Accounts = () => {
             </div> */}
           </div>
         </div>
-      </div>
-    </div>
+    </PageContainer>
   );
 };
 

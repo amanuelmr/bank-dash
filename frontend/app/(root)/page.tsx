@@ -18,6 +18,7 @@ import type { Card } from "@/types/api";
 import Image from "next/image";
 import MyCardsLoad from "@/components/loadingComponents/MyCardsLoad";
 import { TbFileSad } from "react-icons/tb";
+import PageContainer from "@/components/PageContainer";
 
 const Page = () => {
   const [cards, setCards] = useState<Card[]>([]);
@@ -46,7 +47,7 @@ const Page = () => {
   }, []);
 
   return (
-    <div className={`${colors.graybg} p-6 md:pl-10 lg:pl-72 md:max-w-full md:px-12  dark:bg-dark text-gray-900 dark:text-white`}>
+    <PageContainer className="py-6">
       <div className="flex flex-col justify-between md:flex-row  gap-10 ">
         <div className=" py-4 md:w-3/5 md:max-w-full">
           <div className={`${colors.navbartext} flex justify-between `}>
@@ -65,9 +66,7 @@ const Page = () => {
                 cards.map((card: any, index: number) => (
                   <div key={index} className="p-1 flex gap-1">
                     <ResponsiveCreditCard
-                      backgroundColor={
-                        index % 2 === 0 ? colors.blue : colors.white
-                      }
+                      tone={(index % 3 === 0 ? "brand" : index % 3 === 1 ? "midnight" : "light")}
                       balance={card.balance}
                       cardHolder={card.cardHolder}
                       expiryDate={card.expiryDate}
@@ -147,7 +146,7 @@ const Page = () => {
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 };
 
