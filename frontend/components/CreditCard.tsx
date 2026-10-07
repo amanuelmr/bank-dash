@@ -13,7 +13,7 @@ interface ResponsiveCreditCardProps {
 
 const ResponsiveCreditCard: React.FC<ResponsiveCreditCardProps> = ({ backgroundColor, balance, cardHolder, expiryDate, maskedNumber }) => {
   return (
-    <div className={`${backgroundColor} w-[231px] h-[170px] sm:w-[265px] sm:h-[170px] md:w-[350px] md:h-[235px] rounded-xl relative ${backgroundColor === colors.white ? 'border-[1px] border-gray-300' : ''}`}>
+    <div className={`${backgroundColor} w-[231px] max-w-full h-[170px] sm:w-[265px] sm:h-[170px] md:w-[350px] md:h-[235px] rounded-xl relative ${backgroundColor === colors.white ? 'border-[1px] border-gray-300' : ''}`}>
       <div className="flex justify-between w-[95%]">
         <div className='mt-1 ml-3 p-2'>
             <span className={`text-[11px] md:text-[12px] ${backgroundColor == colors.blue ? textColors.textWhite : textColors.textDimmed}`}>Balance</span>
