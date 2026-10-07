@@ -238,37 +238,43 @@ const Investments = () => {
         </div>
       </div>
 
-      <div className="flex flex-col lg:grid lg:grid-cols-5 ">
-        <div className="px-6  lg:col-span-3 flex flex-col gap-5">
+      {/* My Investment and Trending Stock read as two unrelated components:
+          different padding (px-6 vs p-6 lg:p-0), and the list rows ran at
+          roughly twice the height of the table beside them. Both are now the
+          same panel chrome and row rhythm, and share a heading, so the row
+          balances. h-full on each lets the grid stretch them to one height
+          rather than each asserting its own. */}
+      <div className="flex flex-col gap-6 py-5 lg:grid lg:grid-cols-5 lg:items-stretch">
+        <div className="flex flex-col gap-3 lg:col-span-3">
           <h2
             className={`font-semibold text-[22px] ${colors.navbartext} dark:text-brand`}
           >
             My Investment
           </h2>
-          {data.map((item, index) => (
-            <MyInvestment
-              key={index}
-              icon={item.icon}
-              color={item.color}
-              colortext={item.colortext}
-              category={item.category}
-              categorycolor={item.categorycolor}
-              name={item.name}
-              amount={item.amount}
-              percentage={item.percentage}
-            />
-          ))}
-        </div>
-        <div className="lg:col-span-2">
-          <div className="p-6 lg:p-0">
-            <h2
-              className={`font-semibold text-[22px] ${colors.navbartext} dark:text-brand`}
-            >
-              Trending Stock
-            </h2>
-
-            <TrendingStock items={trendingdata} />
+          <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100 dark:border-line dark:bg-surface-1 dark:divide-line">
+            {data.map((item, index) => (
+              <MyInvestment
+                key={index}
+                icon={item.icon}
+                color={item.color}
+                colortext={item.colortext}
+                category={item.category}
+                categorycolor={item.categorycolor}
+                name={item.name}
+                amount={item.amount}
+                percentage={item.percentage}
+              />
+            ))}
           </div>
+        </div>
+        <div className="flex flex-col gap-3 lg:col-span-2">
+          <h2
+            className={`font-semibold text-[22px] ${colors.navbartext} dark:text-brand`}
+          >
+            Trending Stock
+          </h2>
+
+          <TrendingStock items={trendingdata} />
         </div>
       </div>
     </div>
