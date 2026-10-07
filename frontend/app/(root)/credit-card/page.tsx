@@ -72,20 +72,20 @@ const CreditCard = () => {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-16">
-        <div className="doughnutChart lg:w-[360px] md:w-[231] w-[325px] my-6">
+      <div className="flex flex-col gap-8 md:flex-row">
+        <div className="my-6 w-full lg:w-[360px] lg:shrink-0">
           <h1 className="text-[19px] mb-6 font-bold text-[#333B69] dark:text-brand">
             Card Expense Statistics
           </h1>
           <Component />
         </div>
-        <div className="cardlist lg:w-[730px] md:w-[487px] sm-w-[325] my-6">
+        <div className="my-6 min-w-0 flex-1">
           <h1 className="text-[19px] mb-3 font-bold text-[#333B69] dark:text-brand">Card List</h1>
           {loading ? (
             <CardListLoad />
           ) : (
             error ? (
-              <div className="pr-6 py-32 bg-white max-h-[400px] lg:w-[730px] md:w-[487px] w-[325] flex flex-col justify-center align-middle rounded-xl scrollbar-none dark:bg-dark dark:border-[1px] dark:border-line ">
+              <div className="flex max-h-[400px] flex-col justify-center rounded-xl bg-white py-32 dark:bg-surface-1 dark:border dark:border-line">
                 <TbFileSad
                     className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
                     strokeWidth={1}
