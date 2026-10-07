@@ -1,27 +1,21 @@
 // SettingsPage.tsx
 'use client';
 import React, { useState } from 'react';
-import { usePathname } from 'next/navigation';
-import { FaUser, FaSlidersH, FaShieldAlt } from 'react-icons/fa';
 import EditProfile from '@/components/updateuser';
 import Preference from '@/components/updateprefrences';
 import Security from '@/components/securityForm';
 import PageContainer from '@/components/PageContainer';
 
 const TABS = [
-  { id: 'editProfile', label: 'Edit profile', Icon: FaUser },
-  { id: 'preference', label: 'Preference', Icon: FaSlidersH },
-  { id: 'security', label: 'Security', Icon: FaShieldAlt },
+  { id: 'editProfile', label: 'Edit Profile' },
+  { id: 'preference', label: 'Preference' },
+  { id: 'security', label: 'Security' },
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState<TabId>('editProfile');
-  const pathname = usePathname();
-
-  const active = TABS.find((tab) => tab.id === activeTab)!;
-
   return (
     <PageContainer>
       <div className="mx-auto w-full max-w-5xl py-8">
@@ -32,15 +26,15 @@ const SettingsPage = () => {
           </p>
         </header>
 
-        {/* Horizontal tabs below the heading, rather than a 250px rail beside
-            the content. The rail existed but rendered nothing at all - an empty
-            <aside> that pushed the form 250px right for no reason. */}
-        <div
-          role="tablist"
-          aria-label="Settings sections"
-          className="mb-6 flex flex-wrap gap-1 border-b border-line"
-        >
-          {TABS.map(({ id, label, Icon }) => {
+        {/* Horizontal tabs below the heading, rather than a 250px rail beside the
+            content. The rail existed but rendered nothing at all - an empty
+            <aside> that pushed the form 250px right for no reason.
+
+            Styled to match the tabs already used on /transaction
+            (font-bold px-4 py-2 rounded-t-lg, border-b-2 when active) so the
+            two do not read as two different tab systems. */}
+        <div role="tablist" aria-label="Settings sections" className="mb-6 flex flex-wrap gap-2">
+          {TABS.map(({ id, label }) => {
             const isActive = activeTab === id;
             return (
               <button
@@ -50,13 +44,12 @@ const SettingsPage = () => {
                 aria-selected={isActive}
                 aria-controls={`panel-${id}`}
                 onClick={() => setActiveTab(id)}
-                className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+                className={`rounded-t-lg px-4 py-2 font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                   isActive
-                    ? "border-brand text-brand"
-                    : "border-transparent text-content-muted hover:border-line-strong hover:text-content-secondary"
+                    ? "border-b-2 border-blue-500 text-content-primary dark:text-white"
+                    : "text-gray-600 hover:text-content-primary dark:text-content-secondary"
                 }`}
               >
-                <Icon className="text-base" aria-hidden />
                 {label}
               </button>
             );
