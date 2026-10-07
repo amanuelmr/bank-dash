@@ -50,7 +50,7 @@ const SecurityForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex max-w-2xl flex-col gap-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
       <Section
         title="Two-factor authentication"
         description="Require a second step when signing in."

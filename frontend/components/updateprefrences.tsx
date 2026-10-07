@@ -71,7 +71,7 @@ const PreferenceForm = () => {
   if (loading) return <p>Loading...</p>; // Optional: Add a loading state
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex max-w-2xl flex-col gap-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
       {/* Currency and time zone were placeholder-only inputs side by side with no
           labels, and the save button sat under a md:pt-32 gap that left it
           floating far below the form. */}
