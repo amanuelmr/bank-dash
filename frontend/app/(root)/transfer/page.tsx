@@ -71,8 +71,8 @@ const TransferPage: React.FC = () => {
   return (
     <>
       {contextHolder}
-      <PageContainer className="flex items-center justify-center py-14">
-        <div className="bg-white p-4 sm:p-6 dark:bg-gray-900 rounded-lg shadow-lg w-full max-w-full sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-lg h-full sm:h-auto flex flex-col justify-center lg:ml-72">
+      <PageContainer className="items-center">
+        <div className="flex w-full max-w-lg flex-col rounded-2xl border border-slate-200 bg-white p-6 dark:border-line dark:bg-surface-1">
           <div className="text-center text-2xl font-bold mb-4 p-3 flex justify-center gap-3">
             <p>
               {visible ? `$${info?.accountBalance}` : '$****'}
@@ -83,11 +83,11 @@ const TransferPage: React.FC = () => {
           </div>
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col py-3 gap-4">
             <div>
-              <label htmlFor="type" className="block text-black text-sm font-bold mb-1">Type:</label>
+              <label htmlFor="type" className="block text-gray-900 text-sm font-bold mb-1 dark:text-white">Type:</label>
               <select
                 id="type"
                 {...register('type', { required: "This field is required" })}
-                className="shadow appearance-none border placeholder-current rounded w-full py-2 px-3 text-gray-700 dark:text-dark dark:bg-surface-1 leading-tight focus:outline-none focus:shadow-outline"
+                className="appearance-none border border-slate-300 placeholder-current rounded-lg dark:border-line w-full py-2 px-3 text-gray-700 dark:text-white dark:bg-surface-1 leading-tight focus:outline-none focus:shadow-outline"
                 defaultValue=""
               >
                 <option value="" disabled>Select a transaction type</option>
@@ -98,32 +98,32 @@ const TransferPage: React.FC = () => {
               </select>
             </div>
             <div>
-              <label htmlFor="description" className="block text-black text-sm font-bold mb-1">Description (optional):</label>
+              <label htmlFor="description" className="block text-gray-900 text-sm font-bold mb-1 dark:text-white">Description (optional):</label>
               <textarea
                 {...register('description')}
                 id="description"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-dark dark:bg-surface-1 leading-tight focus:outline-none focus:shadow-outline"
+                className="appearance-none border border-slate-300 rounded-lg dark:border-line w-full py-2 px-3 text-gray-700 dark:text-white dark:bg-surface-1 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Enter a brief description"
               />
             </div>
             <div>
-              <label htmlFor="amount" className="block text-black text-sm font-bold mb-1">Amount:</label>
+              <label htmlFor="amount" className="block text-gray-900 text-sm font-bold mb-1 dark:text-white">Amount:</label>
               <input
                 {...register('amount', { required: "This field is required" })}
                 type="number"
                 id="amount"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-dark dark:bg-surface-1 leading-tight focus:outline-none focus:shadow-outline"
+                className="appearance-none border border-slate-300 rounded-lg dark:border-line w-full py-2 px-3 text-gray-700 dark:text-white dark:bg-surface-1 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Enter amount"
                 required
               />
             </div>
             <div>
-              <label htmlFor="receiverUsername" className="block text-black text-sm font-bold mb-1">Receiver Username:</label>
+              <label htmlFor="receiverUsername" className="block text-gray-900 text-sm font-bold mb-1 dark:text-white">Receiver Username:</label>
               <input
                 {...register('receiverUsername', { required: "This field is required" })}
                 type="text"
                 id="receiverUsername"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-dark dark:bg-surface-1 leading-tight focus:outline-none focus:shadow-outline"
+                className="appearance-none border border-slate-300 rounded-lg dark:border-line w-full py-2 px-3 text-gray-700 dark:text-white dark:bg-surface-1 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Enter receiver's username"
                 required
               />

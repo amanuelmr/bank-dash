@@ -71,11 +71,11 @@ const PreferenceForm = () => {
   if (loading) return <p>Loading...</p>; // Optional: Add a loading state
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white dark:divide-line dark:border-line dark:bg-surface-1">
       {/* Currency and time zone were placeholder-only inputs side by side with no
           labels, and the save button sat under a md:pt-32 gap that left it
           floating far below the form. */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-line dark:bg-surface-1">
+      <section className="p-6">
         <header className="mb-5">
           <h2 className="text-base font-semibold text-content-primary">Regional</h2>
           <p className="mt-1 text-sm text-content-muted">
@@ -92,7 +92,7 @@ const PreferenceForm = () => {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-line dark:bg-surface-1">
+      <section className="p-6">
         <header className="mb-5">
           <h2 className="text-base font-semibold text-content-primary">Notifications</h2>
           <p className="mt-1 text-sm text-content-muted">
@@ -124,7 +124,7 @@ const PreferenceForm = () => {
         </div>
       </section>
 
-      <div className="flex items-center justify-end gap-4">
+      <div className="flex items-center justify-end gap-4 px-6 py-4">
         {saved && (
           <p role="status" className="text-sm font-medium text-success">
             Preferences saved
@@ -133,7 +133,7 @@ const PreferenceForm = () => {
         <button
           type="submit"
           disabled={saving}
-          className="rounded-lg bg-brand-fill px-5 py-2.5 text-sm font-medium text-on-brand-fill transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 disabled:opacity-60 dark:focus:ring-offset-dark"
+          className="rounded-lg bg-brand-fill px-5 py-2.5 text-sm font-medium text-brand-on transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 disabled:opacity-60 dark:focus:ring-offset-dark"
         >
           {saving ? 'Saving…' : 'Save changes'}
         </button>

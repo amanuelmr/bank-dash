@@ -5,6 +5,7 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import type { Transaction } from "@/types/api";
 
 import { TbFileSad } from "react-icons/tb";
+import { Card } from "./ui/card";
 
 
 const TransactionList: React.FC = () => {
@@ -70,20 +71,20 @@ const TransactionList: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4 bg-white rounded-lg shadow-md p-4">
+    <Card className="flex flex-col gap-4 p-5">
       {transactions.map((transaction) => (
         <div key={transaction.id} className="flex items-center justify-between">
           <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-100">
             <CurrencyDollarIcon className="h-8 w-8 text-blue-700"/>
           </div>
           <div className="flex-1 px-3">
-            <div className="text-gray-800 font-medium">{transaction.receiverUsername}</div>
-            <div className="text-gray-400 text-sm">{formatTimeSince(transaction.occurredAt)}</div>
+            <div className="text-content-primary font-medium">{transaction.receiverUsername}</div>
+            <div className="text-content-muted text-sm">{formatTimeSince(transaction.occurredAt)}</div>
           </div>
-          <div className="text-gray-800 font-semibold">${transaction.amount}</div>
+          <div className="text-content-primary font-semibold">${transaction.amount}</div>
         </div>
       ))}
-    </div>
+    </Card>
   );
 };
 

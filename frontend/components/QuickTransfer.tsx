@@ -169,7 +169,7 @@ const QuickTransfer: React.FC = () => {
   }
 
   return (
-    <div className="flex bg-white rounded-2xl flex-col py-4 items-start gap-3 w-[100%] dark:bg-dark text-gray-900 dark:text-white">
+    <div className="flex w-full flex-col items-start justify-center gap-6 rounded-2xl border border-slate-200 bg-white py-6 text-gray-900 dark:border-line dark:bg-surface-1 dark:text-white">
       {contextHolder}
       <div className="flex justify-between items-center h-35 w-[100%] px-2">
         <div

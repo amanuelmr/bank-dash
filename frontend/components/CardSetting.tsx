@@ -18,9 +18,9 @@ const CardSetting = () => {
         {icon: '/icons/apple.png', title: 'Add to Apple Store', description: 'Withdraw without any card', background: 'bg-[#DCFAF8] dark:bg-[#DCFAF8]/15'},
     ]
   return (
-    <div className='md:w-[335px] md:h-[470px] w-[330px] h-[450px] rounded-3xl bg-white pt-4  dark:bg-dark text-gray-900 dark:text-white dark:border-[1px] dark:border-line'>
+    <div className='h-full divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white text-gray-900 dark:divide-line dark:border-line dark:bg-surface-1 dark:text-white'>
         { options.map((option, index) => (
-            <Link key={index} href={''}>
+            <Link key={index} href={''} className='block transition-colors hover:bg-slate-50 dark:hover:bg-surface-2'>
                 <CardSettingLine key={index} icon={option.icon} title={option.title} description={option.description} background={option.background} />
             </Link>
         ))}

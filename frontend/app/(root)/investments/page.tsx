@@ -113,10 +113,10 @@ const Investments = () => {
 
   if (status === "loading") {
     return (
-      <PageContainer className="py-6">
-        <div className="flex flex-col gap-5">
-        <div className="flex flex-col items-center pt-4 gap-4 lg:flex-row">
-          <div className="flex gap-3 w-[80%] bg-gray-200 justify-center items-center py-3 rounded-xl animate-pulse">
+      <PageContainer>
+        <div className="flex flex-col gap-8">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="flex items-center gap-4 rounded-2xl bg-gray-200 p-4 animate-pulse dark:bg-surface-3">
             <div className="bg-cyan-100 w-[50px] h-[50px] flex items-center justify-center rounded-full animate-pulse"></div>
             <div>
               <div className="bg-gray-300 h-[12px] w-[150px] rounded mb-2 animate-pulse"></div>
@@ -124,7 +124,7 @@ const Investments = () => {
             </div>
           </div>
 
-          <div className="flex gap-3 w-[80%] bg-gray-200 justify-center items-center py-3 rounded-xl animate-pulse">
+          <div className="flex items-center gap-4 rounded-2xl bg-gray-200 p-4 animate-pulse dark:bg-surface-3">
             <div className="bg-pink-100 w-[50px] h-[50px] flex items-center justify-center rounded-full animate-pulse"></div>
             <div>
               <div className="bg-gray-300 h-[12px] w-[150px] rounded mb-2 animate-pulse"></div>
@@ -132,7 +132,7 @@ const Investments = () => {
             </div>
           </div>
 
-          <div className="flex gap-3 w-[80%] bg-gray-200 justify-center items-center py-3 rounded-xl animate-pulse">
+          <div className="flex items-center gap-4 rounded-2xl bg-gray-200 p-4 animate-pulse dark:bg-surface-3">
             <div className="bg-indigo-100 w-[50px] h-[50px] flex items-center justify-center rounded-full animate-pulse"></div>
             <div>
               <div className="bg-gray-300 h-[12px] w-[150px] rounded mb-2 animate-pulse"></div>
@@ -172,57 +172,57 @@ const Investments = () => {
   }
 
   return (
-    <PageContainer className="py-6">
-      <div className="flex flex-col gap-5">
-      <div className="flex flex-col items-center pt-4 gap-4 lg:flex-row">
-        <div className="flex gap-3 w-[80%] bg-white justify-center items-center py-3  rounded-xl  dark:bg-dark text-gray-900 dark:text-white">
+    <PageContainer>
+      <div className="flex flex-col gap-8">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-gray-900 dark:border-line dark:bg-surface-1 dark:text-white">
           <div className="bg-cyan-100 w-[50px] h-[50px] flex items-center justify-center rounded-full  ">
             <FaSackDollar className="text-cyan-500 h-[25px] w-[20px] " />
           </div>
           <div>
             <p
-              className={`${colors.textgray} font-normal text-[12px] lg:text-[18px] dark:text-white`}
+              className="text-xs text-content-muted"
             >
               Total Invested Amount
             </p>
             <p
-              className={`${colors.textblack} font-semibold text-[16px] dark:text-white`}
+              className="text-lg font-bold text-content-primary"
             >
               {investment ? `$${investment.totalInvestment.toLocaleString()}` : "no data to display"}
             </p>
           </div>
         </div>
 
-        <div className="flex gap-3 w-[80%] bg-white justify-center items-center py-3 rounded-xl  dark:bg-dark text-gray-900 dark:text-white">
+        <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-gray-900 dark:border-line dark:bg-surface-1 dark:text-white">
           <div className="bg-pink-100 w-[50px] h-[50px] flex items-center justify-center rounded-full  ">
             <GiTakeMyMoney className="text-pink-500 h-[25px] w-[20px] " />
           </div>
           <div>
             <p
-              className={`${colors.textgray} font-normal text-[12px] lg:text-[18px] dark:text-white`}
+              className="text-xs text-content-muted"
             >
               Number of Investments
             </p>
             <p
-              className={`${colors.textblack} font-semibold text-[16px] dark:text-white`}
+              className="text-lg font-bold text-content-primary"
             >
               {investment ? investment.numberOfInvestments.toLocaleString() : "-"}
             </p>
           </div>
         </div>
 
-        <div className="flex gap-3 w-[80%] bg-white justify-center items-center py-3 rounded-xl dark:bg-dark text-gray-900 dark:text-white">
+        <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-gray-900 dark:border-line dark:bg-surface-1 dark:text-white">
           <div className="bg-indigo-100 w-[50px] h-[50px] flex items-center justify-center rounded-full  ">
             <AiOutlineRetweet className="text-indigo-500 h-[25px] w-[20px] " />
           </div>
           <div>
             <p
-              className={`${colors.textgray} font-normal text-[12px] w-[132px] lg:text-[18px] dark:text-white`}
+              className="text-xs text-content-muted"
             >
               Rate of Return
             </p>
             <p
-              className={`${colors.textblack} font-semibold text-[16px] dark:text-white`}
+              className="text-lg font-bold text-content-primary"
             >
               {investment ? `${investment.rateOfReturn}%` : "no data to display"}
             </p>
@@ -230,10 +230,10 @@ const Investments = () => {
         </div>
       </div>
 
-      <div className="  flex flex-col py-5 px-6 gap-14 lg:grid lg:grid-cols-2 lg:gap-6  ">
-        <div className="flex flex-col gap-3 lg:gap-4 xl:gap-5 ">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <div className="flex flex-col gap-4">
           <h2
-            className={`font-semibold text-[22px] ${colors.navbartext} dark:text-brand`}
+            className="text-xl font-semibold text-[#343C6A] dark:text-brand"
           >
             Yearly Total Investments
           </h2>
@@ -243,9 +243,9 @@ const Investments = () => {
             }
           />
         </div>
-        <div className="flex  flex-col gap-3 lg:gap-4 xl:gap-5 ">
+        <div className="flex flex-col gap-4">
           <h2
-            className={`font-semibold text-[22px] ${colors.navbartext} dark:text-brand`}
+            className="text-xl font-semibold text-[#343C6A] dark:text-brand"
           >
             Monthly Revenue
           </h2>
@@ -261,10 +261,10 @@ const Investments = () => {
           same panel chrome and row rhythm, and share a heading, so the row
           balances. h-full on each lets the grid stretch them to one height
           rather than each asserting its own. */}
-      <div className="flex flex-col gap-6 py-5 lg:grid lg:grid-cols-5 lg:items-stretch">
-        <div className="flex flex-col gap-3 lg:col-span-3">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-5 lg:items-stretch">
+        <div className="flex flex-col gap-4 lg:col-span-3">
           <h2
-            className={`font-semibold text-[22px] ${colors.navbartext} dark:text-brand`}
+            className="text-xl font-semibold text-[#343C6A] dark:text-brand"
           >
             My Investment
           </h2>
@@ -282,9 +282,9 @@ const Investments = () => {
             ))}
           </div>
         </div>
-        <div className="flex flex-col gap-3 lg:col-span-2">
+        <div className="flex flex-col gap-4 lg:col-span-2">
           <h2
-            className={`font-semibold text-[22px] ${colors.navbartext} dark:text-brand`}
+            className="text-xl font-semibold text-[#343C6A] dark:text-brand"
           >
             Trending Stock
           </h2>

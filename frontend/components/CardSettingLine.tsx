@@ -14,25 +14,19 @@ const CardSettingLine = ({
   background: string;
 }) => {
   return (
-    <div className="flex p-0.5 justify-between">
-      <div className=" flex gap-2 md:gap-3 lg:gap-4">
+    <div className="flex items-center gap-4 px-5 py-3">
+      <div className="flex items-center gap-4">
         <div
-          className={`rounded-full flex items-center justify-center p-4 h-20 w-20`}
+          className={`${background} flex h-11 w-11 shrink-0 items-center justify-center rounded-xl`}
         >
-          <Image
-            src={icon}
-            alt="go"
-            width={120}
-            height={120}
-            className={`${background} p-2 rounded-xl items-center`}
-          />
+          <Image src={icon} alt="" width={22} height={22} className="object-contain" />
         </div>
-        <div className="my-2">
-          <p className="md:text-[16px] sm:text-[13px] font-medium pb-1">
+        <div>
+          <p className="text-[15px] font-medium">
             {title}
           </p>
           <p
-            className={`${colors.textgray} md:text-[13px] sm:text-[11px] text-start`}
+            className={`${colors.textgray} text-[13px]`}
           >
             {description}
           </p>

@@ -2,6 +2,10 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * The panel every page draws its content in - the same chrome the Settings
+ * forms use, so a panel looks the same whichever page it is on.
+ */
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -9,7 +13,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border border-slate-200 bg-white text-slate-950 shadow-sm dark:border-line dark:bg-surface-1 dark:text-content-primary",
+      "rounded-2xl border border-slate-200 bg-white text-slate-950 dark:border-line dark:bg-surface-1 dark:text-content-primary",
       className
     )}
     {...props}

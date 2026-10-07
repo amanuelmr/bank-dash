@@ -31,11 +31,11 @@ const LoanCard: React.FC<{
   title: string;
   description: string;
 }> = ({ icon: Icon, title, description }) => (
-  <div className="flex items-center space-x-4">
-    <Icon className="pl-1 w-12 h-12" aria-hidden="true" />
+  <div className="flex items-center gap-4">
+    <Icon className="h-12 w-12 shrink-0" aria-hidden="true" />
     <div>
-      <h3 className="text-sm text-gray-500">{title}</h3>
-      <p className="text-lg font-extrabold">{description}</p>
+      <h3 className="text-xs text-content-muted">{title}</h3>
+      <p className="text-lg font-bold text-content-primary">{description}</p>
     </div>
   </div>
 );
@@ -202,7 +202,7 @@ const LoansPage: React.FC = () => {
   );
 
   return (
-    <PageContainer className="py-6">
+    <PageContainer>
       {/* Mobile and Tablet View */}
 
       {contextHolder}
@@ -243,13 +243,13 @@ const LoansPage: React.FC = () => {
           </div>
         ) : (
           <Carousel>
-            <CarouselContent className="p-6">
+            <CarouselContent>
               {loanCards.map((loanItem, index) => (
                 <CarouselItem
                   key={index}
                   className="w-[240px] h-[85px] mx-auto mr-4 flex-none"
                 >
-                  <div className="shadow-lg p-4 rounded-md flex items-center h-full">
+                  <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 dark:border-line dark:bg-surface-1 h-full">
                     <LoanCard
                       icon={loanItem.icon}
                       title={loanItem.title}
@@ -262,13 +262,13 @@ const LoansPage: React.FC = () => {
           </Carousel>
         )}
 
-        <div className="w-[100%] flex flex-col items-center mt-8 text-sm">
-          <h2 className="text-lg font-bold mb-4 ml-5 dark:text-brand">
+        <div className="w-full flex flex-col items-center mt-8 text-sm">
+          <h2 className="text-xl font-semibold text-[#343C6A] dark:text-brand mb-4 self-start">
             Active Loans Overview
           </h2>
           {loansLoading ? (
             <div className="w-[100%] flex justify-center">
-              <table className="w-[70%]  h-[85px] bg-white rounded-lg shadow-md text-[12px] dark:bg-dark dark:text-white animate-pulse">
+              <table className="w-full overflow-hidden rounded-2xl bg-white text-[13px] dark:bg-surface-1 dark:text-white animate-pulse">
                 <thead>
                   <tr>
                     <th className="px-4 py-2 text-left font-semibold text-gray-400 bg-gray-300 dark:bg-surface-3 h-6">
@@ -304,7 +304,7 @@ const LoansPage: React.FC = () => {
             </div>
           ) : (
             <div className="w-[100%] flex justify-center">
-              <table className="w-[70%]  h-[85px] bg-white rounded-lg shadow-md text-[12px] dark:bg-dark text-gray-900 dark:text-white">
+              <table className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white text-[13px] text-gray-900 dark:border-line dark:bg-surface-1 dark:text-white">
                 <thead>
                   <tr>
                     <th className="px-4 py-2 text-left font-semibold text-gray-400">
@@ -328,7 +328,7 @@ const LoansPage: React.FC = () => {
                       <td className="border-t px-4 py-2">
                       <button
                           onClick={() => onSubmit(loan, index)}
-                          className= {` text-gray-900 border border-purple-900 rounded-full px-4 py-1 ${selectedIndex === index && isLoading ? 'bg-gray-200 cursor-not-allowed ' : 'bg-white hover:bg-gray-200' }`}
+                          className= {` text-gray-900 border border-purple-900 rounded-full px-4 py-1 dark:border-brand dark:text-brand ${selectedIndex === index && isLoading ? 'bg-gray-200 cursor-not-allowed ' : 'bg-white hover:bg-gray-200' }`}
                         >
                            { selectedIndex === index && isLoading ? (
                             <div className="flex justify-center items-center ">
@@ -341,7 +341,7 @@ const LoansPage: React.FC = () => {
                       </td>
                     </tr>
                   ))}
-                  <tr className="font-bold text-red-500">
+                  <tr className="font-bold text-gray-900 dark:text-white">
                     <td className="border-t px-4 py-2">
                       ${totalLoanMoney.toLocaleString()}
                     </td>
@@ -362,13 +362,13 @@ const LoansPage: React.FC = () => {
       </div>
 
       {/* Desktop and Tablet View */}
-      <div className="hidden lg:block lg:w-[100%] lg:bg-gary-100 lg:dark:bg-dark dark:text-brand ">
+      <div className="hidden lg:flex lg:flex-col lg:gap-8">
         {loanCardsLoading ? (
-          <div className="flex justify-evenly py-10   space-x-6">
+          <div className="grid grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className="flex items-center space-x-4 animate-pulse p-4 bg-gray-200 dark:bg-gray-800 rounded-md w-[240px] h-[85px] shadow-md"
+                className="flex items-center gap-4 animate-pulse rounded-2xl bg-gray-200 p-4 dark:bg-surface-3"
               >
                 <div className="pl-1 w-12 h-12 bg-gray-300 dark:bg-gray-300 rounded-full" />
                 <div>
@@ -389,11 +389,11 @@ const LoansPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="w-[100%] flex gap-6 pr-6 py-8">
+          <div className="grid grid-cols-4 gap-4">
             {loanCards.map((loanItem, index) => (
               <div
                 key={index}
-                className="w-[100%] h-[120px] shadow-lg rounded-lg flex items-center"
+                className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 dark:border-line dark:bg-surface-1"
               >
                 <div className="w-[100%]">
                   <LoanCard
@@ -407,12 +407,12 @@ const LoansPage: React.FC = () => {
           </div>
         )}
 
-        <div className="mt-8">
-          <h2 className="text-lg font-bold mb-4 dark:text-brand">
+        <div>
+          <h2 className="text-xl font-semibold text-[#343C6A] dark:text-brand mb-4">
             Active Loans Overview
           </h2>
           {loansLoading ? (
-            <div className="overflow-x-auto px-10">
+            <div className="overflow-x-auto">
               <table className="w-[100%] bg-white rounded-2xl shadow-md table-fixed dark:bg-dark text-gray-900 dark:text-white animate-pulse">
                 <thead>
                   <tr>
@@ -463,8 +463,8 @@ const LoansPage: React.FC = () => {
               <div className="text-red-500 text-center">{loansError}</div>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-[100%] bg-white rounded-2xl shadow-md table-fixed dark:bg-dark text-gray-900 dark:text-white">
+            <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-line">
+              <table className="w-full table-fixed bg-white text-gray-900 dark:bg-surface-1 dark:text-white">
                 <thead>
                   <tr>
                     <th className="px-4 py-2 text-left font-semibold text-gray-400">
@@ -514,7 +514,7 @@ const LoansPage: React.FC = () => {
                       <td className="border-t px-4 py-2 text-sm">
                         <button
                           onClick={() => onSubmit(loan, index)}
-                          className="text-purple-900 border border-purple-900 rounded-full px-4 py-1 hover:bg-gray-300"
+                          className="text-purple-900 border border-purple-900 rounded-full px-4 py-1 hover:bg-gray-300 dark:border-brand dark:text-brand dark:hover:bg-surface-2"
                         >
                            { selectedIndex === index && isLoading ? (
                             <div className="flex justify-center items-center ">
@@ -527,7 +527,7 @@ const LoansPage: React.FC = () => {
                       </td>
                     </tr>
                   ))}
-                  <tr className="font-bold text-red-500">
+                  <tr className="font-bold text-gray-900 dark:text-white">
                     <td className="border-t px-4 py-2"></td>
                     <td className="border-t px-4 py-2">
                       ${totalLoanMoney.toLocaleString()}

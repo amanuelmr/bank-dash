@@ -17,7 +17,7 @@ const Section: React.FC<{ title: string; description?: string; children: React.R
   description,
   children,
 }) => (
-  <section className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-line dark:bg-surface-1">
+  <section className="p-6">
     <header className="mb-5">
       <h2 className="text-base font-semibold text-content-primary">{title}</h2>
       {description && <p className="mt-1 text-sm text-content-muted">{description}</p>}
@@ -50,7 +50,7 @@ const SecurityForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white dark:divide-line dark:border-line dark:bg-surface-1">
       <Section
         title="Two-factor authentication"
         description="Require a second step when signing in."
@@ -92,7 +92,7 @@ const SecurityForm = () => {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-brand-fill px-5 py-2.5 text-sm font-medium text-on-brand-fill transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 disabled:opacity-60 dark:focus:ring-offset-surface-1"
+            className="rounded-lg bg-brand-fill px-5 py-2.5 text-sm font-medium text-brand-on transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 disabled:opacity-60 dark:focus:ring-offset-surface-1"
           >
             {saving ? 'Saving…' : 'Save changes'}
           </button>
