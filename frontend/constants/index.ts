@@ -232,6 +232,44 @@ export const creditcardstyles = [{
 
 }]
 
+/**
+ * Credit-card appearances.
+ *
+ * The card component used to branch on `backgroundColor === colors.blue` and
+ * gave every other card orange text, so a light card sitting next to a blue one
+ * looked like it came from a different app - the two halves of a row had nothing
+ * to do with each other. Each tone now carries its own background, foreground,
+ * chip artwork and bottom strip, so a set of cards reads as one collection.
+ *
+ * The dark tones are all in the brand's blue family at different lightnesses,
+ * which keeps them complementary rather than merely different.
+ */
+export const cardTones = {
+  brand: {
+    bg: "bg-[#1814F9]",
+    fg: "text-white",
+    muted: "text-white/70",
+    chip: "/icons/chip.png",
+    strip: "bg-gradient-to-b from-blue-600",
+  },
+  midnight: {
+    bg: "bg-[#0A1233]",
+    fg: "text-white",
+    muted: "text-white/70",
+    chip: "/icons/chip.png",
+    strip: "bg-white/10",
+  },
+  light: {
+    bg: "bg-white dark:bg-surface-2",
+    fg: "text-content-primary",
+    muted: "text-content-muted",
+    chip: "/icons/blackChip.png",
+    strip: "border-t border-slate-200 dark:border-line",
+  },
+} as const;
+
+export type CardTone = keyof typeof cardTones;
+
 export const colors = {
   blue: 'bg-[#1814F9]',
   white: 'bg-white dark:bg-surface-2',
