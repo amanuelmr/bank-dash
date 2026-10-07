@@ -102,8 +102,8 @@ const Accounts = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 sm:gap-8 mt-8">
-          <div className="lg:col-span-7 flex flex-col">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_350px] gap-4 sm:gap-6 mt-8">
+          <div className="flex flex-col">
             <h2 className="text-lg font-semibold mb-4 dark:text-brand">
               Debit & Credit Overview
             </h2>
@@ -111,7 +111,7 @@ const Accounts = () => {
               <AccountBarChart />
             </div>
           </div>
-          <div className="lg:col-span-3 flex flex-col h-full">
+          <div className="flex flex-col h-full">
             <h2 className="text-lg font-semibold mb-4">Invoices Sent</h2>
             <div className="h-fit ">
               <InvoicesCard />
