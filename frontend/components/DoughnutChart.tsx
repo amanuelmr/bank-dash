@@ -113,14 +113,14 @@ export default function Component() {
                         <tspan
                           x={viewBox.cx}
                           y={viewBox.cy}
-                          className="dark:text-yellow-500 fill-foreground text-3xl font-bold"
+                          className="fill-content-primary text-3xl font-bold"
                         >
                           {desktopData[activeIndex].desktop.toLocaleString()}
                         </tspan>
                         <tspan
                           x={viewBox.cx}
                           y={(viewBox.cy || 0) + 24}
-                          className="dark:text-yellow-500 fill-muted-foreground"
+                          className="fill-content-muted"
                         >
                           expense
                         </tspan>
@@ -134,6 +134,13 @@ export default function Component() {
               layout="horizontal"
               verticalAlign="bottom"
               align="center"
+              iconType="circle"
+              iconSize={8}
+              // The raw values are lowercase full month names ("january"), so
+              // the default legend wrapped onto a second row and clipped the
+              // last entry. Short labels fit on one line in this column.
+              formatter={(value: string) => value.charAt(0).toUpperCase() + value.slice(1, 3)}
+              className="text-xs text-content-secondary"
             />
           </PieChart>
         </ChartContainer>

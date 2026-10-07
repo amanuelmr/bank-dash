@@ -10,12 +10,12 @@ interface Props {
 
 const CardList: React.FC<Props> = ({ card_list }) => {
   return (
-    <div className="max-h-[400px] lg:w-[730px] md:w-[487px] w-[325] overflow-y-scroll pr-6 py-4 scrollbar-thin scrollbar-track-[#F5F7FA] dark:scrollbar-track-dark scrollbar-thumb-[#b5c2d9] scrollbar-thumb-rounded-full">
+    <div className="max-h-[400px] w-full overflow-y-auto py-4 pr-2 scrollbar-thin scrollbar-track-[#F5F7FA] dark:scrollbar-track-dark scrollbar-thumb-[#b5c2d9] scrollbar-thumb-rounded-full">
       {Array.isArray(card_list) && card_list.length > 0 ? (
         card_list.map((card, index) => (
         <div
           key={index}
-          className="flex flex-row justify-between w-full bg-surface-1 p-4 mb-4 rounded-lg shadow-md dark:bg-dark dark:text-white"
+          className="mb-3 flex w-full flex-row items-center justify-between gap-4 rounded-lg bg-white p-4 shadow-sm dark:bg-surface-1 dark:text-white"
         >
           {/* Icon */}
           <div className="h-12 w-12 rounded-xl bg-[#E7EDFF] dark:bg-[#E7EDFF]/15 flex items-center justify-center">
