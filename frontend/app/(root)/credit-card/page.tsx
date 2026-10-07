@@ -1,6 +1,5 @@
 "use client";
 import ResponsiveCreditCard from "@/components/CreditCard";
-import { colors } from "@/constants";
 import Component from "@/components/DoughnutChart";
 import AddNewCard from "@/components/AddNewCard";
 import CardSetting from "@/components/CardSetting";
@@ -12,6 +11,7 @@ import Image from "next/image";
 import CardListLoad from "@/components/loadingComponents/CardListLoad";
 import MyCardsLoad from "@/components/loadingComponents/MyCardsLoad";
 import { TbFileSad } from "react-icons/tb";
+import PageContainer from "@/components/PageContainer";
 
 const CreditCard = () => {
   const [cards, setCards] = useState<Card[]>([]);
@@ -40,8 +40,8 @@ const CreditCard = () => {
   }, []);
 
   return (
-    <div className="lg:ml-72 ml-5 overflow-x-hidden mx-auto">
-      <div className="myCards max-w-[97%] mt-4">
+    <PageContainer>
+      <div className="myCards mt-4">
         <h1 className="text-[19px] mb-3 font-bold text-[#333B69] dark:text-brand">My Cards</h1>
         <div className="flex overflow-x-auto space-x-4 md:pr-3 pr-1 scrollbar-thin scrollbar-track-[#F5F7FA] dark:scrollbar-track-dark scrollbar-thumb-[#92a7c5] scrollbar-thumb-rounded-full">
           {loading ? (
@@ -50,7 +50,7 @@ const CreditCard = () => {
             cards.map((card: any, index: number) => (
               <span key={index} className="p-3">
                 <ResponsiveCreditCard
-                  backgroundColor={index % 2 === 0 ? colors.blue : colors.white}
+                  tone={(index % 3 === 0 ? "brand" : index % 3 === 1 ? "midnight" : "light")}
                   balance={card.balance}
                   cardHolder={card.cardHolder}
                   expiryDate={card.expiryDate}
@@ -101,7 +101,7 @@ const CreditCard = () => {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row w-[80%] mb-16">
+      <div className="mb-16 flex flex-col gap-8 md:flex-row md:items-start">
         <div className="md:mb-2 mb-0 md:mr-5 lg:mr-10">
           <h1 className="text-[20px] mb-3 font-bold text-[#333B69] dark:text-brand">Add New Card</h1>
           <AddNewCard />
@@ -112,7 +112,7 @@ const CreditCard = () => {
           <CardSetting />
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 };
 
