@@ -1,5 +1,5 @@
 'use client';
-import { Bar, BarChart, ResponsiveContainer, XAxis } from "recharts";
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { getExpenses, getIncomes } from "@/services/transactionfetch";
@@ -30,13 +30,13 @@ export default function Component() {
     const handleResize = () => {
       const width = window.innerWidth;
       if (width < 768) {
-        setBottomMargin(20);
+        setBottomMargin(0);
         setBarSize(10);
       } else if (width >= 768 && width < 1024) {
-        setBottomMargin(30);
+        setBottomMargin(0);
         setBarSize(15);
       } else {
-        setBottomMargin(50);
+        setBottomMargin(0);
         setBarSize(20);
       }
     };
@@ -146,9 +146,24 @@ export default function Component() {
               barCategoryGap="10%"
               barGap={5}
               barSize={barSize}
-              margin={{ top: 10, right: 20, left: 20, bottom: bottomMargin }}
+              margin={{ top: 10, right: 20, left: 0, bottom: bottomMargin }}
             >
-              <XAxis dataKey="day" axisLine={true} tickLine={false} />
+              <XAxis
+                dataKey="day"
+                axisLine={true}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: "rgb(105, 112, 128)" }}
+              />
+              {/* No Y axis at all, so the bar heights were unreadable - three
+                  very different totals all looked like similar bars with no
+                  scale to judge them against. */}
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                width={56}
+                tick={{ fontSize: 11, fill: "rgb(105, 112, 128)" }}
+                tickFormatter={(value: number) => `$${value}`}
+              />
               <ChartTooltip
                 cursor={false}
                 content={<ChartTooltipContent indicator="dashed" />}
