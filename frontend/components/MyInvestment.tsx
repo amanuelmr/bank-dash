@@ -16,6 +16,7 @@ import Image from "next/image";
 const MyInvestment = ({
   icon,
   color,
+  initial,
   name,
   category,
   amount,
@@ -23,9 +24,9 @@ const MyInvestment = ({
 }: {
   icon: string;
   color: string;
-  colortext: string;
+  /** Shown instead of `icon` when the company has no brand asset. */
+  initial?: string;
   category: string;
-  categorycolor: string;
   name: string;
   amount: string;
   percentage: string;
@@ -37,13 +38,13 @@ const MyInvestment = ({
       <div
         className={`${color} flex h-11 w-11 shrink-0 items-center justify-center rounded-xl`}
       >
-        <Image
-          src={icon}
-          alt={`${name} logo`}
-          width={22}
-          height={22}
-          className="object-contain"
-        />
+        {icon ? (
+          <Image src={icon} alt={`${name} logo`} width={22} height={22} className="object-contain" />
+        ) : (
+          <span aria-hidden className="text-sm font-semibold text-content-secondary">
+            {initial ?? name.charAt(0)}
+          </span>
+        )}
       </div>
 
       <div className="min-w-0">
