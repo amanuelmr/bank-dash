@@ -58,8 +58,8 @@ const Accounts = () => {
           {/* </div> */}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 sm:gap-8 mb-8">
-          <div className="lg:col-span-7 flex flex-col">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_350px] gap-4 sm:gap-6 mb-8">
+          <div className="flex flex-col">
             <h2 className="text-lg font-semibold mb-3 dark:text-brand">
               Last Transaction
             </h2>
@@ -67,8 +67,8 @@ const Accounts = () => {
               <LastTransactionCard />
             </div>
           </div>
-          <div className="lg:col-span-3 flex flex-col h-full">
-            <div className="mb-3 flex justify-between gap-0 md:gap-56 lg:justify-between lg:gap-0  md:justify-start items-center text-lg font-semibold">
+          <div className="flex flex-col h-full">
+            <div className="mb-3 flex justify-between items-center text-lg font-semibold">
               <h2 className="dark:text-brand">My Card</h2>
               <Link
                 href="/credit-card"
