@@ -70,7 +70,7 @@ const TransactionList: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 py-3 flex flex-col justify-between bg-white rounded-lg shadow-md p-4 space-y-4">
+    <div className="flex flex-col gap-4 bg-white rounded-lg shadow-md p-4">
       {transactions.map((transaction) => (
         <div key={transaction.id} className="flex items-center justify-between">
           <div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-100">
