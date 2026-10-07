@@ -9,7 +9,7 @@ import DebitCreditIcon from "@/public/icons/DebitCreditIcon";
 import SafetyIcon from "@/public/icons/SafetyIcon";
 import Pagination from "./Pagination";
 import { TbFileSad } from "react-icons/tb";
-import { colors } from "@/constants";
+import { FaSearch } from "react-icons/fa";
 import type { BankService } from "@/types/api";
 
 
@@ -123,8 +123,8 @@ const BankservicesList: React.FC = () => {
 
   if (status === "loading") {
     return (
-      <div className="max-w-[1110px] px-4 md:mx-auto">
-        <h2 className="text-xl font-bold mb-4 dark:text-blue-500 animate-pulse">
+      <div className="w-full">
+        <h2 className="mb-4 text-xl font-semibold text-[#343C6A] dark:text-brand">
           Bank Services List
         </h2>
         {renderShimmer(3)}
@@ -132,13 +132,13 @@ const BankservicesList: React.FC = () => {
     );
   } else if (status === "error") {
     return (
-      <div className="max-w-[1110px] px-4 md:mx-auto">
-        <h2 className="text-xl font-bold mb-4 dark:text-blue-500 animate-pulse">
+      <div className="w-full">
+        <h2 className="mb-4 text-xl font-semibold text-[#343C6A] dark:text-brand">
           Bank Services List
         </h2>
         <div className="text-xl w-[100%] text-center gap-4 flex flex-col items-center  font-bold mb-4 text-red-500">
         <TbFileSad
-          className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+          className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
           strokeWidth={1}
         />
           <div> Failed to fetch the data</div>
@@ -149,8 +149,8 @@ const BankservicesList: React.FC = () => {
     return (
       <>
         {services.length == 0 ? (
-          <div className="max-w-[1110px] px-4 md:mx-auto mt-4">
-            <div className="shadow-lg p-4 rounded-md flex items-center justify-between bg-gray-100">
+          <div className="w-full mt-4">
+            <div className="shadow-lg p-4 rounded-md flex items-center justify-between bg-gray-100 dark:bg-surface-2">
               <div className="flex items-center space-x-4">
                 <div className="w-13 h-13 bg-gray-300 rounded-full"></div>
                 <div>
@@ -168,83 +168,105 @@ const BankservicesList: React.FC = () => {
       )
   
         : (
-          <div className="max-w-[1110px] px-4 md:mx-auto">
-            <h2 className="text-xl font-bold mb-4 dark:text-blue-500">
+          <div className="w-full">
+            <h2 className="mb-4 text-xl font-semibold text-[#343C6A] dark:text-brand">
               Bank Services List
             </h2>
-            <input type="text" onChange={filter} placeholder="search" />
+            <div className="relative mb-6 max-w-sm">
+              <FaSearch
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-content-muted"
+                size={18}
+                aria-hidden
+              />
+              <input
+                type="search"
+                onChange={filter}
+                placeholder="Search services"
+                aria-label="Search services"
+                className="w-full rounded-full border border-gray-300 dark:border-line bg-gray-100 dark:bg-surface-2 py-2 pl-11 pr-4 text-content-primary placeholder:text-content-muted focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-brand"
+              />
+            </div>
+            <div className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white dark:divide-line dark:border-line dark:bg-surface-1">
             {filtered.map((service: any, index: any) => (
-              <div key={index} className="mb-4">
+              <div key={service.id ?? index}>
              
-                {/* Mobile View */}
-                <div className="lg:hidden shadow-lg p-4 rounded-md flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    {icons[index % icons.length] &&
-                      React.createElement(icons[index % icons.length], {
-                        className: "w-13 h-13",
-                        "aria-hidden": "true",
-                      })}
-                    <div>
-                      <h3 className="text-[14px] font-semibold">
-                        {service.name}
-                      </h3>
-                      <p className="text-[12px] text-gray-500">
-                        {service.details}
-                      </p>
-                    </div>
-                  </div>
-                  <Link href="/details" className="text-[12px] text-blue-600">
-                    View Details
-                  </Link>
-                </div>
-
-                {/* Larger Screens */}
-                <div
-                  className="hidden lg:flex shadow-lg p-4 rounded-md items-center"
-                  style={{ width: "1110px", height: "90px" }}
-                >
+                {/* Narrow screens. This row had a shadow but no background of its own, so it
+                    rendered as a floating shadow on the grey page - which is what
+                    made the list look broken. `w-13 h-13` is also not a real
+                    Tailwind size, so the icons fell back to their intrinsic
+                    dimensions and some overflowed their box. */}
+                <div className="flex items-center gap-4 px-5 py-4 lg:hidden">
                   {icons[index % icons.length] &&
                     React.createElement(icons[index % icons.length], {
-                      className: "w-13 h-13",
+                      className: "h-10 w-10 shrink-0",
                       "aria-hidden": "true",
                     })}
-                  <div className="flex-1 ml-3">
-                    <div className="flex justify-between">
-                      <div>
-                        <h3 className="text-[16px] font-semibold">
-                          {service.name}
-                        </h3>
-                        <p className="text-[15px] text-gray-500">
-                          {service.details}
-                        </p>
-                      </div>
-                      <div className="flex space-x-28">
-                        <div>
-                          <h4 className="text-[14px] font-semibold">
-                            {service.type}
-                          </h4>
-                          <p className="text-[12px] text-gray-500">type</p>
-                        </div>
-                        <div>
-                          <h4 className="text-[14px] font-semibold">
-                            {service.status}
-                          </h4>
-                          <p className="text-[12px] text-gray-500">status</p>
-                        </div>
-                        <div>
-                          <h4 className="text-[14px] font-semibold">
-                            {service.numberOfUsers}
-                          </h4>
-                          <p className="text-[12px] text-gray-500">
-                            number of users
-                          </p>
-                        </div>
-                      </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-sm font-semibold text-content-primary">
+                      {service.name}
+                    </h3>
+                    <p className="truncate text-xs text-content-muted">
+                      {service.details}
+                    </p>
+                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-content-muted">
+                      <span>{service.type}</span>
+                      <span aria-hidden>·</span>
+                      <span>{service.status}</span>
+                      <span aria-hidden>·</span>
+                      <span className="tabular-nums">
+                        {service.numberOfUsers} users
+                      </span>
                     </div>
                   </div>
                   <Link
                     href="/details"
-                    className="text-[15px] text-blue-600 ml-28 border border-blue-600 px-2 py-1 rounded-full"
+                    className="shrink-0 whitespace-nowrap rounded-full border border-blue-600 px-3 py-1 text-xs text-blue-600 transition-colors hover:bg-blue-600 hover:text-white"
+                  >
+                    View Details
+                  </Link>
+                </div>
+
+                {/* Larger Screens. This row carried an inline
+                    style={{ width: "1110px" }} plus `space-x-28` gaps, so its
+                    width was fixed in pixels and ignored the container
+                    entirely - which is why the View Details button fell off the
+                    right edge whenever the page was not exactly 1110px wide. A
+                    grid of fractions tracks whatever width it is given. */}
+                <div className="hidden lg:grid lg:grid-cols-[2.5rem_minmax(0,2.4fr)_minmax(0,1fr)_minmax(0,0.95fr)_minmax(0,0.8fr)_auto] lg:items-center lg:gap-4 px-5 py-4 transition-colors hover:bg-slate-50 dark:hover:bg-surface-2">
+                  {icons[index % icons.length] &&
+                    React.createElement(icons[index % icons.length], {
+                      className: "h-10 w-10",
+                      "aria-hidden": "true",
+                    })}
+                  <div className="min-w-0">
+                    <h3 className="truncate text-[16px] font-semibold text-content-primary">
+                      {service.name}
+                    </h3>
+                    <p className="truncate text-[14px] text-content-muted">
+                      {service.details}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="text-[14px] font-semibold text-content-primary">
+                      {service.type}
+                    </h4>
+                    <p className="text-[12px] text-content-muted">type</p>
+                  </div>
+                  <div>
+                    <h4 className="text-[14px] font-semibold text-content-primary">
+                      {service.status}
+                    </h4>
+                    <p className="text-[12px] text-content-muted">status</p>
+                  </div>
+                  <div>
+                    <h4 className="text-[14px] font-semibold tabular-nums text-content-primary">
+                      {service.numberOfUsers}
+                    </h4>
+                    <p className="text-[12px] text-content-muted">users</p>
+                  </div>
+                  <Link
+                    href="/details"
+                    className="justify-self-end whitespace-nowrap text-[14px] text-blue-600 border border-blue-600 px-3 py-1 rounded-full transition-colors hover:bg-blue-600 hover:text-white"
                   >
                     View Details
                   </Link>
@@ -252,6 +274,7 @@ const BankservicesList: React.FC = () => {
               </div>
               
             ))}
+            </div>
           <Pagination
         currentPage={currentPage}
         totalPages={totalPages}

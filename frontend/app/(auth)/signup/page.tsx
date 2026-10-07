@@ -140,7 +140,7 @@ export default function SignupForm() {
                   type="text"
                   placeholder="Full Name"
                   {...register("name")}
-                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
+                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-surface-1 border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
                 />
                 {showError("name") && (
                   <div className="flex gap-1">
@@ -159,7 +159,7 @@ export default function SignupForm() {
                   type="email"
                   placeholder="Email"
                   {...register("email")}
-                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
+                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-surface-1 border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
                 />
                 {showError("email") && (
                   <div className="flex gap-1">
@@ -177,7 +177,7 @@ export default function SignupForm() {
                   id="dateOfBirth"
                   type="date"
                   {...register("dateOfBirth")}
-                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
+                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-surface-1 border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
                 />
                 {showError("dateOfBirth") && (
                   <div className="flex gap-1">
@@ -196,7 +196,7 @@ export default function SignupForm() {
                   type="text"
                   placeholder="Username"
                   {...register("username")}
-                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
+                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-surface-1 border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
                 />
                 {showError("username") && (
                   <div className="flex gap-1">
@@ -215,7 +215,7 @@ export default function SignupForm() {
                   type="password"
                   placeholder="Password"
                   {...register("password")}
-                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
+                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-surface-1 border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
                 />
                 {showError("password") && (
                   <div className="flex gap-1">
@@ -238,7 +238,7 @@ export default function SignupForm() {
                   type="text"
                   placeholder="Permanent Address"
                   {...register("permanentAddress")}
-                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
+                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-surface-1 border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
                 />
                 {showError("permanentAddress") && (
                   <div className="flex gap-1">
@@ -257,7 +257,7 @@ export default function SignupForm() {
                   type="text"
                   placeholder="Present Address"
                   {...register("presentAddress")}
-                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
+                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-surface-1 border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
                 />
                 {showError("presentAddress") && (
                   <div className="flex gap-1">
@@ -276,7 +276,7 @@ export default function SignupForm() {
                   type="text"
                   placeholder="Postal Code"
                   {...register("postalCode")}
-                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
+                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-surface-1 border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
                 />
                 {showError("postalCode") && (
                   <div className="flex gap-1">
@@ -295,7 +295,7 @@ export default function SignupForm() {
                   type="text"
                   placeholder="City"
                   {...register("city")}
-                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
+                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-surface-1 border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
                 />
                 {showError("city") && (
                   <div className="flex gap-1">
@@ -314,7 +314,7 @@ export default function SignupForm() {
                   type="text"
                   placeholder="Country"
                   {...register("country")}
-                  className="w-full  m-auto border-gray-200  dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
+                  className="w-full  m-auto border-gray-200  dark:text-dark dark:bg-surface-1 border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
                 />
                 {showError("country") && (
                   <div className="flex gap-1">
@@ -335,7 +335,7 @@ export default function SignupForm() {
                 <select
                   id="currency"
                   {...register("preferences.currency")}
-                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
+                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-surface-1 border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
                 >
                   <option value="">Select currency</option>
                   <option value="USD">USD</option>
@@ -357,7 +357,7 @@ export default function SignupForm() {
                 <select
                   id="timeZone"
                   {...register("preferences.timeZone")}
-                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-white border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
+                  className="w-full m-auto border-gray-200 dark:text-dark dark:bg-surface-1 border-2 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 h-10 px-2.5"
                 >
                   <option value="">Select time zone</option>
                   <option value="UTC">UTC</option>
@@ -461,10 +461,10 @@ export default function SignupForm() {
 
           {step === 1 && (
             <div className="my-14 flex flex-col items-center text-l">
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-gray-600 dark:text-content-primary">
                 Already have an account?{" "}
                 <span className="text-indigo-600 font-medium text-l">
-                  <Link href="./login" className="dark:text-gray-300">Login</Link>
+                  <Link href="./login" className="dark:text-content-primary">Login</Link>
                 </span>
               </p>
             </div>

@@ -1,5 +1,5 @@
 'use client';
-import { Bar, BarChart, ResponsiveContainer, XAxis } from "recharts";
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { getExpenses, getIncomes } from "@/services/transactionfetch";
@@ -30,13 +30,13 @@ export default function Component() {
     const handleResize = () => {
       const width = window.innerWidth;
       if (width < 768) {
-        setBottomMargin(20);
+        setBottomMargin(0);
         setBarSize(10);
       } else if (width >= 768 && width < 1024) {
-        setBottomMargin(30);
+        setBottomMargin(0);
         setBarSize(15);
       } else {
-        setBottomMargin(50);
+        setBottomMargin(0);
         setBarSize(20);
       }
     };
@@ -95,7 +95,7 @@ export default function Component() {
 
   if (status === 'loading') {
     return (
-      <div className="w-full  h-[300px] lg:h-[600px] bg-gray-200 rounded-lg animate-pulse">
+      <div className="w-full h-full bg-gray-200 rounded-lg animate-pulse">
 </div>
 
     );
@@ -105,7 +105,7 @@ export default function Component() {
     return (
       <div className="p-3 gap-4  flex flex-col justify-center items-center h-auto  dark:bg-dark   text-center ">
         <TbFileSad
-          className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+          className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
           strokeWidth={1}
         />
         <p className="text-red-500" >Failed to fetch</p>
@@ -115,7 +115,7 @@ export default function Component() {
 
   return (
     <Card className="flex flex-col w-full h-full">
-      <CardHeader className="flex justify-between">
+      <CardHeader className="flex justify-between p-4 pb-0">
         <div className="hidden md:flex text-sm font-normal">
           <span className="font-bold">${totalDebit}</span>&nbsp;Debited
           &nbsp;&&nbsp;
@@ -135,16 +135,35 @@ export default function Component() {
         </div>
       </CardHeader>
       <CardContent className="flex-1">
-        <ChartContainer config={chartConfig} className="p-0">
+        {/* ChartContainer defaults to aspect-video, which at this panel's width
+            forces a ~600px SVG and pushed the bars and the x-axis labels out
+            through the bottom of the card. aspect-auto lets the plot fill the
+            panel it is given instead. */}
+        <ChartContainer config={chartConfig} className="p-0 aspect-auto h-full w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
               barCategoryGap="10%"
               barGap={5}
               barSize={barSize}
-              margin={{ top: 10, right: 20, left: 20, bottom: bottomMargin }}
+              margin={{ top: 10, right: 20, left: 0, bottom: bottomMargin }}
             >
-              <XAxis dataKey="day" axisLine={true} tickLine={false} />
+              <XAxis
+                dataKey="day"
+                axisLine={true}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: "rgb(105, 112, 128)" }}
+              />
+              {/* No Y axis at all, so the bar heights were unreadable - three
+                  very different totals all looked like similar bars with no
+                  scale to judge them against. */}
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                width={56}
+                tick={{ fontSize: 11, fill: "rgb(105, 112, 128)" }}
+                tickFormatter={(value: number) => `$${value}`}
+              />
               <ChartTooltip
                 cursor={false}
                 content={<ChartTooltipContent indicator="dashed" />}

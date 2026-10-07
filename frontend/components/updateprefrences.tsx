@@ -4,6 +4,7 @@ import { useForm, Controller } from 'react-hook-form';
 import {Input} from '@/components/ui/Input';
 import Toggle from '@/components/ui/Toggle';
 import { updatePreference, currentuser} from '@/services/userupdate';
+import Field, { inputClass } from "@/components/FormField";
 
 interface PreferenceFormValues {
   currency: string;
@@ -70,62 +71,72 @@ const PreferenceForm = () => {
   if (loading) return <p>Loading...</p>; // Optional: Add a loading state
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="md:grid md:grid-cols-2 md:gap-6">
-        <div className="md:col-span-2 space-y-4 md:flex md:space-y-0 md:space-x-6">
-          <div className="w-full max-w-xs">
-            <input
-              className="mt-1 p-2 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-800"
-              placeholder="USD"
-              {...register('currency')}
-            />
-          </div>
-          <div className="w-full max-w-xs">
-            <input
-              className="mt-1 p-2 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-800"
-              placeholder="GMT-5"
-              {...register('timeZone')}
-            />
-          </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white dark:divide-line dark:border-line dark:bg-surface-1">
+      {/* Currency and time zone were placeholder-only inputs side by side with no
+          labels, and the save button sat under a md:pt-32 gap that left it
+          floating far below the form. */}
+      <section className="p-6">
+        <header className="mb-5">
+          <h2 className="text-base font-semibold text-content-primary">Regional</h2>
+          <p className="mt-1 text-sm text-content-muted">
+            How amounts and times are shown to you.
+          </p>
+        </header>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field id="currency" label="Currency" hint="For example, USD.">
+            <input className={inputClass} {...register('currency')} />
+          </Field>
+          <Field id="timeZone" label="Time zone" hint="For example, GMT-5.">
+            <input className={inputClass} {...register('timeZone')} />
+          </Field>
         </div>
+      </section>
 
-        <div className="md:col-span-2 space-y-4">
-          <h3 className="font-semibold">Notification</h3>
-          <div className="space-y-4 flex flex-col">
-            <Controller
-              control={control}
-              name="sentOrReceiveDigitalCurrency"
-              render={({ field }) => (
-                <Toggle label="I send or receive digital currency" {...field} />
-              )}
-            />
-            <Controller
-              control={control}
-              name="receiveMerchantOrder"
-              render={({ field }) => (
-                <Toggle label="I receive merchant order" {...field} />
-              )}
-            />
-            <Controller
-              control={control}
-              name="accountRecommendations"
-              render={({ field }) => (
-                <Toggle label="There are recommendations for my account" {...field} />
-              )}
-            />
-          </div>
+      <section className="p-6">
+        <header className="mb-5">
+          <h2 className="text-base font-semibold text-content-primary">Notifications</h2>
+          <p className="mt-1 text-sm text-content-muted">
+            Choose what BankDash tells you about.
+          </p>
+        </header>
+        <div className="flex flex-col gap-4">
+          <Controller
+            control={control}
+            name="sentOrReceiveDigitalCurrency"
+            render={({ field }) => (
+              <Toggle label="I send or receive digital currency" {...field} />
+            )}
+          />
+          <Controller
+            control={control}
+            name="receiveMerchantOrder"
+            render={({ field }) => (
+              <Toggle label="I receive merchant orders" {...field} />
+            )}
+          />
+          <Controller
+            control={control}
+            name="accountRecommendations"
+            render={({ field }) => (
+              <Toggle label="There are recommendations for my account" {...field} />
+            )}
+          />
         </div>
-      </div>
+      </section>
 
-      <div className="mt-6 flex justify-center md:pt-32">
+      <div className="flex items-center justify-end gap-4 px-6 py-4">
+        {saved && (
+          <p role="status" className="text-sm font-medium text-success">
+            Preferences saved
+          </p>
+        )}
         <button
           type="submit"
           disabled={saving}
-          className="w-full max-w-xs mx-auto bg-blue-800 text-white py-2 rounded-md disabled:opacity-60"
+          className="rounded-lg bg-brand-fill px-5 py-2.5 text-sm font-medium text-brand-on transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 disabled:opacity-60 dark:focus:ring-offset-dark"
         >
-          {saving ? 'Saving…' : 'Save'}
+          {saving ? 'Saving…' : 'Save changes'}
         </button>
-        {saved && <p className="text-sm text-green-600 text-center mt-2">Preferences saved</p>}
       </div>
     </form>
   );

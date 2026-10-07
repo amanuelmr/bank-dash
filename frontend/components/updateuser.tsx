@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import Image from "next/image";
 import { updateUserDetails, currentuser } from "@/services/userupdate";
 import { FaPencilAlt } from "react-icons/fa";
+import Field, { inputClass } from "@/components/FormField";
 
 interface EditProfileFormData {
   name: string;
@@ -16,6 +17,22 @@ interface EditProfileFormData {
   country: string;
   profilePicture: string; // URL
 }
+
+const Section: React.FC<{
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}> = ({ title, description, children }) => (
+  <section className="p-6">
+    <header className="mb-5">
+      <h2 className="text-base font-semibold text-content-primary">{title}</h2>
+      {description && (
+        <p className="mt-1 text-sm text-content-muted">{description}</p>
+      )}
+    </header>
+    {children}
+  </section>
+);
 
 const EditProfileForm = () => {
   const {
@@ -46,15 +63,11 @@ const EditProfileForm = () => {
         setValue("presentAddress", userData.presentAddress);
         setValue("city", userData.city);
         setValue("country", userData.country);
-
-        
-
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
     };
 
-    
     fetchUserData();
   }, [setValue]);
 
@@ -84,123 +97,141 @@ const EditProfileForm = () => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 md:grid md:grid-cols-3 md:gap-2"
-    >
-      {/* Profile picture section */}
-      <div className="flex justify-center md:justify-start md:col-span-1">
-        <div className="relative ml-4 h-[160px]">
-          <Image
-            src={profileImage}
-            alt="Profile"
-            width={150}
-            height={150}
-            className="rounded-full aspect-square object-cover"
-          />
-          {/* Pencil icon for changing profile picture */}
-          <span className="absolute bottom-2 right-2 w-10 h-10 p-2 bg-blue-800 rounded-full cursor-pointer flex justify-center items-center">
-            <FaPencilAlt
-              className="text-white"
-              onClick={() => document.getElementById("fileInput")?.click()}
-            />
-            <input
-              id="fileInput"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden" // Hidden file input
-            />
-          </span>
-        </div>
-      </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white dark:divide-line dark:border-line dark:bg-surface-1">
+      {/* Identity: the photo and the three fields that describe who the account
+          belongs to, rather than the photo sitting alone in a column of its own
+          with five unrelated fields stacked beside it. */}
+      <Section
+        title="Profile"
+        description="How you appear in BankDash, and how people reach you."
+      >
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+          <div className="flex shrink-0 flex-col items-center gap-2">
+            <div className="relative">
+              <Image
+                src={profileImage}
+                alt="Profile"
+                width={104}
+                height={104}
+                className="aspect-square rounded-full object-cover ring-1 ring-slate-200 dark:ring-line"
+              />
+              <button
+                type="button"
+                onClick={() => document.getElementById("fileInput")?.click()}
+                aria-label="Change profile picture"
+                className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-brand-fill text-white transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-surface-1"
+              >
+                <FaPencilAlt className="text-xs" aria-hidden />
+              </button>
+              <input
+                id="fileInput"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </div>
+            <p className="text-xs text-content-muted">JPG or PNG</p>
+          </div>
 
-      {/* Form fields */}
-      <div className="md:col-span-1 space-y-4">
-        <div className="w-full max-w-xs mx-auto sm:w-11/12 sm:mx-0 md:w-full">
-          <input
-            className="mt-1 p-2 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-800 w-full"
-            placeholder="John Doe"
-            {...register("name", { required: true })}
-          />
-          {errors.name && <p className="text-red-500">Name is required</p>}
-        </div>
-        <div className="w-full max-w-xs mx-auto sm:w-11/12 sm:mx-0 md:w-full">
-          <input
-            className="mt-1 p-2 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-800 w-full"
-            type="email"
-            placeholder="john@example.com"
-            {...register("email", { required: true })}
-          />
-          {errors.email && <p className="text-red-500">Email is required</p>}
-        </div>
-        <div className="w-full max-w-xs mx-auto sm:w-11/12 sm:mx-0 md:w-full">
-          <input
-            className="mt-1 p-2 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-800 w-full"
-            type="date"
-            {...register("dateOfBirth")}
-          />
-        </div>
-        <div className="w-full max-w-xs mx-auto sm:w-11/12 sm:mx-0 md:w-full">
-          <input
-            className="mt-1 p-2 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-800 w-full"
-            placeholder="123 Main St"
-            {...register("permanentAddress")}
-          />
-        </div>
-        <div className="w-full max-w-xs mx-auto sm:w-11/12 sm:mx-0 md:w-full">
-          <input
-            className="mt-1 p-2 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-800 w-full"
-            placeholder="12345"
-            {...register("postalCode")}
-          />
-        </div>
-      </div>
+          <div className="grid flex-1 gap-4 sm:grid-cols-2">
+            <Field
+              id="name"
+              label="Full name"
+              error={errors.name && "Name is required"}
+            >
+              <input className={inputClass} {...register("name", { required: true })} />
+            </Field>
 
-      <div className="md:col-span-1 space-y-4">
-        <div className="w-full max-w-xs mx-auto sm:w-11/12 sm:mx-0 md:w-full">
-          <input
-            className="mt-1 p-2 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-800 w-full"
-            placeholder="john_doe"
-            {...register("username", { required: true })}
-          />
-          {errors.username && (
-            <p className="text-red-500">Username is required</p>
-          )}
-        </div>
-        <div className="w-full max-w-xs mx-auto sm:w-11/12 sm:mx-0 md:w-full">
-          <input
-            className="mt-1 p-2 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-800 w-full"
-            placeholder="456 Another St"
-            {...register("presentAddress")}
-          />
-        </div>
-        <div className="w-full max-w-xs mx-auto sm:w-11/12 sm:mx-0 md:w-full">
-          <input
-            className="mt-1 p-2 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-800 w-full"
-            placeholder="City"
-            {...register("city")}
-          />
-        </div>
-        <div className="w-full max-w-xs mx-auto sm:w-11/12 sm:mx-0 md:w-full">
-          <input
-            className="mt-1 p-2 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-800 w-full"
-            placeholder="Country"
-            {...register("country")}
-          />
-        </div>
-      </div>
+            <Field
+              id="username"
+              label="Username"
+              error={errors.username && "Username is required"}
+            >
+              <input
+                className={inputClass}
+                {...register("username", { required: true })}
+              />
+            </Field>
 
-      {/* Submit button */}
-      <div className="md:col-span-3 flex justify-end">
+            <Field
+              id="email"
+              label="Email address"
+              className="sm:col-span-2"
+              error={errors.email && "Email is required"}
+            >
+              <input
+                type="email"
+                className={inputClass}
+                {...register("email", { required: true })}
+              />
+            </Field>
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Personal">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field id="dateOfBirth" label="Date of birth">
+            <input type="date" className={inputClass} {...register("dateOfBirth")} />
+          </Field>
+        </div>
+      </Section>
+
+      {/* Addresses were previously split across two columns by position in the
+          form rather than by what they were, so present and permanent address
+          ended up in different columns with nothing marking them as a pair. */}
+      <Section title="Addresses">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div className="flex flex-col gap-4">
+            <Field
+              id="presentAddress"
+              label="Present address"
+              hint="Where you live now"
+            >
+              <input className={inputClass} {...register("presentAddress")} />
+            </Field>
+            <Field id="city" label="City">
+              <input className={inputClass} {...register("city")} />
+            </Field>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <Field
+              id="permanentAddress"
+              label="Permanent address"
+              hint="Used for official correspondence"
+            >
+              <input className={inputClass} {...register("permanentAddress")} />
+            </Field>
+            <div className="grid grid-cols-2 gap-4">
+              <Field id="postalCode" label="Postal code">
+                <input className={inputClass} {...register("postalCode")} />
+              </Field>
+              <Field id="country" label="Country">
+                <input className={inputClass} {...register("country")} />
+              </Field>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      <div className="flex items-center justify-end gap-4 px-6 py-4">
+        {saved && (
+          <p
+            role="status"
+            className="text-sm font-medium text-success"
+          >
+            Profile updated
+          </p>
+        )}
         <button
           type="submit"
           disabled={saving}
-          className="px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-700 focus:outline-none disabled:opacity-60"
+          className="rounded-lg bg-brand-fill px-5 py-2.5 text-sm font-medium text-brand-on transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 disabled:opacity-60 dark:focus:ring-offset-dark"
         >
-          {saving ? 'Saving…' : 'Save Changes'}
+          {saving ? "Saving…" : "Save changes"}
         </button>
-        {saved && <p className="text-sm text-green-600">Profile updated</p>}
       </div>
     </form>
   );

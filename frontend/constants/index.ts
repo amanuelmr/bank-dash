@@ -232,9 +232,47 @@ export const creditcardstyles = [{
 
 }]
 
+/**
+ * Credit-card appearances.
+ *
+ * The card component used to branch on `backgroundColor === colors.blue` and
+ * gave every other card orange text, so a light card sitting next to a blue one
+ * looked like it came from a different app - the two halves of a row had nothing
+ * to do with each other. Each tone now carries its own background, foreground,
+ * chip artwork and bottom strip, so a set of cards reads as one collection.
+ *
+ * The dark tones are all in the brand's blue family at different lightnesses,
+ * which keeps them complementary rather than merely different.
+ */
+export const cardTones = {
+  brand: {
+    bg: "bg-[#1814F9]",
+    fg: "text-white",
+    muted: "text-white/70",
+    chip: "/icons/chip.png",
+    strip: "bg-gradient-to-b from-blue-600",
+  },
+  midnight: {
+    bg: "bg-[#0A1233]",
+    fg: "text-white",
+    muted: "text-white/70",
+    chip: "/icons/chip.png",
+    strip: "bg-white/10",
+  },
+  light: {
+    bg: "bg-white dark:bg-surface-2",
+    fg: "text-content-primary",
+    muted: "text-content-muted",
+    chip: "/icons/blackChip.png",
+    strip: "border-t border-slate-200 dark:border-line",
+  },
+} as const;
+
+export type CardTone = keyof typeof cardTones;
+
 export const colors = {
   blue: 'bg-[#1814F9]',
-  white: 'bg-white',
+  white: 'bg-white dark:bg-surface-2',
   navbartext:' text-[#343C6A]',
   black: 'bg-[#000000]',
   textwhite: 'text-white',
@@ -243,13 +281,13 @@ export const colors = {
   textgreen: 'text-[#41D4A8]',
   green :'bg-[#16DBCC]',
   red : 'bg-[#FF82AC]',
-  textgray : 'text-[#718EBF]',
+  textgray : 'text-content-secondary',
   gradientcard:'linear-gradient(to bottom, #4C49ED,#0A06F4)',
   gradientchart:'linear-gradient(to bottom, #2D60FF,#2D60FF)',
   textblue : "text-[#1814F3]",
-  lightblue : "bg-gray-100",
-  lightorange : 'bg-[#FFF5D9]',
-  lightpurple : 'bg-[#E7EDFF]',
+  lightblue : "bg-gray-100 dark:bg-surface-3",
+  lightorange : 'bg-[#FFF5D9] dark:bg-surface-3 dark:text-content-primary',
+  lightpurple : 'bg-[#E7EDFF] dark:bg-surface-3 dark:text-content-primary',
   lightgreen : 'bg-[#DCFAF8]',
   graybg : 'bg-[#F5F7FA]'
 

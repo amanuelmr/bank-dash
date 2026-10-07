@@ -66,12 +66,12 @@ const AddNewCard: React.FC = () => {
     <>
       {contextHolder}
       <div
-        className={`mr-4 ${
+        className={`${
           loading ? "animate-pulse opacity-50 pointer-events-none" : ""
         }`}
       >
-        <div className="bg-white 2xl:w-[800px] xl:w-[600px] lg:w[600px] w-[330px] md:w-[400px] sm:h-[880px] md:h-[520px] lg:h-[470px] p-7 dark:border-[1px] dark:border-gray-700 rounded-xl dark:bg-dark dark:text-white">
-          <p className="text-[17px] md:text-[15px] text-[#718EBF]">
+        <div className="h-full rounded-2xl border border-slate-200 bg-white p-6 dark:border-line dark:bg-surface-1 dark:text-white">
+          <p className="text-[17px] md:text-[15px] text-content-secondary">
             Credit Card generally means a plastic card issued by Scheduled
             Commercial Banks assigned to a Cardholder, with a credit limit, that
             can be used to purchase goods and services on credit or obtain cash
@@ -80,7 +80,7 @@ const AddNewCard: React.FC = () => {
 
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 dark:bg-dark text-gray-900 dark:text-white"
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-gray-900 dark:text-white"
           >
             <div>
               <label
@@ -95,7 +95,7 @@ const AddNewCard: React.FC = () => {
                   required: "Card Type is required",
                 })}
                 placeholder="Classic"
-                className="border-[1px] border-[#DFEAF2] rounded-md text-[15px] md:text-[14px] p-3 w-full outline-none text-[#718EBF] dark:text-white placeholder-[#718EBF]"
+                className="border-[1px] border-[#DFEAF2] bg-white rounded-md dark:border-line dark:bg-surface-2 text-[15px] md:text-[14px] p-3 w-full outline-none text-content-secondary dark:text-white placeholder-[#718EBF]"
               />
               {errors.cardType && (
                 <span className="text-red-500 text-sm">
@@ -117,7 +117,7 @@ const AddNewCard: React.FC = () => {
                   required: "Name on Card is required",
                 })}
                 placeholder="My Cards"
-                className="border-[1px] border-[#DFEAF2] rounded-md text-[15px] md:text-[14px] p-3 w-full outline-none text-[#718EBF] dark:text-white placeholder-[#718EBF]"
+                className="border-[1px] border-[#DFEAF2] bg-white rounded-md dark:border-line dark:bg-surface-2 text-[15px] md:text-[14px] p-3 w-full outline-none text-content-secondary dark:text-white placeholder-[#718EBF]"
               />
               {errors.nameOnCard && (
                 <span className="text-red-500 text-sm">
@@ -143,7 +143,7 @@ const AddNewCard: React.FC = () => {
                   },
                 })}
                 placeholder="27,000$"
-                className="border-[1px] border-[#DFEAF2] rounded-md text-[15px] md:text-[14px] p-3 w-full outline-none text-[#718EBF] dark:text-white placeholder-[#718EBF]"
+                className="border-[1px] border-[#DFEAF2] bg-white rounded-md dark:border-line dark:bg-surface-2 text-[15px] md:text-[14px] p-3 w-full outline-none text-content-secondary dark:text-white placeholder-[#718EBF]"
               />
               {errors.balance && (
                 <span className="text-red-500 text-sm">
@@ -170,10 +170,10 @@ const AddNewCard: React.FC = () => {
                     }
                   }}
                   placeholderText="dd MMMM yyyy"
-                  className="border-[1px] border-[#DFEAF2] rounded-md text-[15px] p-3 w-full pr-40 outline-none text-[#718EBF] dark:text-white placeholder-[#718EBF]"
+                  className="border-[1px] border-[#DFEAF2] bg-white rounded-md dark:border-line dark:bg-surface-2 text-[15px] p-3 w-full pr-40 outline-none text-content-secondary dark:text-white placeholder-[#718EBF]"
                   dateFormat="dd MMMM yyyy"
                 />
-                <FaCalendarAlt className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-[#718EBF] dark:text-white" />
+                <FaCalendarAlt className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-content-secondary dark:text-white" />
               </div>
               {errors.expiryDate && (
                 <span className="text-red-500 text-sm">
@@ -195,7 +195,7 @@ const AddNewCard: React.FC = () => {
                   required: "Passcode is required",
                 })}
                 placeholder="******"
-                className="border-[1px] border-[#DFEAF2] rounded-md text-[15px] md:text-[14px] p-3 w-full outline-none text-[#718EBF] dark:text-white placeholder-[#718EBF]"
+                className="border-[1px] border-[#DFEAF2] bg-white rounded-md dark:border-line dark:bg-surface-2 text-[15px] md:text-[14px] p-3 w-full outline-none text-content-secondary dark:text-white placeholder-[#718EBF]"
               />
               {errors.passcode && (
                 <span className="text-red-500 text-sm">
@@ -204,10 +204,10 @@ const AddNewCard: React.FC = () => {
               )}
             </div>
 
-            <div className="md:mt-2 lg:mt-4 md:ml-10 2xl:ml-56">
+            <div className="flex items-end">
               <button
                 type="submit"
-                className="rounded-xl text-[16px] px-7 md:px-4 xl:px-7 text-center bg-[#1814F3] dark:bg-blue-700 text-white w-[95%] md:w-[auto] mt-4 py-2"
+                className="w-full rounded-xl bg-[#1814F3] px-7 py-3 text-center text-[16px] text-white md:w-auto dark:bg-blue-700"
               >
                 Add Card
               </button>

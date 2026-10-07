@@ -1,58 +1,81 @@
-import React from 'react'
-import { colors , logo } from '@/constants';
-import Image from 'next/image';
-const MyInvestment = ({icon , color ,colortext , name ,category,categorycolor ,amount,percentage}:{
-    icon:string;
-    color:string;
-    colortext : string;
-    category:string;
-    categorycolor:string
-    name:string;
-    amount:string;
-    percentage:string;
+import React from "react";
+import Image from "next/image";
+
+/**
+ * One row of "My Investment".
+ *
+ * This and TrendingStock sit side by side, so they are built from the same
+ * panel chrome and the same row rhythm. Previously this row was ~86px tall with
+ * `lg:justify-evenly` and a set of `lg:text-start` / `lg:text-end` overrides
+ * fighting the parent, while the table next to it ran at ~40px a row - the two
+ * halves of the row read as unrelated components.
+ *
+ * Return colouring uses the success/danger tokens rather than hardcoded
+ * red-500/green-500, which had no dark-mode variant.
+ */
+const MyInvestment = ({
+  icon,
+  color,
+  initial,
+  name,
+  category,
+  amount,
+  percentage,
+}: {
+  icon: string;
+  color: string;
+  /** Shown instead of `icon` when the company has no brand asset. */
+  initial?: string;
+  category: string;
+  name: string;
+  amount: string;
+  percentage: string;
 }) => {
+  const negative = percentage.includes("-");
+
   return (
-    <div className= "w-[100%] rounded-2xl">
-      <div className={`${colors.white} rounded-2xl  dark:bg-dark text-gray-900 dark:text-white`}>
-          <div className=''>
-            <div className='flex p-2 justify-between lg:justify-evenly'>
-              <div className=' flex gap-4 justify-center items-center'>
-                  <div className={`${color} rounded-2xl flex items-center justify-center px-4 h-[60px]`}>
-                      <Image
-                    src={icon}
-                    alt="next logo"
-                    width={30}
-                    height={10}
-                    className="object-contain"
-                  />
-                  </div>
-                  <div className=' '>
-                      <p className='text-[14px] font-normal'> {name}</p>
-                      <p className={`${categorycolor} text-wrap w-[100px] lg:w-auto text-[12px] font-normal text-start`}> {category}</p>
-                  </div>
-              </div>
-              <div className='py-5 flex gap-6 items-center'>
-                <div className=' hidden lg:block'>
-                    <p className={`${colortext} text-[14px] font-normal dark:text-white`} >{amount}</p>
-                    <p className={`${categorycolor} text-[12px] font-normal text-start`} >Investment Value</p>
-                </div>
-                  <div className='flex flex-col items-end'>
-                      <p className={`${colortext}`}>
-                         {
-                                percentage.includes("-") ?
-                                <span className='text-red-500 text-[14px] font-normal text-end lg:text-start'>{percentage}</span>:
-                                <span className='text-green-500 text-end text-[14px] font-normal lg:text-start'>{percentage}</span>
-                         }
-                      
-                         </p>
-                        <p className={`${categorycolor} text-[12px] font-normal text-end`} >return value</p>
-                  </div>
-              </div>
-            </div>
-          </div>
+    <div className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-slate-50 dark:hover:bg-surface-2">
+      <div
+        className={`${color} flex h-11 w-11 shrink-0 items-center justify-center rounded-xl`}
+      >
+        {icon ? (
+          <Image src={icon} alt={`${name} logo`} width={22} height={22} className="object-contain" />
+        ) : (
+          <span aria-hidden className="text-sm font-semibold text-content-secondary">
+            {initial ?? name.charAt(0)}
+          </span>
+        )}
+      </div>
+
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium text-content-primary">
+          {name}
+        </p>
+        <p className="truncate text-xs text-content-muted">{category}</p>
+      </div>
+
+      {/* ml-auto pins the figures to the right edge, which is what the
+          justify-evenly variant was reaching for and did not quite achieve. */}
+      <div className="ml-auto flex items-center gap-6 text-right">
+        <div className="hidden sm:block">
+          <p className="text-sm font-medium tabular-nums text-content-primary">
+            {amount}
+          </p>
+          <p className="text-xs text-content-muted">Investment value</p>
+        </div>
+        <div>
+          <p
+            className={`text-sm font-medium tabular-nums ${
+              negative ? "text-danger" : "text-success"
+            }`}
+          >
+            {percentage}
+          </p>
+          <p className="text-xs text-content-muted">Return</p>
+        </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default MyInvestment
+export default MyInvestment;

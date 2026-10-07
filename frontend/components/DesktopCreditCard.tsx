@@ -7,7 +7,7 @@ interface CreditCardProps {
 
 const DesktopCreditCard: React.FC<CreditCardProps> = ({ bgColor, textColor }) => {
   return (
-    <div className={`${bgColor} w-[300px] h-[200px] md:w-[350px] md:h-[235px] rounded-xl relative`}>
+    <div className={`${bgColor} w-[300px] max-w-full h-[200px] md:w-[350px] md:h-[235px] rounded-xl relative`}>
       {/* Top Section */}
       <div className="flex justify-between w-[95%]">
         <div className="mt-1 ml-3 p-2">

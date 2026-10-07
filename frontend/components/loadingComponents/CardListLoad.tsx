@@ -2,7 +2,7 @@ import { CardListSkeleton } from "./CardListSkeleton"
 
 const CardListLoad = () => {
   return (
-    <div className="cardlist lg:w-[730px] md:w-[487px] sm-w-[325] my-6">
+    <div className="w-full">
         <CardListSkeleton />
         <CardListSkeleton />
         <CardListSkeleton />

@@ -2,6 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------------------------------------------------------------------------
+   Theme tokens
+
+   Every colour the UI draws with comes from here, as space-separated RGB so
+   Tailwind can apply opacity to any of them. The dark values are not chosen by
+   eye: each one was solved for the WCAG contrast it must clear against the
+   *lightest* surface it can appear on, so a token cannot quietly fail once it
+   is used on a raised panel instead of the page.
+
+   Dark surfaces are all one hue (222) with elevation expressed as lightness -
+   which is what the old palette was missing. It mixed navy #232A3C for the page
+   with near-black #020617 panels and #475467 cards, so nothing read as sitting
+   on anything else. One family, four steps, cards separated by lightness plus a
+   border rather than by jumping hue.
+--------------------------------------------------------------------------- */
+:root {
+  --surface-base: 241 244 249;
+  --surface-1: 255 255 255;
+  --surface-2: 255 255 255;
+  --surface-3: 248 250 252;
+
+  --line: 228 231 236;
+  --line-strong: 123 135 148;
+
+  --content-primary: 16 24 40;
+  --content-secondary: 76 83 97;
+  --content-muted: 105 112 128;
+  --content-inverse: 255 255 255;
+
+  --brand: 84 108 227;
+  --brand-fill: 84 108 227;
+  --on-brand-fill: 255 255 255;
+  --accent-secondary: 9 128 168;
+
+  --success: 24 135 83;
+  --warning: 177 99 9;
+  --danger: 221 55 44;
+}
+
+.dark {
+  --surface-base: 20 23 31;
+  --surface-1: 28 33 43;
+  --surface-2: 36 42 56;
+  --surface-3: 46 54 71;
+
+  --line: 68 80 107;
+  --line-strong: 108 127 169;
+
+  --content-primary: 254 254 254;
+  --content-secondary: 192 198 211;
+  --content-muted: 150 158 176;
+  --content-inverse: 11 18 32;
+
+  /* The accent is lightened in dark mode: the light-mode brand blue reached
+     only 4.42:1 on the darkest surface, and text must clear 4.5:1 on the
+     lightest one too. */
+  --brand: 104 157 255;
+  --brand-fill: 61 129 255;
+  --on-brand-fill: 11 18 32;
+  --accent-secondary: 11 187 218;
+
+  --success: 41 188 134;
+  --warning: 225 144 5;
+  --danger: 249 118 118;
+}
+
+/* Native controls - scrollbars, date pickers, form autofill - render against
+   the dark surface instead of flashing white. */
+.dark { color-scheme: dark; }
+:root { color-scheme: light; }
+
 * {
   margin: 0;
   padding: 0;

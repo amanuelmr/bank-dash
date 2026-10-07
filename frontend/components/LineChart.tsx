@@ -77,7 +77,7 @@ export default function LineChart() {
   if (status === "loading") {
     return (
       <div className="flex bg-white rounded-2xl flex-col py-4 items-start gap-3 w-[100%] dark:bg-dark text-gray-900 dark:text-white animate-pulse">
-        <div className="w-full h-[300px] bg-gray-300 dark:bg-gray-600 rounded-2xl"></div>
+        <div className="w-full h-[300px] bg-gray-300 dark:bg-surface-2 rounded-2xl"></div>
       </div>
     );
   }
@@ -86,7 +86,7 @@ export default function LineChart() {
     return (
       <div className="flex flex-col items-center justify-center h-full text-red-500">
         <TbFileSad
-          className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+          className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
           strokeWidth={1}
         />
 
@@ -97,7 +97,7 @@ export default function LineChart() {
 
   if (status === "nodata") {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-300">
+      <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-content-primary">
         <TbFileSad className="text-blue-500 dark:text-white w-[70px] h-[70px]" />
         <div>No data available to display</div>
       </div>

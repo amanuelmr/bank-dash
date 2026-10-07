@@ -1,4 +1,5 @@
-import Image from 'next/image';  
+import Image from 'next/image';
+import { Card } from './ui/card';  
 
 interface BalanceCardProps {
     iconSrc: string; // Path to the image source
@@ -11,7 +12,7 @@ export const BalanceCard: React.FC<{ balance: BalanceCardProps }> = ({ balance }
     const { iconSrc, altText, title, amount } = balance;
   
     return (
-      <div className="bg-white rounded-lg shadow-md p-3 flex items-center space-x-3 w-full">
+      <Card className="flex w-full items-center gap-3 p-4">
         {/* Icon */}
         <div className="rounded-full p-2">
           <Image 
@@ -25,9 +26,9 @@ export const BalanceCard: React.FC<{ balance: BalanceCardProps }> = ({ balance }
   
         {/* amount Details */}
         <div>
-          <p className="text-blue-500 text-xs">{title}</p>
-          <p className="text-black text-lg font-bold">{amount}</p>
+          <p className="text-xs text-content-muted">{title}</p>
+          <p className="text-lg font-bold text-content-primary">{amount}</p>
         </div>
-      </div>
+      </Card>
     );
   };

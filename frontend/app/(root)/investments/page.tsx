@@ -10,45 +10,52 @@ import MyInvestment from "@/components/MyInvestment";
 import TrendingStock from "@/components/TrendingStock";
 import { getTrendingCompanies } from "@/services/companygetch";
 import { randomInvestmentData } from "@/services/userupdate";
-const data = [
-  {
-    icon: "/icons/apple_store.png",
-    color: "bg-red-100 ",
-    colortext: colors.textblack,
-    category: "E-commerce, marketplace",
-    categorycolor: colors.textgray,
-    name: "Apple Store",
-    amount: "54000",
-    percentage: "1.6%",
-  },
-  {
-    icon: "/icons/Google_store.png",
-    color: "bg-blue-100",
-    colortext: colors.textblack,
-    category: "E-commerce, marketplace",
-    categorycolor: colors.textgray,
-    name: "Google Store",
-    amount: "25000",
-    percentage: "2.23%",
-  },
-  {
-    icon: "/icons/tesla.png",
-    color: "bg-yellow-100",
-    colortext: colors.textblack,
-    category: "E-commerce, marketplace",
-    categorycolor: colors.textgray,
-    name: "Tesla Store",
-    amount: "95000",
-    percentage: "2.23%",
-  },
-];
-const trendingdata = [
-  { slNo: "01.", name: "Nokia", price: "$940", return: "+2%" },
-  { slNo: "02.", name: "Apple", price: "$1500", return: "+5%" },
-  { slNo: "03.", name: "Google", price: "$2500", return: "-3%" },
-  { slNo: "04.", name: "Amazon", price: "$3000", return: "+4%" },
-  { slNo: "05.", name: "Microsoft", price: "$2000", return: "-6%" },
-];
+import PageContainer from "@/components/PageContainer";
+import type { Company } from "@/types/api";
+// Which brand asset to use for each company. The API has no logo for these rows
+// (logoUrl is null), so the mark is matched locally rather than showing a broken
+// image; a company without an entry falls back to a neutral tile with its ticker.
+const COMPANY_MARKS: Record<string, { icon?: string; color: string }> = {
+  AAPL: { icon: "/icons/apple_store.png", color: "bg-red-100" },
+  GOOGL: { icon: "/icons/Google_store.png", color: "bg-blue-100" },
+  TSLA: { icon: "/icons/tesla.png", color: "bg-yellow-100" },
+  AMZN: { color: "bg-amber-100" },
+  MSFT: { color: "bg-sky-100" },
+  NOK: { color: "bg-purple-100" },
+};
+
+/** Holdings, derived from the companies the API actually returns. */
+function toHoldings(companies: Company[]) {
+  return companies.slice(0, 3).map((company) => {
+    const mark = COMPANY_MARKS[company.symbol];
+    return {
+      // Empty icon means "no asset" - the row shows the ticker's initial
+      // rather than borrowing another company's mark.
+      icon: mark?.icon ?? "",
+      color: mark?.color ?? "bg-slate-100",
+      initial: company.symbol.charAt(0),
+      name: company.name,
+      category: company.sector,
+      // Held value is not modelled by the API yet, so it is derived from the
+      // share price rather than shown as an unrelated invented number.
+      amount: `$${(company.price * 100).toLocaleString("en-US", { maximumFractionDigits: 0 })}`,
+      percentage: `${company.changePercent > 0 ? "+" : ""}${company.changePercent.toFixed(2)}%`,
+    };
+  });
+}
+
+/** The trending table, in the shape TrendingStock expects. */
+function toTrendingRows(companies: Company[]) {
+  return companies.map((company, index) => ({
+    slNo: `${index + 1}.`,
+    name: `${company.name} (${company.symbol})`,
+    price: `$${company.price.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`,
+    return: `${company.changePercent > 0 ? "+" : ""}${company.changePercent.toFixed(2)}%`,
+  }));
+}
 
 interface chartData {
   period: string;
@@ -63,18 +70,8 @@ interface InvestmentData {
 }
 
 const Investments = () => {
-  // const fetch = async () => {
-  //   try {
-  //     const trendingcomp = await getTrendingCompanies();
-  //     return trendingcomp;
-  //   } catch (error) {
-  //     console.error("Login Error:", error);
-  //   }
-  // };
-
-  // const Trendingcomp = fetch();
-
   const [investment, setInvestment] = useState<InvestmentData>();
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [status, setStatus] = useState<"loading" | "error" | "success">(
     "loading"
   );
@@ -93,13 +90,33 @@ const Investments = () => {
     fetchInvestmentData();
   }, []);
 
+  const holdings = toHoldings(companies);
+  const trendingRows = toTrendingRows(companies);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchCompanies = async () => {
+      try {
+        const trending = await getTrendingCompanies(6);
+        if (!cancelled) setCompanies(trending);
+      } catch (error) {
+        // The investment charts are the point of this page; a failed companies
+        // call should leave those intact rather than flip the page to an error.
+        console.error("Error fetching trending companies:", error);
+      }
+    };
+    fetchCompanies();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   if (status === "loading") {
     return (
-      <div
-        className={` ${colors.graybg} flex flex-col lg:gap-5 lg:ml-64 lg:pr-6 xl:pr-10 dark:bg-dark text-gray-900 dark:text-white`}
-      >
-        <div className="flex flex-col items-center px-6 pt-10 gap-4 lg:flex-row dark:bg-dark text-gray-900 dark:text-white">
-          <div className="flex gap-3 w-[80%] bg-gray-200 justify-center items-center py-3 rounded-xl animate-pulse">
+      <PageContainer>
+        <div className="flex flex-col gap-8">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="flex items-center gap-4 rounded-2xl bg-gray-200 p-4 animate-pulse dark:bg-surface-3">
             <div className="bg-cyan-100 w-[50px] h-[50px] flex items-center justify-center rounded-full animate-pulse"></div>
             <div>
               <div className="bg-gray-300 h-[12px] w-[150px] rounded mb-2 animate-pulse"></div>
@@ -107,7 +124,7 @@ const Investments = () => {
             </div>
           </div>
 
-          <div className="flex gap-3 w-[80%] bg-gray-200 justify-center items-center py-3 rounded-xl animate-pulse">
+          <div className="flex items-center gap-4 rounded-2xl bg-gray-200 p-4 animate-pulse dark:bg-surface-3">
             <div className="bg-pink-100 w-[50px] h-[50px] flex items-center justify-center rounded-full animate-pulse"></div>
             <div>
               <div className="bg-gray-300 h-[12px] w-[150px] rounded mb-2 animate-pulse"></div>
@@ -115,7 +132,7 @@ const Investments = () => {
             </div>
           </div>
 
-          <div className="flex gap-3 w-[80%] bg-gray-200 justify-center items-center py-3 rounded-xl animate-pulse">
+          <div className="flex items-center gap-4 rounded-2xl bg-gray-200 p-4 animate-pulse dark:bg-surface-3">
             <div className="bg-indigo-100 w-[50px] h-[50px] flex items-center justify-center rounded-full animate-pulse"></div>
             <div>
               <div className="bg-gray-300 h-[12px] w-[150px] rounded mb-2 animate-pulse"></div>
@@ -124,7 +141,7 @@ const Investments = () => {
           </div>
         </div>
 
-        <div className="flex flex-col py-5 px-6 gap-14 lg:grid lg:grid-cols-2 lg:gap-6">
+        <div className="flex flex-col gap-8 lg:grid lg:grid-cols-2 lg:gap-6">
           <div className="flex flex-col gap-3 lg:gap-4 xl:gap-5">
             <div className="bg-gray-300 h-[22px] w-[200px] rounded mb-4 animate-pulse"></div>
             <div className="bg-gray-300 h-[250px] rounded animate-pulse"></div>
@@ -150,62 +167,62 @@ const Investments = () => {
           </div>
         </div>
       </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div
-      className={` ${colors.graybg}   flex  flex-col  lg:gap-5 lg:ml-64 lg:pr-6 xl:pr-10  dark:bg-dark text-gray-900 dark:text-white`}
-    >
-      <div className="flex flex-col items-center px-6 pt-10 gap-4 lg:flex-row dark:bg-dark text-gray-900 dark:text-white">
-        <div className="flex gap-3 w-[80%] bg-white justify-center items-center py-3  rounded-xl  dark:bg-dark text-gray-900 dark:text-white">
+    <PageContainer>
+      <div className="flex flex-col gap-8">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-gray-900 dark:border-line dark:bg-surface-1 dark:text-white">
           <div className="bg-cyan-100 w-[50px] h-[50px] flex items-center justify-center rounded-full  ">
             <FaSackDollar className="text-cyan-500 h-[25px] w-[20px] " />
           </div>
           <div>
             <p
-              className={`${colors.textgray} font-normal text-[12px] lg:text-[18px] dark:text-white`}
+              className="text-xs text-content-muted"
             >
               Total Invested Amount
             </p>
             <p
-              className={`${colors.textblack} font-semibold text-[16px] dark:text-white`}
+              className="text-lg font-bold text-content-primary"
             >
               {investment ? `$${investment.totalInvestment.toLocaleString()}` : "no data to display"}
             </p>
           </div>
         </div>
 
-        <div className="flex gap-3 w-[80%] bg-white justify-center items-center py-3 rounded-xl  dark:bg-dark text-gray-900 dark:text-white">
+        <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-gray-900 dark:border-line dark:bg-surface-1 dark:text-white">
           <div className="bg-pink-100 w-[50px] h-[50px] flex items-center justify-center rounded-full  ">
             <GiTakeMyMoney className="text-pink-500 h-[25px] w-[20px] " />
           </div>
           <div>
             <p
-              className={`${colors.textgray} font-normal text-[12px] lg:text-[18px] dark:text-white`}
+              className="text-xs text-content-muted"
             >
               Number of Investments
             </p>
             <p
-              className={`${colors.textblack} font-semibold text-[16px] dark:text-white`}
+              className="text-lg font-bold text-content-primary"
             >
               {investment ? investment.numberOfInvestments.toLocaleString() : "-"}
             </p>
           </div>
         </div>
 
-        <div className="flex gap-3 w-[80%] bg-white justify-center items-center py-3 rounded-xl dark:bg-dark text-gray-900 dark:text-white">
+        <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-gray-900 dark:border-line dark:bg-surface-1 dark:text-white">
           <div className="bg-indigo-100 w-[50px] h-[50px] flex items-center justify-center rounded-full  ">
             <AiOutlineRetweet className="text-indigo-500 h-[25px] w-[20px] " />
           </div>
           <div>
             <p
-              className={`${colors.textgray} font-normal text-[12px] w-[132px] lg:text-[18px] dark:text-white`}
+              className="text-xs text-content-muted"
             >
               Rate of Return
             </p>
             <p
-              className={`${colors.textblack} font-semibold text-[16px] dark:text-white`}
+              className="text-lg font-bold text-content-primary"
             >
               {investment ? `${investment.rateOfReturn}%` : "no data to display"}
             </p>
@@ -213,10 +230,10 @@ const Investments = () => {
         </div>
       </div>
 
-      <div className="  flex flex-col py-5 px-6 gap-14 lg:grid lg:grid-cols-2 lg:gap-6  ">
-        <div className="flex flex-col gap-3 lg:gap-4 xl:gap-5 ">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <div className="flex flex-col gap-4">
           <h2
-            className={`font-semibold text-[22px] ${colors.navbartext} dark:text-blue-500`}
+            className="text-xl font-semibold text-[#343C6A] dark:text-brand"
           >
             Yearly Total Investments
           </h2>
@@ -226,9 +243,9 @@ const Investments = () => {
             }
           />
         </div>
-        <div className="flex  flex-col gap-3 lg:gap-4 xl:gap-5 ">
+        <div className="flex flex-col gap-4">
           <h2
-            className={`font-semibold text-[22px] ${colors.navbartext} dark:text-blue-500`}
+            className="text-xl font-semibold text-[#343C6A] dark:text-brand"
           >
             Monthly Revenue
           </h2>
@@ -238,40 +255,45 @@ const Investments = () => {
         </div>
       </div>
 
-      <div className="flex flex-col lg:grid lg:grid-cols-5 ">
-        <div className="px-6  lg:col-span-3 flex flex-col gap-5">
+      {/* My Investment and Trending Stock read as two unrelated components:
+          different padding (px-6 vs p-6 lg:p-0), and the list rows ran at
+          roughly twice the height of the table beside them. Both are now the
+          same panel chrome and row rhythm, and share a heading, so the row
+          balances. h-full on each lets the grid stretch them to one height
+          rather than each asserting its own. */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-5 lg:items-stretch">
+        <div className="flex flex-col gap-4 lg:col-span-3">
           <h2
-            className={`font-semibold text-[22px] ${colors.navbartext} dark:text-blue-500`}
+            className="text-xl font-semibold text-[#343C6A] dark:text-brand"
           >
             My Investment
           </h2>
-          {data.map((item, index) => (
-            <MyInvestment
-              key={index}
-              icon={item.icon}
-              color={item.color}
-              colortext={item.colortext}
-              category={item.category}
-              categorycolor={item.categorycolor}
-              name={item.name}
-              amount={item.amount}
-              percentage={item.percentage}
-            />
-          ))}
-        </div>
-        <div className="lg:col-span-2">
-          <div className="p-6 lg:p-0">
-            <h2
-              className={`font-semibold text-[22px] ${colors.navbartext} dark:text-blue-500`}
-            >
-              Trending Stock
-            </h2>
-
-            <TrendingStock items={trendingdata} />
+          <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100 dark:border-line dark:bg-surface-1 dark:divide-line">
+            {holdings.map((item, index) => (
+              <MyInvestment
+                key={index}
+                icon={item.icon}
+                color={item.color}
+                category={item.category}
+                name={item.name}
+                amount={item.amount}
+                percentage={item.percentage}
+              />
+            ))}
           </div>
+        </div>
+        <div className="flex flex-col gap-4 lg:col-span-2">
+          <h2
+            className="text-xl font-semibold text-[#343C6A] dark:text-brand"
+          >
+            Trending Stock
+          </h2>
+
+          <TrendingStock items={trendingRows} />
         </div>
       </div>
     </div>
+    </PageContainer>
   );
 };
 

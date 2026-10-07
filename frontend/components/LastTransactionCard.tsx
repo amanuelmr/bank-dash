@@ -5,6 +5,7 @@ import TransactionCard from "./TransactionCard";
 import type { Transaction } from "@/types/api";
 import { TbFileSad } from "react-icons/tb";
 import TransactionCardShimmer from './TransactionCardShimmer';
+import { Card } from './ui/card';
 
 // App Component
 const App: React.FC = () => {
@@ -46,7 +47,7 @@ const App: React.FC = () => {
     return (
       <div className="p-3 gap-4  flex flex-col justify-center items-center h-auto  dark:bg-dark   text-center ">
         <TbFileSad
-          className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+          className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
           strokeWidth={1}
         />
         <p className="text-red-500" >Failed to fetch</p>
@@ -63,11 +64,11 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="p-3  flex-1 h-auto bg-gray-50 dark:bg-dark text-gray-900 dark:text-white grid grid-cols-1  gap-4">
-      {transactions.map((transaction, index) => (
-        <TransactionCard key={index} transaction={transaction} />
+    <Card className="divide-y divide-slate-100 overflow-hidden dark:divide-line">
+      {transactions.map((transaction) => (
+        <TransactionCard key={transaction.id} transaction={transaction} />
       ))}
-    </div>
+    </Card>
   );
 };
 

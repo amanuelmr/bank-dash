@@ -60,7 +60,7 @@ const RecentTransactions = () => {
 
   if (isLoading === "loading") {
     return (
-      <div className="flex flex-wrap lg:ml-72 px-10 flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <div className="flex flex-wrap mb-4">
           <button className="font-bold px-4 py-2 rounded-t-lg text-gray-600">
             All Transactions
@@ -81,7 +81,7 @@ const RecentTransactions = () => {
 
   if (isLoading === "error") {
     return (
-      <div className="flex flex-wrap lg:ml-72 px-10 flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <div className="flex flex-wrap mb-4">
           <button className="font-bold px-4 py-2 rounded-t-lg text-gray-600">
             All Transactions
@@ -98,7 +98,7 @@ const RecentTransactions = () => {
           role="alert"
         >
           <TbFileSad
-          className={`text-gray-300 dark:text-[#993d4b] w-[400px] h-[70px] pb-2 block mx-auto`}
+          className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
           strokeWidth={1}
         />
           <div>
@@ -113,8 +113,8 @@ const RecentTransactions = () => {
   }
 
   return (
-    <div className="p-4 md:ml-64">
-      <div className="flex flex-wrap mb-4 dark:text-blue-500">
+    <div>
+      <div className="flex flex-wrap mb-4 dark:text-brand">
         <button
           onClick={() => {
             setFilter("all");

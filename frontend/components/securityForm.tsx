@@ -4,12 +4,27 @@ import { useForm, Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/Input';
 import Toggle from '@/components/ui/Toggle';
 import { changePassword } from '@/services/authentication';
+import Field from '@/components/FormField';
 
 interface SecurityFormValues {
   twoFactorEnabled: boolean;
   currentPassword: string;
   newPassword: string;
 }
+
+const Section: React.FC<{ title: string; description?: string; children: React.ReactNode }> = ({
+  title,
+  description,
+  children,
+}) => (
+  <section className="p-6">
+    <header className="mb-5">
+      <h2 className="text-base font-semibold text-content-primary">{title}</h2>
+      {description && <p className="mt-1 text-sm text-content-muted">{description}</p>}
+    </header>
+    {children}
+  </section>
+);
 
 const SecurityForm = () => {
   const { control, register, handleSubmit } = useForm<SecurityFormValues>({
@@ -35,37 +50,54 @@ const SecurityForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <h3 className="font-semibold">Two-factor Authentication</h3>
-      <Controller
-        control={control}
-        name="twoFactorEnabled"
-        render={({ field }) => (
-          <Toggle label="Enable or disable two-factor authentication" {...field} />
-        )}
-      />
+    <form onSubmit={handleSubmit(onSubmit)} className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white dark:divide-line dark:border-line dark:bg-surface-1">
+      <Section
+        title="Two-factor authentication"
+        description="Require a second step when signing in."
+      >
+        <Controller
+          control={control}
+          name="twoFactorEnabled"
+          render={({ field }) => (
+            <Toggle label="Enable two-factor authentication" {...field} />
+          )}
+        />
+      </Section>
 
-      <h3 className="font-semibold">Change Password</h3>
-      <div className="w-full max-w-xs">
-        <Input type="password" placeholder="******" {...register('currentPassword')} />
-      </div>
-      <div className="w-full max-w-xs">
-        <Input type="password" placeholder="******" {...register('newPassword')} />
-      </div>
-      <div className="flex justify-center md:pt-20">
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full max-w-xs mx-auto bg-blue-800 text-white py-2 rounded-md disabled:opacity-60"
-        >
-          {saving ? 'Saving…' : 'Save'}
-        </button>
-        {message && (
-          <p className={`text-sm text-center mt-2 ${message.ok ? 'text-green-600' : 'text-red-500'}`}>
-            {message.text}
-          </p>
-        )}
-      </div>
+      {/* Both fields were placeholders-only, so once a password was typed there
+          was no way to tell the current one from the new one. */}
+      <Section title="Change password">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field id="currentPassword" label="Current password">
+            <Input type="password" autoComplete="current-password" {...register('currentPassword')} />
+          </Field>
+          <Field
+            id="newPassword"
+            label="New password"
+            hint="Choose something you have not used before."
+          >
+            <Input type="password" autoComplete="new-password" {...register('newPassword')} />
+          </Field>
+        </div>
+
+        <div className="mt-6 flex items-center justify-end gap-4">
+          {message && (
+            <p
+              role="status"
+              className={`text-sm font-medium ${message.ok ? 'text-success' : 'text-danger'}`}
+            >
+              {message.text}
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={saving}
+            className="rounded-lg bg-brand-fill px-5 py-2.5 text-sm font-medium text-brand-on transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 disabled:opacity-60 dark:focus:ring-offset-surface-1"
+          >
+            {saving ? 'Saving…' : 'Save changes'}
+          </button>
+        </div>
+      </Section>
     </form>
   );
 };
