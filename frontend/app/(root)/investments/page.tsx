@@ -10,45 +10,52 @@ import MyInvestment from "@/components/MyInvestment";
 import TrendingStock from "@/components/TrendingStock";
 import { getTrendingCompanies } from "@/services/companygetch";
 import { randomInvestmentData } from "@/services/userupdate";
-const data = [
-  {
-    icon: "/icons/apple_store.png",
-    color: "bg-red-100 ",
-    colortext: colors.textblack,
-    category: "E-commerce, marketplace",
-    categorycolor: colors.textgray,
-    name: "Apple Store",
-    amount: "54000",
-    percentage: "1.6%",
-  },
-  {
-    icon: "/icons/Google_store.png",
-    color: "bg-blue-100",
-    colortext: colors.textblack,
-    category: "E-commerce, marketplace",
-    categorycolor: colors.textgray,
-    name: "Google Store",
-    amount: "25000",
-    percentage: "2.23%",
-  },
-  {
-    icon: "/icons/tesla.png",
-    color: "bg-yellow-100",
-    colortext: colors.textblack,
-    category: "E-commerce, marketplace",
-    categorycolor: colors.textgray,
-    name: "Tesla Store",
-    amount: "95000",
-    percentage: "2.23%",
-  },
-];
-const trendingdata = [
-  { slNo: "01.", name: "Nokia", price: "$940", return: "+2%" },
-  { slNo: "02.", name: "Apple", price: "$1500", return: "+5%" },
-  { slNo: "03.", name: "Google", price: "$2500", return: "-3%" },
-  { slNo: "04.", name: "Amazon", price: "$3000", return: "+4%" },
-  { slNo: "05.", name: "Microsoft", price: "$2000", return: "-6%" },
-];
+import PageContainer from "@/components/PageContainer";
+import type { Company } from "@/types/api";
+// Which brand asset to use for each company. The API has no logo for these rows
+// (logoUrl is null), so the mark is matched locally rather than showing a broken
+// image; a company without an entry falls back to a neutral tile with its ticker.
+const COMPANY_MARKS: Record<string, { icon?: string; color: string }> = {
+  AAPL: { icon: "/icons/apple_store.png", color: "bg-red-100" },
+  GOOGL: { icon: "/icons/Google_store.png", color: "bg-blue-100" },
+  TSLA: { icon: "/icons/tesla.png", color: "bg-yellow-100" },
+  AMZN: { color: "bg-amber-100" },
+  MSFT: { color: "bg-sky-100" },
+  NOK: { color: "bg-purple-100" },
+};
+
+/** Holdings, derived from the companies the API actually returns. */
+function toHoldings(companies: Company[]) {
+  return companies.slice(0, 3).map((company) => {
+    const mark = COMPANY_MARKS[company.symbol];
+    return {
+      // Empty icon means "no asset" - the row shows the ticker's initial
+      // rather than borrowing another company's mark.
+      icon: mark?.icon ?? "",
+      color: mark?.color ?? "bg-slate-100",
+      initial: company.symbol.charAt(0),
+      name: company.name,
+      category: company.sector,
+      // Held value is not modelled by the API yet, so it is derived from the
+      // share price rather than shown as an unrelated invented number.
+      amount: `$${(company.price * 100).toLocaleString("en-US", { maximumFractionDigits: 0 })}`,
+      percentage: `${company.changePercent > 0 ? "+" : ""}${company.changePercent.toFixed(2)}%`,
+    };
+  });
+}
+
+/** The trending table, in the shape TrendingStock expects. */
+function toTrendingRows(companies: Company[]) {
+  return companies.map((company, index) => ({
+    slNo: `${index + 1}.`,
+    name: `${company.name} (${company.symbol})`,
+    price: `$${company.price.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`,
+    return: `${company.changePercent > 0 ? "+" : ""}${company.changePercent.toFixed(2)}%`,
+  }));
+}
 
 interface chartData {
   period: string;
@@ -63,18 +70,8 @@ interface InvestmentData {
 }
 
 const Investments = () => {
-  // const fetch = async () => {
-  //   try {
-  //     const trendingcomp = await getTrendingCompanies();
-  //     return trendingcomp;
-  //   } catch (error) {
-  //     console.error("Login Error:", error);
-  //   }
-  // };
-
-  // const Trendingcomp = fetch();
-
   const [investment, setInvestment] = useState<InvestmentData>();
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [status, setStatus] = useState<"loading" | "error" | "success">(
     "loading"
   );
@@ -93,12 +90,32 @@ const Investments = () => {
     fetchInvestmentData();
   }, []);
 
+  const holdings = toHoldings(companies);
+  const trendingRows = toTrendingRows(companies);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchCompanies = async () => {
+      try {
+        const trending = await getTrendingCompanies(6);
+        if (!cancelled) setCompanies(trending);
+      } catch (error) {
+        // The investment charts are the point of this page; a failed companies
+        // call should leave those intact rather than flip the page to an error.
+        console.error("Error fetching trending companies:", error);
+      }
+    };
+    fetchCompanies();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   if (status === "loading") {
     return (
-      <div
-        className={` ${colors.graybg} flex flex-col lg:gap-5 lg:ml-64 lg:pr-6 xl:pr-10 dark:bg-dark text-gray-900 dark:text-white`}
-      >
-        <div className="flex flex-col items-center px-6 pt-10 gap-4 lg:flex-row dark:bg-dark text-gray-900 dark:text-white">
+      <PageContainer className="py-6">
+        <div className="flex flex-col gap-5">
+        <div className="flex flex-col items-center pt-4 gap-4 lg:flex-row">
           <div className="flex gap-3 w-[80%] bg-gray-200 justify-center items-center py-3 rounded-xl animate-pulse">
             <div className="bg-cyan-100 w-[50px] h-[50px] flex items-center justify-center rounded-full animate-pulse"></div>
             <div>
@@ -124,7 +141,7 @@ const Investments = () => {
           </div>
         </div>
 
-        <div className="flex flex-col py-5 px-6 gap-14 lg:grid lg:grid-cols-2 lg:gap-6">
+        <div className="flex flex-col gap-8 lg:grid lg:grid-cols-2 lg:gap-6">
           <div className="flex flex-col gap-3 lg:gap-4 xl:gap-5">
             <div className="bg-gray-300 h-[22px] w-[200px] rounded mb-4 animate-pulse"></div>
             <div className="bg-gray-300 h-[250px] rounded animate-pulse"></div>
@@ -150,14 +167,14 @@ const Investments = () => {
           </div>
         </div>
       </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div
-      className={` ${colors.graybg}   flex  flex-col  lg:gap-5 lg:ml-64 lg:pr-6 xl:pr-10  dark:bg-dark text-gray-900 dark:text-white`}
-    >
-      <div className="flex flex-col items-center px-6 pt-10 gap-4 lg:flex-row dark:bg-dark text-gray-900 dark:text-white">
+    <PageContainer className="py-6">
+      <div className="flex flex-col gap-5">
+      <div className="flex flex-col items-center pt-4 gap-4 lg:flex-row">
         <div className="flex gap-3 w-[80%] bg-white justify-center items-center py-3  rounded-xl  dark:bg-dark text-gray-900 dark:text-white">
           <div className="bg-cyan-100 w-[50px] h-[50px] flex items-center justify-center rounded-full  ">
             <FaSackDollar className="text-cyan-500 h-[25px] w-[20px] " />
@@ -252,14 +269,12 @@ const Investments = () => {
             My Investment
           </h2>
           <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100 dark:border-line dark:bg-surface-1 dark:divide-line">
-            {data.map((item, index) => (
+            {holdings.map((item, index) => (
               <MyInvestment
                 key={index}
                 icon={item.icon}
                 color={item.color}
-                colortext={item.colortext}
                 category={item.category}
-                categorycolor={item.categorycolor}
                 name={item.name}
                 amount={item.amount}
                 percentage={item.percentage}
@@ -274,10 +289,11 @@ const Investments = () => {
             Trending Stock
           </h2>
 
-          <TrendingStock items={trendingdata} />
+          <TrendingStock items={trendingRows} />
         </div>
       </div>
     </div>
+    </PageContainer>
   );
 };
 

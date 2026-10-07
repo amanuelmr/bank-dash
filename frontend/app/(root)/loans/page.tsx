@@ -19,6 +19,7 @@ import { currentuser } from "@/services/userupdate";
 import { message } from "antd";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import Pagination from "@/components/Pagination";
+import PageContainer from "@/components/PageContainer";
 interface LoanCard {
   icon: (props: any) => JSX.Element;
   title: string;
@@ -201,7 +202,7 @@ const LoansPage: React.FC = () => {
   );
 
   return (
-    <div className="flex lg:ml-64 lg:max-w-[100%] px-6 dark:text-brand bg-gray-100 dark:bg-dark ">
+    <PageContainer className="py-6">
       {/* Mobile and Tablet View */}
 
       {contextHolder}
@@ -553,7 +554,7 @@ const LoansPage: React.FC = () => {
           
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 };
 
