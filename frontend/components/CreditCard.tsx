@@ -31,7 +31,7 @@ const ResponsiveCreditCard: React.FC<ResponsiveCreditCardProps> = ({
 
   return (
     <div
-      className={`${t.bg} ${t.fg} relative h-[170px] w-[231px] max-w-full rounded-xl sm:h-[170px] sm:w-[265px] md:h-[235px] md:w-[350px] ${
+      className={`${t.bg} ${t.fg} relative flex h-[170px] w-[231px] max-w-full flex-col overflow-hidden rounded-xl sm:h-[170px] sm:w-[265px] md:h-[235px] md:w-[350px] ${
         tone === "light"
           ? "border border-slate-200 dark:border-line"
           : ""
@@ -74,9 +74,12 @@ const ResponsiveCreditCard: React.FC<ResponsiveCreditCardProps> = ({
       </div>
 
       <div
-        className={`absolute bottom-0 left-0 right-0 flex items-center justify-between ${t.strip}`}
+        // In flow at the bottom rather than absolutely positioned: when the
+        // number wrapped on the narrow card, an absolute strip grew upward
+        // over the holder and expiry date.
+        className={`mt-auto flex items-center justify-between ${t.strip}`}
       >
-        <span className={`${t.fg} ml-2 p-3 text-[15px] tabular-nums sm:text-[15px] md:text-[22px]`}>
+        <span className={`${t.fg} ml-2 whitespace-nowrap p-3 text-[14px] tabular-nums sm:text-[15px] md:text-[22px]`}>
           {maskedNumber}
         </span>
         <Image

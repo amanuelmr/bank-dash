@@ -18,14 +18,7 @@ const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState<TabId>('editProfile');
   return (
     <PageContainer>
-      <div className="mx-auto w-full max-w-5xl py-8">
-        <header className="mb-6">
-          <h1 className="text-2xl font-semibold text-content-primary">Settings</h1>
-          <p className="mt-1 text-sm text-content-muted">
-            Manage your profile, preferences and account security.
-          </p>
-        </header>
-
+      <div className="w-full max-w-5xl">
         {/* Horizontal tabs below the heading, rather than a 250px rail beside the
             content. The rail existed but rendered nothing at all - an empty
             <aside> that pushed the form 250px right for no reason.

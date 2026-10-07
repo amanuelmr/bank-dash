@@ -50,6 +50,7 @@ const config = {
         },
         accentSecondary: "rgb(var(--accent-secondary) / <alpha-value>)",
         danger: "rgb(var(--danger) / <alpha-value>)",
+        warning: "rgb(var(--warning) / <alpha-value>)",
 
         // `dark` is a legacy alias for the page surface, kept so the existing
         // `bg-dark` usages resolve into the new scale instead of staying a
@@ -69,6 +70,9 @@ const config = {
           700: "#3D4FBF",
         },
         success: {
+          // The token. Without a DEFAULT, `text-success` resolved to nothing
+          // and every "positive" figure rendered in the inherited colour.
+          DEFAULT: "rgb(var(--success) / <alpha-value>)",
           25: "#F6FEF9",
           50: "#ECFDF3",
           100: "#D1FADF",

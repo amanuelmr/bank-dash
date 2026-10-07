@@ -124,7 +124,7 @@ const BankservicesList: React.FC = () => {
   if (status === "loading") {
     return (
       <div className="w-full">
-        <h2 className="text-xl font-bold mb-4 dark:text-brand animate-pulse">
+        <h2 className="mb-4 text-xl font-semibold text-[#343C6A] dark:text-brand">
           Bank Services List
         </h2>
         {renderShimmer(3)}
@@ -133,7 +133,7 @@ const BankservicesList: React.FC = () => {
   } else if (status === "error") {
     return (
       <div className="w-full">
-        <h2 className="text-xl font-bold mb-4 dark:text-brand animate-pulse">
+        <h2 className="mb-4 text-xl font-semibold text-[#343C6A] dark:text-brand">
           Bank Services List
         </h2>
         <div className="text-xl w-[100%] text-center gap-4 flex flex-col items-center  font-bold mb-4 text-red-500">
@@ -169,7 +169,7 @@ const BankservicesList: React.FC = () => {
   
         : (
           <div className="w-full">
-            <h2 className="text-xl font-bold mb-4 dark:text-brand">
+            <h2 className="mb-4 text-xl font-semibold text-[#343C6A] dark:text-brand">
               Bank Services List
             </h2>
             <div className="relative mb-6 max-w-sm">
@@ -186,18 +186,19 @@ const BankservicesList: React.FC = () => {
                 className="w-full rounded-full border border-gray-300 dark:border-line bg-gray-100 dark:bg-surface-2 py-2 pl-11 pr-4 text-content-primary placeholder:text-content-muted focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-brand"
               />
             </div>
+            <div className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white dark:divide-line dark:border-line dark:bg-surface-1">
             {filtered.map((service: any, index: any) => (
-              <div key={index} className="mb-4">
+              <div key={service.id ?? index}>
              
                 {/* Narrow screens. This row had a shadow but no background of its own, so it
                     rendered as a floating shadow on the grey page - which is what
                     made the list look broken. `w-13 h-13` is also not a real
                     Tailwind size, so the icons fell back to their intrinsic
                     dimensions and some overflowed their box. */}
-                <div className="mb-4 flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 lg:hidden dark:border-line dark:bg-surface-1">
+                <div className="flex items-center gap-4 px-5 py-4 lg:hidden">
                   {icons[index % icons.length] &&
                     React.createElement(icons[index % icons.length], {
-                      className: "h-6 w-6 shrink-0",
+                      className: "h-10 w-10 shrink-0",
                       "aria-hidden": "true",
                     })}
                   <div className="min-w-0 flex-1">
@@ -231,10 +232,10 @@ const BankservicesList: React.FC = () => {
                     entirely - which is why the View Details button fell off the
                     right edge whenever the page was not exactly 1110px wide. A
                     grid of fractions tracks whatever width it is given. */}
-                <div className="hidden lg:grid lg:grid-cols-[1.5rem_minmax(0,2.4fr)_minmax(0,1fr)_minmax(0,0.95fr)_minmax(0,0.8fr)_auto] lg:items-center lg:gap-4 p-4 rounded-md bg-white dark:bg-surface-1 border border-slate-200 dark:border-line">
+                <div className="hidden lg:grid lg:grid-cols-[2.5rem_minmax(0,2.4fr)_minmax(0,1fr)_minmax(0,0.95fr)_minmax(0,0.8fr)_auto] lg:items-center lg:gap-4 px-5 py-4 transition-colors hover:bg-slate-50 dark:hover:bg-surface-2">
                   {icons[index % icons.length] &&
                     React.createElement(icons[index % icons.length], {
-                      className: "w-6 h-6",
+                      className: "h-10 w-10",
                       "aria-hidden": "true",
                     })}
                   <div className="min-w-0">
@@ -273,6 +274,7 @@ const BankservicesList: React.FC = () => {
               </div>
               
             ))}
+            </div>
           <Pagination
         currentPage={currentPage}
         totalPages={totalPages}

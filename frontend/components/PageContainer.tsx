@@ -27,6 +27,12 @@ const PageContainer: FC<{
       // offset made it 1440 + 256 = 1696px and pushed every child off the right
       // edge.
       "px-4 sm:px-6 lg:ml-64 lg:px-8",
+      // One vertical rhythm for every page: each top-level child is a row of
+      // sections, one gap apart. Pages used py-6, pt-6, mt-4 or nothing.
+      "flex flex-col gap-8 py-6 lg:py-8",
+      // Fill the screen below the fixed navbar (pt-[120px], lg:pt-20 in the
+      // layout), so a short page doesn't end in a white band under the grey.
+      "min-h-[calc(100vh-120px)] lg:min-h-[calc(100vh-5rem)]",
       "bg-gray-100 dark:bg-dark text-gray-900 dark:text-white",
       className
     )}

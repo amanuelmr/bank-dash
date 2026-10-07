@@ -1,116 +1,51 @@
 "use client";
-import ResponsiveCreditCard from "@/components/CreditCard";
 import Component from "@/components/DoughnutChart";
 import AddNewCard from "@/components/AddNewCard";
 import CardSetting from "@/components/CardSetting";
 import CardList from "@/components/CardList";
-import { useEffect, useState } from "react";
-import { getAllCards } from "@/services/cardfetch";
-import type { Card } from "@/types/api";
-import Image from "next/image";
 import CardListLoad from "@/components/loadingComponents/CardListLoad";
-import MyCardsLoad from "@/components/loadingComponents/MyCardsLoad";
-import { TbFileSad } from "react-icons/tb";
 import PageContainer from "@/components/PageContainer";
+import Section from "@/components/Section";
+import CardStrip from "@/components/CardStrip";
+import EmptyState from "@/components/EmptyState";
+import { Card } from "@/components/ui/card";
+import { useCards } from "@/hooks/useCards";
 
 const CreditCard = () => {
-  const [cards, setCards] = useState<Card[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const fetchCards = async () => {
-      try {
-        const { items } = await getAllCards(0, 20);
-        if (!cancelled) {
-          setCards(items);
-          setError(null);
-        }
-      } catch {
-        if (!cancelled) setError("Failed to fetch cards data!");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    fetchCards();
-    return () => { cancelled = true; };
-  }, []);
+  const { cards, error, loading } = useCards();
 
   return (
     <PageContainer>
-      <div className="myCards mt-4">
-        <h1 className="text-[19px] mb-3 font-bold text-[#333B69] dark:text-brand">My Cards</h1>
-        <div className="flex overflow-x-auto space-x-4 md:pr-3 pr-1 scrollbar-thin scrollbar-track-[#F5F7FA] dark:scrollbar-track-dark scrollbar-thumb-[#92a7c5] scrollbar-thumb-rounded-full">
-          {loading ? (
-            <MyCardsLoad count={3}/>
-          ) : Array.isArray(cards) && cards.length > 0 ? (
-            cards.map((card: any, index: number) => (
-              <span key={index} className="p-3">
-                <ResponsiveCreditCard
-                  tone={(index % 3 === 0 ? "brand" : index % 3 === 1 ? "midnight" : "light")}
-                  balance={card.balance}
-                  cardHolder={card.cardHolder}
-                  expiryDate={card.expiryDate}
-                  maskedNumber={card.maskedNumber}
-                />
-              </span>
-            ))
-          ) : (
-            <div className="max-h-[400px] lg:w-[730px] md:w-[487px] bg-white py-16 rounded-xl flex flex-col justify-center dark:bg-dark dark:border-[1px] dark:border-line">
-              <TbFileSad
-                className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
-                strokeWidth={1}
-              />
-              <span className="mx-auto my-auto md:text-xl text-sm text-red-500 mb-5">
-                {error ? error : "There are no cards for now!"}
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
+      <Section title="My Cards">
+        <CardStrip cards={cards} loading={loading} error={error} />
+      </Section>
 
-      <div className="flex flex-col gap-8 md:flex-row">
-        <div className="my-6 w-full lg:w-[360px] lg:shrink-0">
-          <h1 className="text-[19px] mb-6 font-bold text-[#333B69] dark:text-brand">
-            Card Expense Statistics
-          </h1>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[360px_minmax(0,1fr)]">
+        <Section title="Card Expense Statistics">
           <Component />
-        </div>
-        <div className="my-6 min-w-0 flex-1">
-          <h1 className="text-[19px] mb-3 font-bold text-[#333B69] dark:text-brand">Card List</h1>
+        </Section>
+        <Section title="Card List">
           {loading ? (
             <CardListLoad />
+          ) : error ? (
+            <Card>
+              <EmptyState tone="error" message={error} />
+            </Card>
           ) : (
-            error ? (
-              <div className="flex max-h-[400px] flex-col justify-center rounded-xl bg-white py-32 dark:bg-surface-1 dark:border dark:border-line">
-                <TbFileSad
-                    className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
-                    strokeWidth={1}
-                  />
-                <span className="mx-auto my-auto md:text-xl text-sm text-red-500">
-                  {error}
-                </span>
-              </div>
-            ) : (
-              <CardList card_list={cards} />
-            )
+            <CardList card_list={cards} />
           )}
-        </div>
+        </Section>
       </div>
 
-      <div className="mb-16 flex flex-col gap-8 md:flex-row md:items-start">
-        <div className="md:mb-2 mb-0 md:mr-5 lg:mr-10">
-          <h1 className="text-[20px] mb-3 font-bold text-[#333B69] dark:text-brand">Add New Card</h1>
+      {/* Same 3:2 split as Accounts. Add New Card was a fixed 600-800px box and
+          Card Setting a fixed 335x470 one, so the row never lined up. */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <Section title="Add New Card">
           <AddNewCard />
-        </div>
-
-        <div>
-          <h1 className="text-[19px] mb-3 font-bold text-[#333B69] md:mt-0 mt-6 dark:text-brand">Card Setting</h1>
+        </Section>
+        <Section title="Card Setting">
           <CardSetting />
-        </div>
+        </Section>
       </div>
     </PageContainer>
   );

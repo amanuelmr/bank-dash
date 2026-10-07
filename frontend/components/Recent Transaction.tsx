@@ -76,7 +76,7 @@ const RecentTransaction = () => {
         <div>No data to display</div>
       </div>
       ) : (
-        <div className="max-w-auto">
+        <div className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white dark:divide-line dark:border-line dark:bg-surface-1">
           {lastThreeTransactions.map((transaction) => {
             let IconComponent = LifeInsuranceIcon;
             let amountTextColor = "text-green-500";
@@ -117,7 +117,7 @@ const RecentTransaction = () => {
             return (
               <div
                 key={transaction.transactionId}
-                className={`${colors.white} max-w-auto rounded-lg dark:bg-dark text-gray-900 dark:text-white`}
+                className="px-3 text-gray-900 dark:text-white"
               >
                 <div className="flex p-2 justify-between items-center w-auto md:w-auto">
                   <div className="flex gap-4 items-center">

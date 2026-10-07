@@ -1,150 +1,61 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Color } from "chart.js";
-import { colors, logo } from "@/constants";
-import DesktopCreditCart from "@/components/DesktopCreditCard";
-import ResponsiveCreditCard from "@/components/CreditCard";
 import RecentTransaction from "@/components/Recent Transaction";
-import ExpensesChart from "@/components/ExpensesCart";
-import { icons, Import } from "lucide-react";
-import { text } from "stream/consumers";
 import BarChart from "@/components/BarChart";
 import PieChart from "@/components/PieChart";
 import QuickTransfer from "@/components/QuickTransfer";
 import LineChart from "@/components/LineChart";
-import Link from "next/link";
-import { getAllCards } from "@/services/cardfetch";
-import type { Card } from "@/types/api";
-import Image from "next/image";
-import MyCardsLoad from "@/components/loadingComponents/MyCardsLoad";
-import { TbFileSad } from "react-icons/tb";
 import PageContainer from "@/components/PageContainer";
+import Section from "@/components/Section";
+import CardStrip from "@/components/CardStrip";
+import { useCards } from "@/hooks/useCards";
+
+// Every row uses the same 3:2 split, so the right-hand column has one edge
+// all the way down the page. On wide screens the left column never drops
+// below the 716px two cards need, so neither card is cut off.
+const ROW =
+  "grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] min-[1360px]:grid-cols-[minmax(716px,3fr)_minmax(0,2fr)]";
 
 const Page = () => {
-  const [cards, setCards] = useState<Card[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const fetchCards = async () => {
-      try {
-        const { items } = await getAllCards(0, 20);
-        if (!cancelled) {
-          setCards(items.slice(0, 2));
-          setError(null);
-        }
-      } catch {
-        if (!cancelled) setError("Failed to fetch cards data!");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    fetchCards();
-    return () => { cancelled = true; };
-  }, []);
+  const { cards, error, loading } = useCards();
 
   return (
-    <PageContainer className="py-6">
-      <div className="flex flex-col justify-between md:flex-row  gap-10 ">
-        <div className=" py-4 md:w-3/5 md:max-w-full">
-          <div className={`${colors.navbartext} flex justify-between `}>
-            <h1 className="font-bold text-2xl dark:text-brand">My Cards</h1>
-            <Link href="/credit-card" className="py-2 dark:text-brand">
-              {""}
-              See All
-            </Link>
-          </div>
-
-          <div className="max-w-[345px] md:max-w-full">
-            <div className="flex gap-3 overflow-x-auto md:w-auto">
-              {loading ? (
-                <MyCardsLoad count={2} />
-              ) : Array.isArray(cards) && cards.length > 0 ? (
-                cards.map((card: any, index: number) => (
-                  <div key={index} className="p-1 flex gap-1">
-                    <ResponsiveCreditCard
-                      tone={(index % 3 === 0 ? "brand" : index % 3 === 1 ? "midnight" : "light")}
-                      balance={card.balance}
-                      cardHolder={card.cardHolder}
-                      expiryDate={card.expiryDate}
-                      maskedNumber={card.maskedNumber}
-                    />
-                  </div>
-                ))
-              ) : (
-                <div className="w-screen bg-white py-16 rounded-xl flex flex-col justify-center dark:bg-dark dark:border-[1px] dark:border-line">
-                  <TbFileSad
-                    className={`text-gray-300 dark:text-danger w-[400px] h-[70px] pb-2 block mx-auto`}
-                    strokeWidth={1}
-                  />
-                  <span className="mx-auto my-auto md:text-xl text-sm text-red-500 mb-5">
-                    {error ? error : "There are no cards for now!"}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="  md:w-2/5  flex flex-col ">
-          <div className={`${colors.navbartext} flex justify-between  py-4`}>
-            <h1 className="font-bold text-2xl dark:text-brand ">
-              Recent Transaction
-            </h1>
-          </div>
-          <div className="flex flex-col rounded-2xl pr-2 w-[100%]">
-            <RecentTransaction />
-          </div>
-        </div>
+    <PageContainer>
+      <div className={ROW}>
+        <Section
+          title="My Cards"
+          action={{ href: "/credit-card", label: "See All" }}
+        >
+          <CardStrip cards={cards} loading={loading} error={error} limit={2} />
+        </Section>
+        <Section title="Recent Transaction">
+          <RecentTransaction />
+        </Section>
       </div>
-      <div className=" w-[100%] flex flex-col justify-between  md:grid md:grid-cols-5 md:gap-10 ">
-        <div className="md:col-span-3 flex flex-col">
-          <div className={`${colors.navbartext} flex justify-between py-4`}>
-            <h1 className="font-bold text-2xl dark:text-brand">
-              Weekly Activity
-            </h1>
-          </div>
-          <div className="w-[100%] flex-1">
+
+      <div className={ROW}>
+        <Section title="Weekly Activity">
+          <div className="flex-1">
             <BarChart />
           </div>
-        </div>
-        <div className="w-[100%] flex flex-col md:col-span-2">
-          <div className={`${colors.navbartext} py-4`}>
-            <h1 className="font-bold text-2xl dark:text-brand">
-              Expense Statistics
-            </h1>
-          </div>
-          <div className="w-[100%] flex-1">
+        </Section>
+        <Section title="Expense Statistics">
+          <div className="flex-1">
             <PieChart />
           </div>
-        </div>
+        </Section>
       </div>
 
-      <div className="flex flex-col justify-between w-full  md:grid md:grid-cols-5 md:gap-10 ">
-        <div className="md:col-span-2 flex flex-col">
-          <div className={`${colors.navbartext} flex justify-between py-4`}>
-            <h1 className="font-bold text-2xl dark:text-brand">
-              Quick Transfer
-            </h1>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+        <Section title="Quick Transfer">
+          <div className="flex flex-1">
+            <QuickTransfer />
           </div>
-          <div className="flex-1">
-            <div className="flex h-full w-full">
-              <QuickTransfer />
-            </div>
-          </div>
-        </div>
-        <div className="md:col-span-3 flex flex-col">
-          <div className={`${colors.navbartext} flex justify-between py-4`}>
-            <h1 className="font-bold text-2xl dark:text-brand">
-              Balance History
-            </h1>
-          </div>
+        </Section>
+        <Section title="Balance History">
           <div className="flex-1">
             <LineChart />
           </div>
-        </div>
+        </Section>
       </div>
     </PageContainer>
   );

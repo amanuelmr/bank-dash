@@ -6,10 +6,10 @@ import PageContainer from "@/components/PageContainer";
 const Services: React.FC = () => {
   return (
     <PageContainer>
-      <div className="pt-5 pb-2">
+      <div>
         <ServiceProvided />
       </div>
-      <div className="pb-12">
+      <div>
         <BankservicesList />
       </div>
     </PageContainer>
