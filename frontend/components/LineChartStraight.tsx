@@ -2,6 +2,7 @@
 
 import { TrendingUp } from "lucide-react";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
+import { periodTick } from "@/lib/period";
 
 import {
   Card,
@@ -61,7 +62,7 @@ export default function LineChartStright({ yearlyData }: props) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value.slice(0, 3)}
+              tickFormatter={periodTick}
             />
             <ChartTooltip
               cursor={false}
