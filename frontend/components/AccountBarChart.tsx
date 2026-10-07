@@ -95,7 +95,7 @@ export default function Component() {
 
   if (status === 'loading') {
     return (
-      <div className="w-full  h-[300px] lg:h-[600px] bg-gray-200 rounded-lg animate-pulse">
+      <div className="w-full h-full bg-gray-200 rounded-lg animate-pulse">
 </div>
 
     );
@@ -115,7 +115,7 @@ export default function Component() {
 
   return (
     <Card className="flex flex-col w-full h-full">
-      <CardHeader className="flex justify-between">
+      <CardHeader className="flex justify-between p-4 pb-0">
         <div className="hidden md:flex text-sm font-normal">
           <span className="font-bold">${totalDebit}</span>&nbsp;Debited
           &nbsp;&&nbsp;
@@ -135,7 +135,11 @@ export default function Component() {
         </div>
       </CardHeader>
       <CardContent className="flex-1">
-        <ChartContainer config={chartConfig} className="p-0">
+        {/* ChartContainer defaults to aspect-video, which at this panel's width
+            forces a ~600px SVG and pushed the bars and the x-axis labels out
+            through the bottom of the card. aspect-auto lets the plot fill the
+            panel it is given instead. */}
+        <ChartContainer config={chartConfig} className="p-0 aspect-auto h-full w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
