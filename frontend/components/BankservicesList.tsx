@@ -9,6 +9,7 @@ import DebitCreditIcon from "@/public/icons/DebitCreditIcon";
 import SafetyIcon from "@/public/icons/SafetyIcon";
 import Pagination from "./Pagination";
 import { TbFileSad } from "react-icons/tb";
+import { FaSearch } from "react-icons/fa";
 import { colors } from "@/constants";
 import type { BankService } from "@/types/api";
 
@@ -172,7 +173,20 @@ const BankservicesList: React.FC = () => {
             <h2 className="text-xl font-bold mb-4 dark:text-brand">
               Bank Services List
             </h2>
-            <input type="text" onChange={filter} placeholder="search" />
+            <div className="relative mb-6 max-w-sm">
+              <FaSearch
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-content-muted"
+                size={18}
+                aria-hidden
+              />
+              <input
+                type="search"
+                onChange={filter}
+                placeholder="Search services"
+                aria-label="Search services"
+                className="w-full rounded-full border border-gray-300 dark:border-line bg-gray-100 dark:bg-surface-2 py-2 pl-11 pr-4 text-content-primary placeholder:text-content-muted focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-brand"
+              />
+            </div>
             {filtered.map((service: any, index: any) => (
               <div key={index} className="mb-4">
              
