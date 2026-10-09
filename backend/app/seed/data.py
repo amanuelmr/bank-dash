@@ -71,14 +71,36 @@ COMPANIES = [
     ("Saudi Aramco", "2222", "Energy", 28.9, -0.12, False),
 ]
 
-SPEND_DESCRIPTIONS = {
+# (description, category, typical amount range)
+#
+# `category` used to be a copy of `type`, so spending only ever came back as
+# "service" or "shopping" - too coarse to break a spend chart down by anything
+# meaningful. Each entry now carries its own category and a plausible amount
+# band, so groceries look like groceries and rent-sized bills do not land in the
+# same bucket as a coffee.
+SPEND_CATALOGUE: dict[TransactionType, list[tuple[str, str, tuple[float, float]]]] = {
     TransactionType.SHOPPING: [
-        "Grocery shopping", "Online order", "Electronics store", "Clothing purchase",
-        "Pharmacy", "Home improvement",
+        ("Grocery shopping", "Groceries", (28, 140)),
+        ("Online order", "Shopping", (15, 220)),
+        ("Electronics store", "Electronics", (40, 480)),
+        ("Clothing purchase", "Clothing", (25, 190)),
+        ("Pharmacy", "Health", (12, 90)),
+        ("Home improvement", "Home", (35, 320)),
+        ("Coffee shop", "Dining", (3, 18)),
+        ("Restaurant", "Dining", (18, 95)),
+        ("Fuel", "Transport", (35, 120)),
+        ("Train ticket", "Transport", (12, 140)),
     ],
     TransactionType.SERVICE: [
-        "Streaming subscription", "Utility bill", "Mobile plan", "Cloud storage",
-        "Gym membership", "Internet bill",
+        ("Streaming subscription", "Entertainment", (9, 22)),
+        ("Cinema tickets", "Entertainment", (14, 60)),
+        ("Utility bill", "Bills", (55, 240)),
+        ("Mobile plan", "Bills", (22, 75)),
+        ("Internet bill", "Bills", (35, 95)),
+        ("Cloud storage", "Bills", (8, 30)),
+        ("Gym membership", "Health", (25, 70)),
+        ("Health insurance", "Health", (90, 320)),
+        ("Car insurance", "Insurance", (75, 240)),
     ],
 }
 
@@ -210,7 +232,11 @@ async def _seed_transactions(db: AsyncSession, users: dict[str, User]) -> None:
             user = users[username]
             for _ in range(rnd.randrange(7) + 3):
                 kind = rnd.choice([TransactionType.SHOPPING, TransactionType.SERVICE])
-                amount = round_money(rnd.uniform(8, 260))
+                description, category, (low, high) = rnd.choice(SPEND_CATALOGUE[kind])
+                # Amount now comes from the category's own band rather than one
+                # flat 8-260 range, so a Cinema ticket and an electricity bill
+                # are no longer equally likely to be $250.
+                amount = round_money(rnd.uniform(low, high))
                 occurred = month_start + timedelta(
                     days=rnd.randrange(28), hours=rnd.randrange(24), minutes=rnd.randrange(60)
                 )
@@ -222,8 +248,8 @@ async def _seed_transactions(db: AsyncSession, users: dict[str, User]) -> None:
                         type=kind,
                         direction=TransactionDirection.OUT,
                         amount=amount,
-                        description=rnd.choice(SPEND_DESCRIPTIONS[kind]),
-                        category=CATEGORY_BY_TYPE[kind],
+                        description=description,
+                        category=category,
                         status=TransactionStatus.COMPLETED,
                         sender_username=username,
                         receiver_username=SYSTEM_USERNAME,
