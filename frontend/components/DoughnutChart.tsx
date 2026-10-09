@@ -114,7 +114,9 @@ export default function Component() {
               onMouseEnter={(_, index) => setActiveIndex(index)}
               className="dark:text-white"
               activeShape={({ outerRadius = 0, ...props }: any) => (
-                <g {...props}>
+                // Only cx/cy reach the DOM; spreading the whole sector onto a
+                // <g> forwarded Recharts' internal geometry as attributes.
+                <g cx={props.cx} cy={props.cy}>
                   <Sector {...props} outerRadius={outerRadius + 10} />
                   <Sector
                     {...props}

@@ -22,11 +22,19 @@ const COMPANY_MARKS: Record<string, { icon?: string; color: string }> = {
   AMZN: { color: "bg-amber-100" },
   MSFT: { color: "bg-sky-100" },
   NOK: { color: "bg-purple-100" },
+  META: { color: "bg-indigo-100" },
+  NFLX: { color: "bg-red-100" },
+  NVDA: { color: "bg-lime-100" },
+  INTC: { color: "bg-blue-100" },
+  WMT: { color: "bg-blue-100" },
+  JNJ: { color: "bg-rose-100" },
+  JPM: { color: "bg-emerald-100" },
+  "2222": { color: "bg-teal-100" },
 };
 
 /** Holdings, derived from the companies the API actually returns. */
 function toHoldings(companies: Company[]) {
-  return companies.slice(0, 3).map((company) => {
+  return companies.map((company) => {
     const mark = COMPANY_MARKS[company.symbol];
     return {
       // Empty icon means "no asset" - the row shows the ticker's initial

@@ -160,6 +160,7 @@ const RecentTransactions = () => {
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={setCurrentPage}
+        align="start"
       />
     </div>
   );

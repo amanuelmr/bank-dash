@@ -3,11 +3,12 @@ import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { FaCalendarAlt } from "react-icons/fa";
 import { createCard } from "@/services/cardfetch";
 import { format } from "date-fns";
 import Image from "next/image";
 import { message } from "antd";
+import { inputClass } from "@/components/FormField";
+import { FaCalendarAlt } from "react-icons/fa";
 
 type NewCardProps = {
   cardType: string;
@@ -85,7 +86,7 @@ const AddNewCard: React.FC = () => {
             <div>
               <label
                 htmlFor="cardTypeId"
-                className="text-[16px] md:text-[15px] block pb-2"
+                className="mb-1.5 block text-sm font-medium text-content-secondary"
               >
                 Card Type
               </label>
@@ -95,10 +96,10 @@ const AddNewCard: React.FC = () => {
                   required: "Card Type is required",
                 })}
                 placeholder="Classic"
-                className="border-[1px] border-[#DFEAF2] bg-white rounded-md dark:border-line dark:bg-surface-2 text-[15px] md:text-[14px] p-3 w-full outline-none text-content-secondary dark:text-white placeholder-[#718EBF]"
+                className={inputClass}
               />
               {errors.cardType && (
-                <span className="text-red-500 text-sm">
+                <span className="mt-1.5 block text-xs font-medium text-danger">
                   {errors.cardType.message}
                 </span>
               )}
@@ -107,7 +108,7 @@ const AddNewCard: React.FC = () => {
             <div>
               <label
                 htmlFor="nameOneCardId"
-                className="text-[16px] md:text-[15px] block pb-2"
+                className="mb-1.5 block text-sm font-medium text-content-secondary"
               >
                 Name On Card
               </label>
@@ -117,10 +118,10 @@ const AddNewCard: React.FC = () => {
                   required: "Name on Card is required",
                 })}
                 placeholder="My Cards"
-                className="border-[1px] border-[#DFEAF2] bg-white rounded-md dark:border-line dark:bg-surface-2 text-[15px] md:text-[14px] p-3 w-full outline-none text-content-secondary dark:text-white placeholder-[#718EBF]"
+                className={inputClass}
               />
               {errors.nameOnCard && (
-                <span className="text-red-500 text-sm">
+                <span className="mt-1.5 block text-xs font-medium text-danger">
                   {errors.nameOnCard.message}
                 </span>
               )}
@@ -129,7 +130,7 @@ const AddNewCard: React.FC = () => {
             <div>
               <label
                 htmlFor="balanceId"
-                className="text-[16px] md:text-[15px] block pb-2"
+                className="mb-1.5 block text-sm font-medium text-content-secondary"
               >
                 Balance
               </label>
@@ -143,10 +144,10 @@ const AddNewCard: React.FC = () => {
                   },
                 })}
                 placeholder="27,000$"
-                className="border-[1px] border-[#DFEAF2] bg-white rounded-md dark:border-line dark:bg-surface-2 text-[15px] md:text-[14px] p-3 w-full outline-none text-content-secondary dark:text-white placeholder-[#718EBF]"
+                className={inputClass}
               />
               {errors.balance && (
-                <span className="text-red-500 text-sm">
+                <span className="mt-1.5 block text-xs font-medium text-danger">
                   {errors.balance.message}
                 </span>
               )}
@@ -155,28 +156,31 @@ const AddNewCard: React.FC = () => {
             <div className="relative">
               <label
                 htmlFor="expirationDateId"
-                className="text-[16px] md:text-[15px] block pb-2"
+                className="mb-1.5 block text-sm font-medium text-content-secondary"
               >
                 Expiration Date
               </label>
-              <div className="relative">
+              <div className="relative w-full [&_.react-datepicker-wrapper]:w-full [&_.react-datepicker-input]:w-full [&_.react-datepicker-input]:pr-10">
                 <DatePicker
-                  id="expirationDateId"
-                  selected={selectedDate}
-                  onChange={(date) => {
-                    if (date) {
-                      setSelectedDate(date);
-                      setValue("expiryDate", date, { shouldValidate: true });
-                    }
-                  }}
-                  placeholderText="dd MMMM yyyy"
-                  className="border-[1px] border-[#DFEAF2] bg-white rounded-md dark:border-line dark:bg-surface-2 text-[15px] p-3 w-full pr-40 outline-none text-content-secondary dark:text-white placeholder-[#718EBF]"
-                  dateFormat="dd MMMM yyyy"
+                id="expirationDateId"
+                selected={selectedDate}
+                onChange={(date) => {
+                  if (date) {
+                    setSelectedDate(date);
+                    setValue("expiryDate", date, { shouldValidate: true });
+                  }
+                }}
+                placeholderText="dd MMMM yyyy"
+                className={inputClass}
+                dateFormat="dd MMMM yyyy"
                 />
-                <FaCalendarAlt className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-content-secondary dark:text-white" />
+                <FaCalendarAlt
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-content-muted"
+                  aria-hidden
+                />
               </div>
               {errors.expiryDate && (
-                <span className="text-red-500 text-sm">
+                <span className="mt-1.5 block text-xs font-medium text-danger">
                   {errors.expiryDate?.message}
                 </span>
               )}
@@ -185,7 +189,7 @@ const AddNewCard: React.FC = () => {
             <div>
               <label
                 htmlFor="passcodeId"
-                className="text-[16px] md:text-[15px] block pb-2"
+                className="mb-1.5 block text-sm font-medium text-content-secondary"
               >
                 Passcode
               </label>
@@ -195,19 +199,19 @@ const AddNewCard: React.FC = () => {
                   required: "Passcode is required",
                 })}
                 placeholder="******"
-                className="border-[1px] border-[#DFEAF2] bg-white rounded-md dark:border-line dark:bg-surface-2 text-[15px] md:text-[14px] p-3 w-full outline-none text-content-secondary dark:text-white placeholder-[#718EBF]"
+                className={inputClass}
               />
               {errors.passcode && (
-                <span className="text-red-500 text-sm">
+                <span className="mt-1.5 block text-xs font-medium text-danger">
                   {errors.passcode.message}
                 </span>
               )}
             </div>
 
-            <div className="flex items-end">
+            <div className="col-span-full flex items-end">
               <button
                 type="submit"
-                className="w-full rounded-xl bg-[#1814F3] px-7 py-3 text-center text-[16px] text-white md:w-auto dark:bg-blue-700"
+                className="w-full rounded-lg bg-brand-fill px-5 py-2.5 text-sm font-medium text-on-brand-fill transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 disabled:opacity-60 dark:focus:ring-offset-surface-1 md:w-auto"
               >
                 Add Card
               </button>

@@ -1,17 +1,20 @@
 // src/components/TransactionTable/Pagination.tsx
 
 import React from "react";
+import { cn } from "@/lib/utils";
 
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  /** Centred under the list by default; "start" pins it to the left edge. */
+  align?: "center" | "start";
 }
 
 /** How many numbered buttons to show either side of the current page. */
 const SIBLINGS = 1;
 
-const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
+const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange, align = "center" }) => {
   // It rendered every page in one non-wrapping row, so 19 pages ran off the right
   // edge of the viewport. It now shows a window around the current page with
   // ellipses, which keeps the control a fixed width at any page count.
@@ -51,7 +54,10 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
   return (
     <nav
       aria-label="Pagination"
-      className="my-6 flex flex-wrap items-center justify-center gap-2"
+      className={cn(
+        "my-6 flex flex-wrap items-center gap-2",
+        align === "start" ? "justify-start" : "justify-center"
+      )}
     >
       {navButton("Previous", currentPage - 1, currentPage <= 0)}
 

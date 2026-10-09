@@ -39,7 +39,18 @@ const MyInvestment = ({
         className={`${color} flex h-11 w-11 shrink-0 items-center justify-center rounded-xl`}
       >
         {icon ? (
-          <Image src={icon} alt={`${name} logo`} width={22} height={22} className="object-contain" />
+          // The brand PNGs are not square (apple_store is 17x20, tesla 21x20).
+          // Declaring those as the attributes while CSS rendered a 20x20 box
+          // overrode the width alone, which Next warns about. Declaring the
+          // rendered size matches the CSS exactly; object-contain still keeps
+          // the mark undistorted inside it.
+          <Image
+            src={icon}
+            alt={`${name} logo`}
+            width={20}
+            height={20}
+            className="h-5 w-5 object-contain"
+          />
         ) : (
           <span aria-hidden className="text-sm font-semibold text-content-secondary">
             {initial ?? name.charAt(0)}

@@ -357,7 +357,9 @@ const LoansPage: React.FC = () => {
            <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
-        onPageChange={setCurrentPage}/>
+        onPageChange={setCurrentPage}
+        align="start"
+      />
         </div>
       </div>
 
@@ -550,6 +552,7 @@ const LoansPage: React.FC = () => {
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={setCurrentPage}
+        align="start"
       />
           
         </div>
