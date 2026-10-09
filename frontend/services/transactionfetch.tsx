@@ -1,5 +1,6 @@
 import { api, paginated } from "@/lib/apiClient";
 import type {
+  CategoryTotal,
   CreateTransactionRequest,
   DepositRequest,
   Page,
@@ -40,3 +41,11 @@ export const getBalanceHistory = (months = 12): Promise<SeriesPoint[]> =>
 /** People worth transferring to, most recently interacted with first. */
 export const getLatestTransfers = (limit = 6): Promise<TransferRecipient[]> =>
   api.get<TransferRecipient[]>("/transactions/transfer-recipients", { limit });
+
+/** Spend grouped by category, largest first. Powers the expense breakdown. */
+export const getSpendByCategory = (months = 12): Promise<CategoryTotal[]> =>
+  api.get<CategoryTotal[]>("/transactions/summary/categories", { months });
+
+/** Spend grouped by calendar month, oldest first. */
+export const getSpendByMonth = (months = 6): Promise<SeriesPoint[]> =>
+  api.get<SeriesPoint[]>("/transactions/summary/monthly", { months });

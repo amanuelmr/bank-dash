@@ -229,3 +229,13 @@ export interface CreateLoanRequest {
   loanDuration: number;
   interestRate: number;
 }
+
+export interface CategoryTotal {
+  category: string;
+  total: number;
+}
+
+export interface SeriesPoint {
+  period: string;
+  value: number;
+}
