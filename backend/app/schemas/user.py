@@ -108,6 +108,14 @@ class CategoryTotal(CamelModel):
     total: float
 
 
+class CashflowPoint(CamelModel):
+    """Money in and money out for one calendar month."""
+
+    period: str
+    money_in: float
+    money_out: float
+
+
 class SeriesPoint(CamelModel):
     """A labelled point on a time series. ``period`` is ``YYYY-MM`` or ``YYYY``."""
 

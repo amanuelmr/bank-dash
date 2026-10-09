@@ -24,7 +24,7 @@ from app.schemas.transaction import (
     TransactionOut,
     TransferRecipientOut,
 )
-from app.schemas.user import CategoryTotal, SeriesPoint
+from app.schemas.user import CashflowPoint, CategoryTotal, SeriesPoint
 from app.services.user import build_balance_series
 
 #: Counterparty recorded for movements that have no human recipient (deposits
@@ -352,4 +352,46 @@ async def spend_by_month(
     return [
         SeriesPoint(period=period, value=round(float(total), 2))
         for period, total in rows.all()
+    ]
+
+
+async def cashflow_by_month(
+    db: AsyncSession, user: User, months: int = 6
+) -> list[CashflowPoint]:
+    """Money in and money out per calendar month, oldest first.
+
+    Both series come from the same month key so they line up on a grouped bar
+    chart; a month with only one of the two still yields a row, with the other
+    side at zero, rather than dropping out of the series.
+    """
+    since = utcnow() - timedelta(days=31 * months)
+    month = func.strftime("%Y-%m", Transaction.occurred_at)
+    rows = await db.execute(
+        select(
+            month.label("period"),
+            Transaction.direction,
+            func.sum(Transaction.amount),
+        )
+        .where(
+            Transaction.user_id == user.id,
+            Transaction.status == TransactionStatus.COMPLETED,
+            Transaction.occurred_at >= since,
+        )
+        .group_by(month, Transaction.direction)
+        .order_by(month)
+    )
+
+    buckets: dict[str, dict[str, float]] = {}
+    for period, direction, total in rows.all():
+        side = buckets.setdefault(period, {"in": 0.0, "out": 0.0})
+        key = "in" if direction == TransactionDirection.IN else "out"
+        side[key] += float(total)
+
+    return [
+        CashflowPoint(
+            period=period,
+            money_in=round(values["in"], 2),
+            money_out=round(values["out"], 2),
+        )
+        for period, values in sorted(buckets.items())
     ]

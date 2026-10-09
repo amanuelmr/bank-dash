@@ -14,7 +14,7 @@ from app.schemas.transaction import (
     TransactionOut,
     TransferRecipientOut,
 )
-from app.schemas.user import CategoryTotal, SeriesPoint
+from app.schemas.user import CashflowPoint, CategoryTotal, SeriesPoint
 from app.services import transaction as tx_service
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
@@ -144,6 +144,19 @@ async def spend_by_month(
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[list[SeriesPoint]]:
     return ApiResponse(data=await tx_service.spend_by_month(db, user, months))
+
+
+@router.get(
+    "/summary/cashflow",
+    response_model=ApiResponse[list[CashflowPoint]],
+    summary="Money in and out per month",
+)
+async def cashflow_by_month(
+    months: int = Query(6, ge=1, le=36),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ApiResponse[list[CashflowPoint]]:
+    return ApiResponse(data=await tx_service.cashflow_by_month(db, user, months))
 
 
 @router.get(
