@@ -230,6 +230,12 @@ export interface CreateLoanRequest {
   interestRate: number;
 }
 
+export interface CashflowPoint {
+  period: string;
+  moneyIn: number;
+  moneyOut: number;
+}
+
 export interface CategoryTotal {
   category: string;
   total: number;

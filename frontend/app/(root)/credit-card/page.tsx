@@ -21,7 +21,7 @@ const CreditCard = () => {
       </Section>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[360px_minmax(0,1fr)]">
-        <Section title="Card Expense Statistics">
+        <Section title="Spending by Month">
           <Component />
         </Section>
         <Section title="Card List">

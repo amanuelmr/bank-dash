@@ -1,5 +1,6 @@
 import { api, paginated } from "@/lib/apiClient";
 import type {
+  CashflowPoint,
   CategoryTotal,
   CreateTransactionRequest,
   DepositRequest,
@@ -45,6 +46,10 @@ export const getLatestTransfers = (limit = 6): Promise<TransferRecipient[]> =>
 /** Spend grouped by category, largest first. Powers the expense breakdown. */
 export const getSpendByCategory = (months = 12): Promise<CategoryTotal[]> =>
   api.get<CategoryTotal[]>("/transactions/summary/categories", { months });
+
+/** Money in and out per calendar month, oldest first. */
+export const getCashflowByMonth = (months = 6): Promise<CashflowPoint[]> =>
+  api.get<CashflowPoint[]>("/transactions/summary/cashflow", { months });
 
 /** Spend grouped by calendar month, oldest first. */
 export const getSpendByMonth = (months = 6): Promise<SeriesPoint[]> =>

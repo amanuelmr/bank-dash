@@ -1,66 +1,94 @@
-'use client'
-import * as React from "react";
-import { Label, Legend, Pie, PieChart, Sector } from "recharts";
-import { PieSectorDataItem } from "recharts/types/polar/Pie";
+"use client"
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import * as React from "react"
+import { Label, Legend, Pie, PieChart, Sector } from "recharts"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   ChartConfig,
   ChartContainer,
   ChartStyle,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/chart"
+import { getSpendByMonth } from "@/services/transactionfetch"
+import type { SeriesPoint } from "@/types/api"
 
-const desktopData = [
-  { month: "january", desktop: 186, fill: "#FF6384" },  // Red
-  { month: "february", desktop: 305, fill: "#36A2EB" }, // Blue
-  { month: "march", desktop: 237, fill: "#FFCE56" },    // Yellow
-  { month: "april", desktop: 173, fill: "#4BC0C0" },    // Teal
-  { month: "may", desktop: 209, fill: "#9966FF" },      // Purple
-];
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+]
+
+/** `2026-04` -> `Apr`. */
+function monthLabel(period: string) {
+  const match = /^(\d{4})-(\d{2})$/.exec(period)
+  if (!match) return period
+  return MONTHS[Number(match[2]) - 1] ?? period
+}
+
+const SLICE_COLORS = [
+  "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#546CE3", "#F79009",
+]
 
 const chartConfig = {
-  visitors: {
-    label: "Visitors",
+  value: {
+    label: "Spend",
   },
-  desktop: {
-    label: "Desktop",
-  },
-  mobile: {
-    label: "Mobile",
-  },
-  january: {
-    label: "January",
-    color: "#FF6384",  // Red
-  },
-  february: {
-    label: "February",
-    color: "#36A2EB",  // Blue
-  },
-  march: {
-    label: "March",
-    color: "#FFCE56",  // Yellow
-  },
-  april: {
-    label: "April",
-    color: "#4BC0C0",  // Teal
-  },
-  may: {
-    label: "May",
-    color: "#9966FF",  // Purple
-  },
-} satisfies ChartConfig;
+} satisfies ChartConfig
 
+/**
+ * Monthly spending breakdown.
+ *
+ * This rendered five fixed months of invented values (january 186, february
+ * 305, ...) with a "desktop"/"mobile"/"visitors" legend inherited from a
+ * Recharts example that never applied to this data.
+ *
+ * Transactions are not linked to a card anywhere in the schema, so a genuine
+ * per-card breakdown is not derivable - the panel is labelled "Spending by
+ * month" rather than claiming a card split it cannot produce.
+ */
 export default function Component() {
-  const id = "pie-interactive";
-  const [activeIndex, setActiveIndex] = React.useState(0);
+  const id = "pie-interactive"
+  const [activeIndex, setActiveIndex] = React.useState(0)
+  const [points, setPoints] = React.useState<SeriesPoint[] | null>(null)
+
+  React.useEffect(() => {
+    let cancelled = false
+    getSpendByMonth(6)
+      .then((data) => {
+        if (!cancelled) setPoints(data)
+      })
+      .catch((error) => {
+        console.error("Error fetching monthly spend:", error)
+        if (!cancelled) setPoints([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const rows = React.useMemo(
+    () =>
+      (points ?? [])
+        .filter((point) => point.value > 0)
+        .map((point, index) => ({
+          month: monthLabel(point.period),
+          value: point.value,
+          fill: SLICE_COLORS[index % SLICE_COLORS.length],
+        })),
+    [points]
+  )
+
+  const total = rows.reduce((sum, row) => sum + row.value, 0)
+
+  if (points !== null && rows.length === 0) {
+    return (
+      <Card data-chart={id} className="flex flex-col rounded-3xl">
+        <CardContent className="flex flex-1 items-center justify-center p-8">
+          <p className="text-sm text-content-muted">No spending in this period.</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card data-chart={id} className="flex flex-col rounded-3xl">
@@ -77,19 +105,16 @@ export default function Component() {
               content={<ChartTooltipContent hideLabel />}
             />
             <Pie
-              data={desktopData}
-              dataKey="desktop"
+              data={rows}
+              dataKey="value"
               nameKey="month"
               innerRadius={60}
               strokeWidth={5}
               activeIndex={activeIndex}
               onMouseEnter={(_, index) => setActiveIndex(index)}
               className="dark:text-white"
-              activeShape={({
-                outerRadius = 0,
-                ...props
-              }: PieSectorDataItem) => (
-                <g>
+              activeShape={({ outerRadius = 0, ...props }: any) => (
+                <g {...props}>
                   <Sector {...props} outerRadius={outerRadius + 10} />
                   <Sector
                     {...props}
@@ -102,6 +127,7 @@ export default function Component() {
               <Label
                 content={({ viewBox }) => {
                   if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                    const row = rows[activeIndex]
                     return (
                       <text
                         x={viewBox.cx}
@@ -115,17 +141,17 @@ export default function Component() {
                           y={viewBox.cy}
                           className="fill-content-primary text-3xl font-bold"
                         >
-                          {desktopData[activeIndex].desktop.toLocaleString()}
+                          {row ? row.value.toLocaleString() : total.toLocaleString()}
                         </tspan>
                         <tspan
                           x={viewBox.cx}
                           y={(viewBox.cy || 0) + 24}
                           className="fill-content-muted"
                         >
-                          expense
+                          {row ? row.month : "total"}
                         </tspan>
                       </text>
-                    );
+                    )
                   }
                 }}
               />
@@ -136,15 +162,12 @@ export default function Component() {
               align="center"
               iconType="circle"
               iconSize={8}
-              // The raw values are lowercase full month names ("january"), so
-              // the default legend wrapped onto a second row and clipped the
-              // last entry. Short labels fit on one line in this column.
-              formatter={(value: string) => value.charAt(0).toUpperCase() + value.slice(1, 3)}
+              formatter={(value: string) => value}
               className="text-xs text-content-secondary"
             />
           </PieChart>
         </ChartContainer>
       </CardContent>
     </Card>
-  );
+  )
 }
