@@ -101,6 +101,13 @@ class AccountSummaryOut(CamelModel):
     total_savings: float
 
 
+class CategoryTotal(CamelModel):
+    """Total spend in one category over a window."""
+
+    category: str
+    total: float
+
+
 class SeriesPoint(CamelModel):
     """A labelled point on a time series. ``period`` is ``YYYY-MM`` or ``YYYY``."""
 

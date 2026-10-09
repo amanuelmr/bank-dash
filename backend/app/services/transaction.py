@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import secrets
+from datetime import timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,7 +24,7 @@ from app.schemas.transaction import (
     TransactionOut,
     TransferRecipientOut,
 )
-from app.schemas.user import SeriesPoint
+from app.schemas.user import CategoryTotal, SeriesPoint
 from app.services.user import build_balance_series
 
 #: Counterparty recorded for movements that have no human recipient (deposits
@@ -303,3 +304,52 @@ async def balance_history(db: AsyncSession, user: User, months: int = 12) -> lis
         ).all()
     )
     return build_balance_series(transactions, user.account_balance, months)
+
+async def spend_by_category(
+    db: AsyncSession, user: User, months: int = 12
+) -> list[CategoryTotal]:
+    """Total spend per category, largest first.
+
+    The frontend previously invented this breakdown; grouping in SQL keeps the
+    aggregation out of the browser and off a single page of results.
+    """
+    since = utcnow() - timedelta(days=31 * months)
+    rows = await db.execute(
+        select(Transaction.category, func.sum(Transaction.amount))
+        .where(
+            Transaction.user_id == user.id,
+            Transaction.direction == TransactionDirection.OUT,
+            Transaction.status == TransactionStatus.COMPLETED,
+            Transaction.occurred_at >= since,
+            Transaction.category != "transfer",
+        )
+        .group_by(Transaction.category)
+        .order_by(func.sum(Transaction.amount).desc())
+    )
+    return [CategoryTotal(category=cat, total=round(float(total), 2)) for cat, total in rows.all()]
+
+
+async def spend_by_month(
+    db: AsyncSession, user: User, months: int = 6
+) -> list[SeriesPoint]:
+    """Total spend per calendar month, oldest first."""
+    since = utcnow() - timedelta(days=31 * months)
+    rows = await db.execute(
+        select(
+            func.strftime("%Y-%m", Transaction.occurred_at),
+            func.sum(Transaction.amount),
+        )
+        .where(
+            Transaction.user_id == user.id,
+            Transaction.direction == TransactionDirection.OUT,
+            Transaction.status == TransactionStatus.COMPLETED,
+            Transaction.occurred_at >= since,
+            Transaction.category != "transfer",
+        )
+        .group_by(func.strftime("%Y-%m", Transaction.occurred_at))
+        .order_by(func.strftime("%Y-%m", Transaction.occurred_at))
+    )
+    return [
+        SeriesPoint(period=period, value=round(float(total), 2))
+        for period, total in rows.all()
+    ]
