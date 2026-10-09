@@ -69,6 +69,12 @@ COMPANIES = [
     ("Nokia Oyj", "NOK", "Telecommunications", 4.12, 0.18, True),
     ("JPMorgan Chase", "JPM", "Financial Services", 218.7, 0.34, False),
     ("Saudi Aramco", "2222", "Energy", 28.9, -0.12, False),
+    ("Meta Platforms", "META", "Communication Services", 512.4, 1.34, True),
+    ("Netflix Inc.", "NFLX", "Entertainment", 681.2, -0.87, True),
+    ("NVIDIA Corp.", "NVDA", "Technology", 118.6, 3.42, True),
+    ("Intel Corp.", "INTC", "Technology", 22.4, -1.15, False),
+    ("Walmart Inc.", "WMT", "Consumer Staples", 78.9, 0.56, False),
+    ("Johnson & Johnson", "JNJ", "Healthcare", 156.3, -0.27, False),
 ]
 
 # (description, category, typical amount range)
